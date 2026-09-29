@@ -1,0 +1,2173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Checkpoint</title>
+<meta name="description" content="Trading-discipline checklists, trade locks and cooldowns.">
+<meta name="theme-color" content="#0B0D10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Checkpoint">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* ==== STYLE: tokens ==== */
+:root{
+  --bg:#0B0D10; --surface:#12171B; --surface-2:#0F1316; --line:#2A3139; --line-soft:#1E242A;
+  --text:#E8ECEF; --text-2:#B4BCC5; --muted:#8B95A1; --dim:#5E6873;
+  --accent:#4DF0B0; --accent-a:rgba(77,240,176,.10); --accent-b:rgba(77,240,176,.35);
+  --lock:#FFB547; --lock-a:rgba(255,181,71,.10);
+  --info:#6FB8FF; --info-a:rgba(111,184,255,.10);
+  --danger-soft:#FF8A7A;
+  --radius:10px;
+  --f-head:"Chakra Petch", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --tabh:60px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text)}
+body{font-family:var(--f-head);font-size:16px;line-height:1.4;min-height:100vh;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer;touch-action:manipulation}
+button:disabled{cursor:default}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-head);margin:0;font-weight:700;letter-spacing:.01em}
+h1{font-size:26px}
+h2{font-size:18px;font-weight:600}
+.mono{font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.1em;font-size:12px}
+.muted{color:var(--muted)}
+.dim{color:var(--dim)}
+.accent{color:var(--accent)}
+.amber{color:var(--lock)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ==== STYLE: layout + tabs ==== */
+#view{padding:calc(env(safe-area-inset-top) + 12px) 16px calc(var(--tabh) + env(safe-area-inset-bottom) + 28px)}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;background:var(--surface-2);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabs .brand{display:none}
+.tab{flex:1;min-height:var(--tabh);font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--muted);border-top:2px solid transparent;margin-top:-1px}
+.tab[aria-selected="true"]{color:var(--accent);border-top-color:var(--accent)}
+@media (min-width:900px){
+  .tabs{top:0;bottom:0;right:auto;width:220px;flex-direction:column;border-top:0;border-right:1px solid var(--line);padding:28px 12px;gap:4px}
+  .tabs .brand{display:flex;align-items:center;gap:10px;font-family:var(--f-head);font-weight:700;font-size:18px;letter-spacing:.06em;padding:0 14px 20px}
+  .tabs .brand img{width:26px;height:26px;border-radius:6px}
+  .tab{flex:0 0 auto;min-height:48px;text-align:left;padding:0 14px;border-top:0;margin-top:0;border-left:2px solid transparent;font-size:12px}
+  .tab[aria-selected="true"]{border-left-color:var(--accent);background:var(--accent-a)}
+  #view{margin-left:220px;padding:32px 24px 48px}
+}
+
+/* ==== STYLE: components ==== */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.card.accent-card{border-color:var(--accent);box-shadow:0 0 14px var(--accent-a)}
+.card.lock-card{border-color:var(--lock);background:linear-gradient(0deg,var(--lock-a),var(--lock-a)),var(--surface)}
+.card.info-card{border-color:var(--info);background:linear-gradient(0deg,var(--info-a),var(--info-a)),var(--surface)}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:8px}
+.btn{min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--line);font-family:var(--f-mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+.btn.accent-o{border-color:var(--accent);color:var(--accent)}
+.btn.lock-o{border-color:var(--lock);color:var(--lock)}
+.btn.danger-o{border-color:var(--line);color:var(--danger-soft)}
+.btn.ghost{border-color:transparent;background:none;color:var(--muted)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45}
+.textbtn{min-height:44px;font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 6px}
+.icon-btn{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:8px;color:var(--muted);font-size:18px}
+.pill{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted)}
+.pill[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-a)}
+.tag{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;padding:2px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.amber{border-color:var(--lock);color:var(--lock)}
+.progress{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:4px;border-radius:4px;background:var(--line-soft);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);box-shadow:0 0 8px var(--accent);border-radius:4px;transition:width .3s ease}
+.banner{border-radius:var(--radius);padding:12px 14px;border:1px solid var(--info);background:var(--info-a);color:var(--text);font-size:14px}
+.banner .mono{color:var(--info);display:block;margin-bottom:2px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cb{width:22px;height:22px;flex:none;border:1.5px solid var(--line);border-radius:5px;display:grid;place-items:center;transition:background .15s,border-color .15s}
+.cb svg{width:14px;height:14px;opacity:0}
+.cb.dashed{border-style:dashed}
+[aria-pressed="true"] > .cb, .cb.on{background:var(--accent);border-color:var(--accent)}
+[aria-pressed="true"] > .cb svg, .cb.on svg{opacity:1}
+
+/* ==== STYLE: premarket ==== */
+.page-head{display:flex;flex-direction:column;gap:10px;padding:4px 0 4px}
+.now-strip .now-text{font-size:21px;font-weight:600;margin:6px 0 2px}
+.now-strip .note{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.big-done{min-height:56px;width:100%;margin-top:12px;font-size:15px}
+.next-line{margin-top:10px;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.cat{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.cat-head{width:100%;min-height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.cat-head .chev{display:inline-block;transition:transform .2s;color:var(--dim);margin-right:8px}
+.cat-head[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.cat-body{border-top:1px solid var(--line-soft);padding:8px;display:flex;flex-direction:column;gap:6px}
+.item{width:100%;min-height:48px;display:flex;align-items:center;gap:12px;text-align:left;padding:10px 12px;border:1px solid var(--line-soft);border-radius:8px;background:var(--surface-2)}
+.item[aria-pressed="true"]{border-color:var(--accent)}
+.item .txt{flex:1;min-width:0}
+.item .txt b{font-weight:500;display:block}
+.item .txt small{display:block;font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.02em}
+.item .time{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.item.optional{opacity:.55}
+.item.gate{cursor:default}
+.gate-btns{display:flex;gap:6px;flex:none}
+.gate-btns button{min-width:48px;min-height:40px;border:1px solid var(--line);border-radius:6px;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--muted)}
+.gate-btns button[aria-pressed="true"].yes{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.gate-btns button[aria-pressed="true"].no{border-color:var(--info);color:var(--info);background:var(--info-a)}
+.focus-wrap{min-height:calc(100vh - 160px);display:flex;flex-direction:column;justify-content:center;gap:16px;padding:12px 0}
+.focus-item{font-size:38px;line-height:1.15;font-weight:700}
+.focus-note{font-family:var(--f-mono);font-size:14px;color:var(--muted)}
+.focus-done{min-height:68px;font-size:18px}
+
+/* ==== STYLE: trade ==== */
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rules .cell{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px}
+.rules .cell b{display:block;font-family:var(--f-mono);font-size:16px;font-weight:600;margin-top:4px;letter-spacing:.04em}
+.session-bar{display:flex;justify-content:space-between;align-items:center;min-height:40px;padding:0 12px;border:1px solid var(--info);border-radius:var(--radius);background:var(--info-a);color:var(--info);font-family:var(--f-mono);font-size:12px;letter-spacing:.1em}
+.counter{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.counter h2{font-family:var(--f-mono);font-size:22px;letter-spacing:.08em}
+.pips{display:flex;gap:6px;align-items:center}
+.pip{width:10px;height:10px;border-radius:3px;border:1px solid var(--line);background:var(--surface-2)}
+.pip.on{background:var(--accent);border-color:var(--accent);box-shadow:0 0 8px var(--accent)}
+.enter{position:relative;width:100%;min-height:64px;border-radius:var(--radius);overflow:hidden;font-family:var(--f-mono);font-size:15px;letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 16px}
+.enter.off{border:1.5px dashed var(--line);color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:none;font-family:var(--f-mono)}
+.enter.live{border:1px solid var(--accent);color:var(--bg);background:var(--accent);font-weight:600}
+.hold{position:relative;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.hold::before{content:"";position:absolute;inset:0;transform-origin:left;transform:scaleX(var(--fill,0));background:currentColor;opacity:.22;pointer-events:none}
+.enter.live.hold::before{background:var(--bg);opacity:.3}
+.hold > span{position:relative}
+.outcomes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.outcomes .btn{padding:0 4px}
+.urge{width:100%;min-height:56px;border:1px solid var(--lock);color:var(--lock);border-radius:var(--radius);font-family:var(--f-mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:10px}
+.lock-title{font-size:20px;font-weight:700;margin:4px 0 6px}
+.done-screen{text-align:center;padding:36px 18px}
+.done-screen h1{font-size:30px;margin:10px 0 18px}
+details.log-anyway summary{min-height:44px;display:flex;align-items:center;font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;list-style:none}
+details.log-anyway summary::-webkit-details-marker{display:none}
+.sub-head{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+
+/* ==== STYLE: cooldown ==== */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);background:var(--surface)}
+.chip[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-a)}
+.chip.running[aria-pressed="true"]{border-color:var(--lock);color:var(--lock);background:var(--lock-a)}
+.ring-wrap{position:relative;width:min(240px,70vw);aspect-ratio:1;margin:8px auto}
+.ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-wrap .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-wrap .big{font-family:var(--f-mono);font-size:48px;font-weight:600;letter-spacing:.02em}
+.steps{display:flex;flex-direction:column;gap:6px}
+.step.current{border-color:var(--accent)}
+.msg{font-size:17px;line-height:1.45}
+
+/* ==== STYLE: settings + editors ==== */
+.sec-title{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin:14px 2px 2px}
+.list-row{width:100%;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-soft)}
+.list-row:last-child{border-bottom:0}
+.list-row small{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.list-card{padding:0}
+.field{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.field:last-child{border-bottom:0}
+.field > label, .field > .lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.field .hint{font-family:var(--f-mono);font-size:11px;color:var(--dim)}
+.inline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+input[type=text],input[type=number],input[type=time],textarea,select{width:100%;min-height:44px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:16px}
+input[type=number],input[type=time]{font-family:var(--f-mono)}
+textarea{min-height:76px;resize:vertical;line-height:1.4}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);outline:none}
+.num-sm{max-width:110px}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.stepper button{width:48px;height:44px;font-size:20px;color:var(--text-2)}
+.stepper output{min-width:44px;text-align:center;font-family:var(--f-mono);font-size:16px}
+.switch{position:relative;width:52px;height:30px;flex:none;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);transition:background .15s,border-color .15s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .15s,background .15s}
+.switch[aria-checked="true"]{background:var(--accent-a);border-color:var(--accent)}
+.switch[aria-checked="true"]::after{transform:translateX(22px);background:var(--accent)}
+.switch-row{min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.day-chips{display:flex;gap:6px;flex-wrap:wrap}
+.day-chips button{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.day-chips button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-a)}
+.swatches{display:flex;gap:10px}
+.swatch{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
+.swatch i{width:24px;height:24px;border-radius:50%;display:block}
+.swatch[aria-pressed="true"]{border-color:var(--text)}
+.pending{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px dashed var(--lock);border-radius:8px;padding:4px 4px 4px 10px;color:var(--lock);font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;background:var(--lock-a);margin-top:6px}
+.pending button{min-height:36px;padding:0 10px;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--text-2);border:1px solid var(--line);border-radius:6px}
+.editor-head{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.editor-head h1{flex:1;font-size:21px}
+.saved{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--accent);opacity:0;transition:opacity .3s}
+.saved.on{opacity:1;transition:none}
+.handle{width:40px;height:44px;flex:none;display:grid;place-items:center;color:var(--dim);font-size:20px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.dnd-cats{display:flex;flex-direction:column;gap:12px}
+.ecat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:6px}
+.ecat-bar{display:flex;align-items:center;gap:4px}
+.ecat-bar input{font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.08em;font-size:14px}
+.dnd-list{display:flex;flex-direction:column;gap:6px;padding:6px 0;min-height:14px}
+.eitem{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:8px}
+.erow{display:flex;align-items:center;gap:2px}
+.etext{flex:1;min-width:0;min-height:44px;text-align:left;padding:6px 4px;display:flex;align-items:center;gap:8px}
+.etext .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.etext .t.empty{color:var(--dim)}
+.etext .flags{display:flex;gap:4px;flex-wrap:wrap}
+.eexp{padding:4px 10px 12px 12px;display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line-soft)}
+.add-btn{min-height:44px;width:100%;border:1px dashed var(--line);border-radius:8px;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;color:var(--muted)}
+.lifted{position:fixed !important;z-index:50;border-color:var(--accent) !important;box-shadow:0 12px 32px rgba(0,0,0,.6),0 0 0 1px var(--accent);transform:rotate(1.2deg);pointer-events:none;margin:0 !important}
+.drop-ph{border:1.5px dashed var(--accent);border-radius:8px;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--accent);background:var(--accent-a);min-height:44px}
+body.dragging{user-select:none;-webkit-user-select:none}
+
+/* ==== STYLE: modal + toast ==== */
+.modal-back{position:fixed;inset:0;z-index:80;background:rgba(5,6,8,.75);display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+@media (min-width:600px){.modal-back{align-items:center}}
+.modal{width:100%;max-width:460px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;max-height:85vh;overflow:auto}
+.modal p{margin:0;color:var(--text-2)}
+.modal .actions{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.toasts{position:fixed;left:0;right:0;bottom:calc(var(--tabh) + env(safe-area-inset-bottom) + 12px);z-index:90;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+@media (min-width:900px){.toasts{left:220px;bottom:24px}}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 8px 8px 14px;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:520px}
+.toast button{min-height:36px;padding:0 10px;color:var(--accent);font-family:var(--f-mono);font-size:12px;letter-spacing:.1em}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none !important;animation:none !important}
+  .bar>i,.pip.on,.card.accent-card{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <div class="brand"><img src="icons/icon-192.png" alt="">CHECKPOINT</div>
+    <button class="tab" role="tab" data-tab="premarket" aria-selected="true">PREMARKET</button>
+    <button class="tab" role="tab" data-tab="trade" aria-selected="false">TRADE</button>
+    <button class="tab" role="tab" data-tab="cooldown" aria-selected="false">COOLDOWN</button>
+    <button class="tab" role="tab" data-tab="settings" aria-selected="false">SETTINGS</button>
+  </nav>
+  <main id="view"></main>
+</div>
+<div id="modal-root"></div>
+<div id="toast-root" class="toasts" aria-live="polite"></div>
+<input type="file" id="import-file" accept="application/json,.json" class="sr" tabindex="-1" aria-hidden="true">
+<script>
+var App = (function () {
+  'use strict';
+
+  /* ==== CORE: helpers ==== */
+  var KEY = 'checkpoint.v1';
+  var ACCENTS = { mint: [77, 240, 176], blue: [111, 184, 255], violet: [199, 155, 255] };
+  var DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  var MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  var CHECK_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="#0B0D10" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function uid() {
+    try {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+    } catch (e) { /* fall through */ }
+    return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6);
+  }
+  function escapeHTML(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  var esc = escapeHTML;
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function hmToMin(hm) {
+    var m = /^(\d{1,2}):(\d{2})/.exec(hm || '');
+    return m ? (+m[1]) * 60 + (+m[2]) : 0;
+  }
+  function minOfDay(d) { return d.getHours() * 60 + d.getMinutes(); }
+  function relMin(min, resetMin) { return ((min - resetMin) % 1440 + 1440) % 1440; }
+  function fmtMS(sec) {
+    sec = Math.max(0, Math.ceil(sec));
+    return Math.floor(sec / 60) + ':' + pad2(sec % 60);
+  }
+  function fmtDur(min) {
+    if (min < 60) return min + ' MIN';
+    return Math.floor(min / 60) + 'H ' + pad2(min % 60) + 'M';
+  }
+  function fmtClock(d) { return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+  function fmtStamp(d) {
+    return DOW[d.getDay()] + ' ' + pad2(d.getDate()) + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear() + ' · ' + fmtClock(d);
+  }
+  function clone(o) { return o === undefined ? undefined : JSON.parse(JSON.stringify(o)); }
+  function isObj(o) { return o !== null && typeof o === 'object' && !Array.isArray(o); }
+  function sameVal(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+  function getPath(obj, path) {
+    return path.split('.').reduce(function (o, k) { return o == null ? undefined : o[k]; }, obj);
+  }
+  function setPath(obj, path, val) {
+    var ks = path.split('.');
+    var last = ks.pop();
+    var o = ks.reduce(function (a, k) { if (!isObj(a[k])) a[k] = {}; return a[k]; }, obj);
+    o[last] = val;
+  }
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  /* ==== DEFAULTS: prefilled content ==== */
+  function makeDefaults() {
+    function cat(name, items) { return { id: uid(), name: name, items: items }; }
+    function pm(text, note, time, flags) {
+      flags = flags || '';
+      return { id: uid(), text: text, note: note || '', time: time || '', optional: flags === 'optional', gate: flags === 'gate' };
+    }
+    function tr(text, note, afterStopOnly) { return { id: uid(), text: text, note: note || '', afterStopOnly: !!afterStopOnly }; }
+    function so(text) { return { id: uid(), text: text, note: '' }; }
+    function preset(name, seconds, steps, startMsg, endMsg) {
+      return {
+        id: uid(), name: name, seconds: seconds, startMsg: startMsg, endMsg: endMsg,
+        steps: steps.map(function (t) { return { id: uid(), text: t }; })
+      };
+    }
+    var presets = [
+      preset('After SL', 300, ['Stand up', '3 physiological sighs', 'Leave the desk', 'Water'],
+        'One more SL closes the day. Nothing to win back.',
+        'Cooldown done. New trigger at a new level, or nothing.'),
+      preset('Break', 300, ['Stand up', 'Water', 'Toilet', 'Check higher time frame'],
+        'Have a short break. Stand up, take some water and go to the toilet. Try cooling down for a while before coming back.',
+        'Are you back to trade now? If the window is still open, stay calm and remember, don\'t force setup, the market will always be there tomorrow. And don\'t forget to check higher time frame as well.'),
+      preset('Urge', 90, ['Breathe in 4, out 6', 'Stand up'],
+        'Hands off the mouse. Breathe.',
+        'Still out? Good.'),
+      preset('Red Day', 180, ['Hands off the mouse', 'Breathe in 4, out 6', 'Drink water', 'Close the platform'],
+        'Iris, hands off the mouse. A loss is one day out of hundreds. Your rules protected the account, and the plan is still good. There is always another session tomorrow. Breathe in for four, out for six. Drink water.',
+        'Have you cooled down? Don\'t forget that our goal is to stay in the game long enough to win. Trade today so that you can trade tomorrow.'),
+      preset('Green Day', 60, ['Close the platform', 'Write your journal'],
+        'Green is done. The reward is the discipline, not the number. One more trade now is gambling with today\'s work. Close the platform and write your journal. Tomorrow is a new day.',
+        'Remember, small compounding wins.')
+    ];
+    return {
+      schema: 1,
+      settings: {
+        accent: 'mint',
+        resetHour: '06:00',
+        activeDays: [1, 2, 3, 4, 5],
+        session: { start: '20:30', end: '21:40' },
+        rules: { tradeCap: 2, maxDailyLoss: 600, maxRiskPerTrade: 300, notATradeMsg: 'Not a trade. Arm every check first.' },
+        behaviour: {
+          slStartsCooldown: true, dayDoneAfterTP: true, lockAtCap: true, lockDuringCooldown: true,
+          holdToEnterSec: 2, endEarlyHoldSec: 5, urgeHoldSec: 3
+        },
+        presetLinks: { sl: presets[0].id, urge: presets[2].id, redDay: presets[3].id, greenDay: presets[4].id, notGood: presets[1].id },
+        sound: true, vibration: false, focusMode: false,
+        sessionOverMsg: 'Is the platform closed? Session should be over. No other accounts. No revenge.',
+        lastExportAt: null
+      },
+      checklists: {
+        premarket: {
+          categories: [
+            cat('BODY', [
+              pm('Slept enough', '', '', 'gate'),
+              pm('Rested / nap', 'Finish what you\'re doing, short nap if you want', '18:50'),
+              pm('Physically OK', 'Not depleted or unwell', '', 'gate'),
+              pm('Concentration OK', '', '', 'gate'),
+              pm('Stress manageable', '', '', 'gate')
+            ]),
+            cat('DAYTIME', [
+              pm('Dump to Claude', 'MQ newsletter · Paralia newsletter · 1BB brief · Daily Structural levels · MQ levels'),
+              pm('Watch MQ videos', '', '', 'optional'),
+              pm('Read 1BB brief')
+            ]),
+            cat('DESK', [
+              pm('Prepare zones in chart', '', '19:30'),
+              pm('Trade plan for the day'),
+              pm('ATAS ready'),
+              pm('1BB screenshot', 'Dashboard + Engine', '20:00'),
+              pm('OVN screenshot')
+            ]),
+            cat('LOCKS', [
+              pm('Check account settings'),
+              pm('Copier on'),
+              pm('Platform daily loss −$600, auto-flatten ON'),
+              pm('Max order size = planned contracts'),
+              pm('Every copy-group account has more than $600 left before its drawdown limit'),
+              pm('Pyae knows today\'s plan and cap'),
+              pm('After-session exit decided', 'Gym, leave the room')
+            ]),
+            cat('DATA', [
+              pm('Premarket fetches in → build data', '', '20:12'),
+              pm('Drink water', '', '20:20'),
+              pm('Post-open fetch', '', '20:45')
+            ])
+          ]
+        },
+        trade: {
+          categories: [
+            cat('BEFORE ENTRY', [
+              tr('Level is on today\'s plan', 'Not in do-nothing zone · no event window'),
+              tr('Trigger confirmed on footprint/TAS', 'Confirmed, not anticipated'),
+              tr('Size = plan · stop covers the level', 'Risk within today\'s limit'),
+              tr('Reward to risk ≥ 1:3', 'To a planned target'),
+              tr('New trigger at a different level · cooldown done · why and how said to Pyae', '', true)
+            ])
+          ]
+        },
+        sessionOver: {
+          categories: [
+            cat('CLOSE OUT', [so('Platform closed'), so('No other accounts'), so('Left the room'), so('Eyes off all charts')])
+          ]
+        }
+      },
+      presets: presets,
+      pending: [],
+      days: {},
+      activeCooldown: null
+    };
+  }
+
+  function newDay() {
+    return {
+      premarket: { checked: {}, gateNo: {}, later: [], collapsed: {} },
+      tradeChecks: {},
+      entered: false,
+      trades: [],
+      cooldowns: [],
+      urges: [],
+      sessionOver: { checked: {} },
+      dayDoneShown: false
+    };
+  }
+
+  /* ==== TIME: trading day + session ==== */
+  function tradingDayKey(date, resetHour) {
+    var d = new Date(date.getTime());
+    if (minOfDay(d) < hmToMin(resetHour)) d.setDate(d.getDate() - 1);
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+  function keyToDate(key) {
+    var p = key.split('-');
+    return new Date(+p[0], +p[1] - 1, +p[2], 12, 0, 0);
+  }
+  function fmtDayKey(key) {
+    var d = keyToDate(key);
+    return DOW[d.getDay()] + ' ' + pad2(d.getDate()) + ' ' + MON[d.getMonth()];
+  }
+  function todayKey(now) { return tradingDayKey(now || new Date(), state.settings.resetHour); }
+  function isActiveDayFor(key, settings) { return settings.activeDays.indexOf(keyToDate(key).getDay()) >= 0; }
+  function isActiveDay(key) { return isActiveDayFor(key, state.settings); }
+  // Phase of the session relative to the trading day: before | live | after
+  function sessionPhase(date, settings) {
+    var reset = hmToMin(settings.resetHour);
+    var n = relMin(minOfDay(date), reset);
+    var s = relMin(hmToMin(settings.session.start), reset);
+    var e = relMin(hmToMin(settings.session.end), reset);
+    if (e <= s) return n < s ? 'before' : 'after';
+    if (n < s) return 'before';
+    if (n < e) return 'live';
+    return 'after';
+  }
+  function sessionInfo(now) {
+    now = now || new Date();
+    var s = state.settings;
+    var key = todayKey(now);
+    if (!isActiveDay(key)) return { phase: 'off', right: 'NO SESSION TODAY' };
+    var phase = sessionPhase(now, s);
+    var reset = hmToMin(s.resetHour);
+    var n = relMin(minOfDay(now), reset);
+    if (phase === 'before') return { phase: phase, right: 'STARTS IN ' + fmtDur(relMin(hmToMin(s.session.start), reset) - n) };
+    if (phase === 'live') return { phase: phase, right: (relMin(hmToMin(s.session.end), reset) - n) + ' MIN LEFT' };
+    return { phase: phase, right: 'SESSION OVER' };
+  }
+  function sessionLive(now) {
+    now = now || new Date();
+    return isActiveDay(todayKey(now)) && sessionPhase(now, state.settings) === 'live';
+  }
+
+  /* ==== STATE: load/save ==== */
+  var state = null;
+  var saveTimer = null;
+  var loadNotice = null;
+
+  function fillMissing(target, defs) {
+    Object.keys(defs).forEach(function (k) {
+      if (!(k in target) || target[k] === undefined) target[k] = clone(defs[k]);
+      else if (isObj(defs[k]) && !isObj(target[k])) target[k] = clone(defs[k]);
+      else if (isObj(defs[k]) && isObj(target[k])) fillMissing(target[k], defs[k]);
+    });
+    return target;
+  }
+  function normalise(s) {
+    var defs = makeDefaults();
+    fillMissing(s, defs);
+    if (!Array.isArray(s.presets) || !s.presets.length) s.presets = defs.presets;
+    Object.keys(s.settings.presetLinks).forEach(function (k) {
+      if (!findPresetIn(s, s.settings.presetLinks[k])) s.settings.presetLinks[k] = s.presets[0].id;
+    });
+    ['premarket', 'trade', 'sessionOver'].forEach(function (l) {
+      if (!Array.isArray(s.checklists[l].categories)) s.checklists[l].categories = [];
+    });
+    if (!Array.isArray(s.pending)) s.pending = [];
+    if (!isObj(s.days)) s.days = {};
+    return s;
+  }
+  function load() {
+    var raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
+    if (!raw) { state = makeDefaults(); saveNow(); return; }
+    try {
+      var parsed = JSON.parse(raw);
+      if (!isObj(parsed)) throw new Error('not an object');
+      state = normalise(parsed);
+    } catch (e) {
+      try { localStorage.setItem(KEY + '.corrupt-' + Date.now(), raw); } catch (e2) { /* ignore */ }
+      state = makeDefaults();
+      loadNotice = 'Saved data could not be read. A copy was kept and the defaults were loaded.';
+      saveNow();
+    }
+  }
+  function saveNow() {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('Could not save. Storage may be full.'); }
+  }
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveNow, 300);
+  }
+  function flushSave() { if (saveTimer) saveNow(); }
+  function getDay(key) {
+    if (!state.days[key]) state.days[key] = newDay();
+    return fillMissing(state.days[key], newDay());
+  }
+  function findPresetIn(s, id) {
+    for (var i = 0; i < s.presets.length; i++) if (s.presets[i].id === id) return s.presets[i];
+    return null;
+  }
+  function findPreset(id) { return findPresetIn(state, id); }
+  function findItem(list, id) {
+    var cats = state.checklists[list].categories;
+    for (var i = 0; i < cats.length; i++) {
+      for (var j = 0; j < cats[i].items.length; j++) if (cats[i].items[j].id === id) return cats[i].items[j];
+    }
+    return null;
+  }
+  function findCat(list, id) {
+    return state.checklists[list].categories.filter(function (c) { return c.id === id; })[0] || null;
+  }
+
+  /* ==== RULES: loosening + pending ==== */
+  var LOOSEN = {
+    'rules.tradeCap': 'up', 'rules.maxDailyLoss': 'up', 'rules.maxRiskPerTrade': 'up',
+    'behaviour.slStartsCooldown': 'off', 'behaviour.dayDoneAfterTP': 'off',
+    'behaviour.lockAtCap': 'off', 'behaviour.lockDuringCooldown': 'off',
+    'behaviour.holdToEnterSec': 'down', 'behaviour.endEarlyHoldSec': 'down', 'behaviour.urgeHoldSec': 'down',
+    'preset.seconds': 'down', 'preset.stepDelete': 'always',
+    'trade.itemAdd': 'never', 'trade.itemDelete': 'always', 'trade.itemEdit': 'always',
+    'trade.afterStopOnly': 'on', 'trade.categoryDelete': 'always',
+    'session': 'change', 'activeDays': 'change', 'presetLinks': 'change'
+  };
+  function isLoosening(ch) {
+    switch (LOOSEN[ch.key]) {
+      case 'up': return Number(ch.to) > Number(ch.from);
+      case 'down': return Number(ch.to) < Number(ch.from);
+      case 'off': return !!ch.from && !ch.to;
+      case 'on': return !ch.from && !!ch.to;
+      case 'always': return true;
+      case 'change': return !sameVal(ch.from, ch.to);
+      default: return false;
+    }
+  }
+  function pendingFor(key) { return state.pending.filter(function (p) { return p.key === key; })[0] || null; }
+  function removePending(key) { state.pending = state.pending.filter(function (p) { return p.key !== key; }); }
+  // Value a control should step from: the pending target if one exists, else the live value.
+  function targetValue(key, live) {
+    var p = pendingFor(key);
+    return p && p.apply.op === 'set' ? clone(p.apply.value) : live;
+  }
+  function applyOp(op) {
+    var cats, p;
+    if (op.op === 'set') setPath(state, op.path, clone(op.value));
+    else if (op.op === 'deleteItem') {
+      state.checklists[op.list].categories.forEach(function (c) {
+        c.items = c.items.filter(function (i) { return i.id !== op.itemId; });
+      });
+    } else if (op.op === 'editItem') {
+      var it = findItem(op.list, op.itemId);
+      if (it) it[op.field] = op.value;
+    } else if (op.op === 'deleteCategory') {
+      cats = state.checklists[op.list];
+      cats.categories = cats.categories.filter(function (c) { return c.id !== op.catId; });
+    } else if (op.op === 'presetSet') {
+      p = findPreset(op.presetId);
+      if (p) p[op.field] = op.value;
+    } else if (op.op === 'deleteStep') {
+      p = findPreset(op.presetId);
+      if (p) p.steps = p.steps.filter(function (s) { return s.id !== op.stepId; });
+    }
+  }
+  // o: { key, rule, from, to, op, label?, fromText?, toText? } -> 'noop' | 'pending' | 'applied'
+  function propose(o) {
+    if (o.op.op === 'set' && sameVal(o.from, o.to)) { removePending(o.key); return 'noop'; }
+    if (sessionLive() && isLoosening({ key: o.rule, from: o.from, to: o.to })) {
+      removePending(o.key);
+      state.pending.push({
+        id: uid(), key: o.key, kind: o.rule, label: o.label || '',
+        fromText: o.fromText != null ? String(o.fromText) : String(o.from),
+        toText: o.toText != null ? String(o.toText) : String(o.to),
+        apply: o.op, createdAt: new Date().toISOString(), dayKey: todayKey()
+      });
+      return 'pending';
+    }
+    applyOp(o.op);
+    removePending(o.key);
+    return 'applied';
+  }
+  function applyDuePending() {
+    var today = todayKey();
+    var due = state.pending.filter(function (p) { return p.dayKey !== today; });
+    if (!due.length) return false;
+    due.forEach(function (p) { applyOp(p.apply); });
+    state.pending = state.pending.filter(function (p) { return p.dayKey === today; });
+    save();
+    return true;
+  }
+  function afterPropose(result) {
+    save();
+    if (result === 'pending') toast('Session is live · applies tomorrow ' + state.settings.resetHour);
+    else flashSaved();
+  }
+
+  /* ==== AUDIO + HAPTICS ==== */
+  var actx = null;
+  function unlockAudio() {
+    try {
+      if (!actx) {
+        var C = window.AudioContext || window.webkitAudioContext;
+        if (C) actx = new C();
+      }
+      if (actx && actx.state === 'suspended') actx.resume();
+    } catch (e) { /* ignore */ }
+  }
+  function chime() {
+    if (!state.settings.sound) return;
+    unlockAudio();
+    if (!actx) return;
+    var t0 = actx.currentTime + 0.02;
+    [[659.25, 0], [987.77, 0.28]].forEach(function (n) {
+      var o = actx.createOscillator();
+      var g = actx.createGain();
+      o.type = 'sine';
+      o.frequency.value = n[0];
+      g.gain.setValueAtTime(0.0001, t0 + n[1]);
+      g.gain.exponentialRampToValueAtTime(0.18, t0 + n[1] + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + n[1] + 1.6);
+      o.connect(g);
+      g.connect(actx.destination);
+      o.start(t0 + n[1]);
+      o.stop(t0 + n[1] + 1.7);
+    });
+  }
+  function vibrate(pattern) {
+    if (!state.settings.vibration || !navigator.vibrate) return;
+    try { navigator.vibrate(pattern); } catch (e) { /* ignore */ }
+  }
+  var wakeLock = null;
+  function requestWakeLock() {
+    var ac = state.activeCooldown;
+    if (!ac || ac.finished || wakeLock || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+    navigator.wakeLock.request('screen').then(function (l) {
+      wakeLock = l;
+      l.addEventListener('release', function () { if (wakeLock === l) wakeLock = null; });
+    }).catch(function () { wakeLock = null; });
+  }
+  function releaseWakeLock() {
+    if (wakeLock) { try { wakeLock.release(); } catch (e) { /* ignore */ } }
+    wakeLock = null;
+  }
+
+  /* ==== UI: shell, modal, toast ==== */
+  var ui = {
+    tab: 'premarket', editor: null, expanded: {}, dayDone: false, showAnyway: null,
+    cdSelected: null, holding: false, focusAfter: null
+  };
+  try {
+    var savedTab = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('checkpoint.tab');
+    if (savedTab && /^(premarket|trade|cooldown|settings)$/.test(savedTab)) ui.tab = savedTab;
+  } catch (e) { /* ignore */ }
+
+  function applyAccent() {
+    var c = ACCENTS[state.settings.accent] || ACCENTS.mint;
+    var rs = document.documentElement.style;
+    rs.setProperty('--accent', 'rgb(' + c.join(',') + ')');
+    rs.setProperty('--accent-a', 'rgba(' + c.join(',') + ',.10)');
+    rs.setProperty('--accent-b', 'rgba(' + c.join(',') + ',.35)');
+  }
+  function setTab(tab) {
+    if (ui.tab === tab && tab === 'settings') ui.editor = null;
+    ui.tab = tab;
+    try { sessionStorage.setItem('checkpoint.tab', tab); } catch (e) { /* ignore */ }
+    render();
+    window.scrollTo(0, 0);
+  }
+  function render() {
+    var view = $('#view');
+    if (!view) return;
+    var active = document.activeElement;
+    var fk = active && active.getAttribute && active.getAttribute('data-fk');
+    $$('.tab').forEach(function (t) { t.setAttribute('aria-selected', String(t.getAttribute('data-tab') === ui.tab)); });
+    var html;
+    if (ui.tab === 'premarket') html = viewPremarket();
+    else if (ui.tab === 'trade') html = viewTrade();
+    else if (ui.tab === 'cooldown') html = viewCooldown();
+    else html = viewSettings();
+    view.innerHTML = '<div class="wrap">' + html + '</div>';
+    bindHolds(view);
+    var want = ui.focusAfter || fk;
+    ui.focusAfter = null;
+    if (want) {
+      var el = view.querySelector('[data-fk="' + want + '"]');
+      if (el) { try { el.focus({ preventScroll: !ui.focusScroll }); } catch (e) { el.focus(); } }
+    }
+    ui.focusScroll = false;
+  }
+  function flashSaved() {
+    var s = $('.saved');
+    if (!s) return;
+    s.classList.add('on');
+    clearTimeout(flashSaved.t);
+    flashSaved.t = setTimeout(function () { s.classList.remove('on'); }, 900);
+  }
+  function cbx(on, dashed) {
+    return '<span class="cb' + (dashed ? ' dashed' : '') + (on ? ' on' : '') + '" aria-hidden="true">' + CHECK_SVG + '</span>';
+  }
+  function toast(msg, action, ms) {
+    var root = $('#toast-root');
+    if (!root) return;
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = '<span>' + esc(msg) + '</span>' + (action ? '<button type="button">' + esc(action.label) + '</button>' : '');
+    if (action) t.querySelector('button').addEventListener('click', function () { t.remove(); action.fn(); });
+    root.appendChild(t);
+    if (ms !== 0) setTimeout(function () { t.remove(); }, ms || 3200);
+  }
+  // opts: { title, html, actions: [{ label, cls, fn, keepOpen, id }], onOpen }
+  function openModal(opts) {
+    var root = $('#modal-root');
+    var prevFocus = document.activeElement;
+    root.innerHTML = '<div class="modal-back"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">' +
+      '<h2 id="m-title">' + esc(opts.title) + '</h2>' + (opts.html || '') +
+      '<div class="actions">' + (opts.actions || []).map(function (a, i) {
+        return '<button type="button" class="btn block ' + (a.cls || '') + '" data-mi="' + i + '"' + (a.id ? ' id="' + a.id + '"' : '') + (a.disabled ? ' disabled' : '') + '>' + esc(a.label) + '</button>';
+      }).join('') + '</div></div></div>';
+    function close() {
+      root.innerHTML = '';
+      document.removeEventListener('keydown', onKey);
+      if (prevFocus && prevFocus.focus && document.body.contains(prevFocus)) prevFocus.focus();
+    }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onKey);
+    $$('[data-mi]', root).forEach(function (b) {
+      b.addEventListener('click', function () {
+        var a = opts.actions[+b.getAttribute('data-mi')];
+        if (!a.keepOpen) close();
+        if (a.fn) a.fn(close);
+      });
+    });
+    root.querySelector('.modal-back').addEventListener('click', function (e) { if (e.target === e.currentTarget) close(); });
+    if (opts.onOpen) opts.onOpen(root.querySelector('.modal'), close);
+    var first = root.querySelector('input, .actions button');
+    if (first) first.focus();
+    return close;
+  }
+  function confirmModal(title, text, okLabel, fn, okCls) {
+    openModal({
+      title: title,
+      html: text ? '<p>' + esc(text) + '</p>' : '',
+      actions: [{ label: okLabel, cls: okCls || 'primary', fn: fn }, { label: 'Cancel', cls: 'ghost' }]
+    });
+  }
+  function typedConfirm(o) {
+    openModal({
+      title: o.title,
+      html: (o.pre || '') + '<p>' + esc(o.text) + '</p><input type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" id="typed" aria-label="Type ' + esc(o.word) + ' to confirm" placeholder="' + esc(o.word) + '">',
+      actions: [{ label: o.okLabel, cls: 'danger-o', id: 'typed-ok', disabled: true, fn: o.fn }, { label: 'Cancel', cls: 'ghost' }],
+      onOpen: function (m, close) {
+        var inp = m.querySelector('#typed');
+        var ok = m.querySelector('#typed-ok');
+        inp.addEventListener('input', function () { ok.disabled = inp.value.trim() !== o.word; });
+        if (o.onOpen) o.onOpen(m, close);
+      }
+    });
+  }
+
+  /* ==== VIEW: premarket ==== */
+  function pmAll() {
+    var out = [];
+    state.checklists.premarket.categories.forEach(function (c) {
+      c.items.forEach(function (it) { out.push(it); });
+    });
+    return out;
+  }
+  function pmResolved(it, pmd) { return !!pmd.checked[it.id] || (it.gate && !!pmd.gateNo[it.id]); }
+  function pmStats(items, pmd) {
+    var req = 0, done = 0;
+    items.forEach(function (it) {
+      if (it.optional) return;
+      req++;
+      if (pmd.checked[it.id]) done++;
+    });
+    return { req: req, done: done };
+  }
+  function pmCurrent(pmd, now) {
+    var reset = hmToMin(state.settings.resetHour);
+    var nr = relMin(minOfDay(now), reset);
+    var open = pmAll().filter(function (it) { return !it.optional && !pmResolved(it, pmd); });
+    var main = open.filter(function (it) { return pmd.later.indexOf(it.id) < 0; });
+    var cur = null, curT = -1;
+    main.forEach(function (it) {
+      if (!it.time) return;
+      var t = relMin(hmToMin(it.time), reset);
+      if (t <= nr && t > curT) { cur = it; curT = t; }
+    });
+    if (!cur) cur = main[0] || null;
+    if (!cur) {
+      cur = pmd.later.map(function (id) { return open.filter(function (it) { return it.id === id; })[0]; }).filter(Boolean)[0] || null;
+    }
+    var next = null, nextT = 1e9;
+    open.forEach(function (it) {
+      if (!it.time || it === cur) return;
+      var t = relMin(hmToMin(it.time), reset);
+      if (t > nr && t < nextT) { next = it; nextT = t; }
+    });
+    var after = null;
+    if (cur) {
+      var rest = main.filter(function (it) { return it !== cur; });
+      after = rest[0] || null;
+    }
+    return { cur: cur, next: next, after: after };
+  }
+  function pmCatFolded(cat, pmd) {
+    if (cat.id in pmd.collapsed) return !!pmd.collapsed[cat.id];
+    var st = pmStats(cat.items, pmd);
+    return st.req > 0 && st.done === st.req;
+  }
+  function gateButtons(it, pmd, big) {
+    var yes = !!pmd.checked[it.id], no = !!pmd.gateNo[it.id];
+    var sz = big ? ' style="min-height:56px;flex:1"' : '';
+    return '<div class="gate-btns"' + (big ? ' style="width:100%;margin-top:12px"' : '') + '>' +
+      '<button type="button" class="yes" data-act="pm-gate" data-v="yes" data-id="' + esc(it.id) + '" aria-pressed="' + yes + '" aria-label="' + esc(it.text) + ': yes"' + sz + '>YES</button>' +
+      '<button type="button" class="no" data-act="pm-gate" data-v="no" data-id="' + esc(it.id) + '" aria-pressed="' + no + '" aria-label="' + esc(it.text) + ': no"' + sz + '>NO</button></div>';
+  }
+  function viewPremarket() {
+    var now = new Date();
+    var key = todayKey(now);
+    var s = state.settings;
+    var head = '<span class="mono muted">' + fmtDayKey(key) + ' · ' + fmtClock(now) + '</span>';
+    var pill = '<button type="button" class="pill" data-act="focus" aria-pressed="' + !!s.focusMode + '">FOCUS ' + (s.focusMode ? 'ON' : 'OFF') + '</button>';
+    if (!isActiveDay(key) && ui.showAnyway !== key) {
+      return '<header class="page-head"><div class="row between">' + head + '</div><h1>Premarket Plan Build</h1></header>' +
+        '<div class="card"><p style="margin:0 0 12px" class="msg">Not a trading day. Premarket is off.</p>' +
+        '<button type="button" class="btn" data-act="pm-show-anyway">Show anyway</button></div>';
+    }
+    var day = getDay(key), pmd = day.premarket;
+    var st = pmStats(pmAll(), pmd);
+    var pct = st.req ? Math.round(st.done / st.req * 100) : 100;
+    var anyNo = pmAll().some(function (it) { return it.gate && pmd.gateNo[it.id]; });
+    var banner = anyNo ? '<div class="banner" role="status"><span class="mono">OBSERVATION DAY</span>Observation day: forward-test only.</div>' : '';
+    var cx = pmCurrent(pmd, now);
+
+    if (s.focusMode) {
+      var body;
+      if (!cx.cur) {
+        body = '<div class="focus-item">Premarket done.</div><div class="focus-note">Every required item is checked.</div>';
+      } else {
+        var it = cx.cur;
+        var nxt = cx.next || cx.after;
+        body = '<div class="eyebrow">NOW' + (it.time ? ' · ' + esc(it.time) : '') + '</div>' +
+          '<div class="focus-item">' + esc(it.text) + '</div>' +
+          (it.note ? '<div class="focus-note">' + esc(it.note) + '</div>' : '') +
+          (it.gate ? gateButtons(it, pmd, true) : '<button type="button" class="btn primary block focus-done" data-act="pm-done" data-id="' + esc(it.id) + '">DONE</button>') +
+          '<button type="button" class="textbtn" data-act="pm-later" data-id="' + esc(it.id) + '">Later · move to the end</button>' +
+          (nxt ? '<div class="next-line">Next: ' + esc(nxt.text) + (nxt.time ? ' · ' + esc(nxt.time) : '') + '</div>' : '');
+      }
+      return '<div class="progress"><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + st.req + '" aria-valuenow="' + st.done + '"><i style="width:' + pct + '%"></i></div>' +
+        '<span class="mono muted">' + st.done + ' / ' + st.req + '</span>' + pill + '</div>' + banner +
+        '<div class="focus-wrap">' + body + '</div>';
+    }
+
+    var out = '<header class="page-head"><div class="row between">' + head + pill + '</div>' +
+      '<h1>Premarket Plan Build</h1>' +
+      '<div class="progress"><div class="bar" role="progressbar" aria-label="Premarket progress" aria-valuemin="0" aria-valuemax="' + st.req + '" aria-valuenow="' + st.done + '"><i style="width:' + pct + '%"></i></div>' +
+      '<span class="mono">' + st.done + ' / ' + st.req + '</span></div></header>' + banner;
+
+    if (cx.cur) {
+      var c = cx.cur;
+      out += '<section class="card accent-card now-strip" aria-label="Current item">' +
+        '<div class="row between"><span class="eyebrow accent">NOW</span>' + (c.time ? '<span class="mono muted">' + esc(c.time) + '</span>' : '') + '</div>' +
+        '<div class="now-text">' + esc(c.text) + '</div>' + (c.note ? '<div class="note">' + esc(c.note) + '</div>' : '') +
+        (c.gate ? gateButtons(c, pmd, true) : '<button type="button" class="btn primary big-done" data-act="pm-done" data-id="' + esc(c.id) + '">DONE</button>') +
+        (cx.next ? '<div class="next-line">NEXT · ' + esc(cx.next.time) + ' · ' + esc(cx.next.text) + '</div>' : '') +
+        '</section>';
+    } else if (st.req) {
+      out += '<div class="mono accent" style="padding:4px 2px">All required items done.</div>';
+    }
+
+    state.checklists.premarket.categories.forEach(function (cat) {
+      var cs = pmStats(cat.items, pmd);
+      var folded = pmCatFolded(cat, pmd);
+      var complete = cs.req > 0 && cs.done === cs.req;
+      out += '<section class="cat"><button type="button" class="cat-head" data-act="pm-fold" data-cat="' + esc(cat.id) + '" aria-expanded="' + !folded + '">' +
+        '<span><span class="chev" aria-hidden="true">›</span>' + esc(cat.name) + '</span>' +
+        '<span class="' + (complete ? 'accent' : 'muted') + '">' + (complete ? cs.done + '/' + cs.req + ' DONE' : cs.done + '/' + cs.req) + '</span></button>';
+      if (!folded) {
+        out += '<div class="cat-body">';
+        cat.items.forEach(function (it) {
+          var note = it.note ? '<small>' + esc(it.note) + '</small>' : '';
+          var tag = it.optional ? ' <span class="tag">OPTIONAL</span>' : '';
+          var time = it.time ? '<span class="time">' + esc(it.time) + '</span>' : '';
+          if (it.gate) {
+            out += '<div class="item gate' + (it.optional ? ' optional' : '') + '"' + (pmd.checked[it.id] ? ' style="border-color:var(--accent)"' : '') + '>' +
+              '<span class="txt"><b>' + esc(it.text) + tag + '</b>' + note + '</span>' + time + gateButtons(it, pmd, false) + '</div>';
+          } else {
+            var on = !!pmd.checked[it.id];
+            out += '<button type="button" class="item' + (it.optional ? ' optional' : '') + '" data-act="pm-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '">' +
+              cbx(on, it.optional) + '<span class="txt"><b>' + esc(it.text) + tag + '</b>' + note + '</span>' + time + '</button>';
+          }
+        });
+        if (!cat.items.length) out += '<div class="mono dim" style="padding:8px">No items</div>';
+        out += '</div>';
+      }
+      out += '</section>';
+    });
+    return out;
+  }
+  function pmCatOf(id) {
+    return state.checklists.premarket.categories.filter(function (c) {
+      return c.items.some(function (i) { return i.id === id; });
+    })[0];
+  }
+  function pmAfterChange(id, pmd) {
+    var cat = pmCatOf(id);
+    if (cat) {
+      var st = pmStats(cat.items, pmd);
+      if (st.req > 0 && st.done === st.req) pmd.collapsed[cat.id] = true;
+    }
+    save();
+    render();
+  }
+
+  /* ==== VIEW: trade ==== */
+  function tradeCtx(now) {
+    now = now || new Date();
+    var key = todayKey(now);
+    var day = getDay(key);
+    var s = state.settings;
+    var slToday = day.trades.some(function (t) { return t.outcome === 'SL'; });
+    var visible = [];
+    state.checklists.trade.categories.forEach(function (c) {
+      c.items.forEach(function (it) { if (!it.afterStopOnly || slToday) visible.push(it); });
+    });
+    var armed = visible.filter(function (it) { return day.tradeChecks[it.id]; }).length;
+    var ac = state.activeCooldown;
+    var cdRunning = !!(ac && !ac.finished && ac.endsAt > Date.now());
+    var active = isActiveDay(key);
+    return {
+      now: now, key: key, day: day, s: s, slToday: slToday, visible: visible, armed: armed,
+      allArmed: armed === visible.length, cdRunning: cdRunning, active: active,
+      phase: sessionPhase(now, s), capReached: day.trades.length >= s.rules.tradeCap
+    };
+  }
+  function holdBtn(kind, sec, cls, label, extra) {
+    return '<button type="button" class="' + cls + ' hold" data-hold="' + kind + '" data-sec="' + sec + '"' + (extra || '') + '>' +
+      '<span class="hold-label">' + esc(label) + '</span></button>';
+  }
+  function viewTradeTop(c) {
+    var r = c.s.rules;
+    var si = sessionInfo(c.now);
+    return '<div class="rules">' +
+      '<div class="cell"><span class="eyebrow">MAX LOSS</span><b>$' + esc(r.maxDailyLoss) + '</b></div>' +
+      '<div class="cell"><span class="eyebrow">RISK/TRADE</span><b>≤ $' + esc(r.maxRiskPerTrade) + '</b></div>' +
+      '<div class="cell"><span class="eyebrow">CAP</span><b>' + esc(r.tradeCap) + ' / DAY</b></div></div>' +
+      '<div class="session-bar"><span>SESSION ' + esc(c.s.session.start) + '–' + esc(c.s.session.end) + '</span><span>' + esc(si.right) + '</span></div>';
+  }
+  function urgeBlock(c) {
+    var b = c.s.behaviour;
+    return holdBtn('urge', b.urgeHoldSec, 'urge', 'HOLD ' + b.urgeHoldSec + 'S · I FEEL THE URGE', ' aria-label="Hold ' + b.urgeHoldSec + ' seconds: I feel the urge"') +
+      '<button type="button" class="textbtn" data-act="not-good" style="align-self:center">Not feeling good · take a break</button>';
+  }
+  function outcomeButtons() {
+    return '<div class="outcomes">' +
+      '<button type="button" class="btn accent-o" data-act="log" data-o="TP">TP</button>' +
+      '<button type="button" class="btn lock-o" data-act="log" data-o="SL">SL</button>' +
+      '<button type="button" class="btn" data-act="log" data-o="SCRATCH">SCRATCH</button>' +
+      '<button type="button" class="btn" data-act="log" data-o="MANUAL">MANUAL</button></div>';
+  }
+  function viewTrade() {
+    var c = tradeCtx();
+    var s = c.s, b = s.behaviour, day = c.day;
+    if (ui.dayDone) {
+      return '<div class="card accent-card done-screen"><span class="eyebrow accent">TP LOGGED</span>' +
+        '<h1>Day done. The TP is the finish, not the start.</h1>' +
+        '<div class="stack"><button type="button" class="btn accent-o block" style="min-height:56px" data-act="start-link" data-link="greenDay">GREEN DAY</button>' +
+        '<button type="button" class="textbtn" data-act="day-done-back">Back</button></div></div>';
+    }
+    var top = viewTradeTop(c);
+
+    if (c.active && c.phase === 'after') {
+      var sod = day.sessionOver.checked;
+      var items = '';
+      state.checklists.sessionOver.categories.forEach(function (cat) {
+        items += '<div class="eyebrow" style="margin-top:6px">' + esc(cat.name) + '</div>';
+        cat.items.forEach(function (it) {
+          var on = !!sod[it.id];
+          items += '<button type="button" class="item" data-act="so-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '">' + cbx(on) +
+            '<span class="txt"><b>' + esc(it.text) + '</b>' + (it.note ? '<small>' + esc(it.note) + '</small>' : '') + '</span></button>';
+        });
+      });
+      return top + '<section class="card lock-card"><span class="mono amber">' + esc(s.session.end) + '</span>' +
+        '<h1 style="font-size:32px;margin:6px 0 8px">Session over.</h1><p class="msg" style="margin:0">' + esc(s.sessionOverMsg) + '</p></section>' +
+        '<div class="stack">' + items + '</div>' +
+        '<div class="row" style="gap:8px"><button type="button" class="btn lock-o block" style="flex:1;min-height:52px" data-act="start-link" data-link="redDay">RED DAY</button>' +
+        '<button type="button" class="btn accent-o block" style="flex:1;min-height:52px" data-act="start-link" data-link="greenDay">GREEN DAY</button></div>' +
+        '<details class="log-anyway"><summary>› Log a trade anyway</summary><div class="stack"><span class="eyebrow">When the trade closes</span>' + outcomeButtons() + '</div></details>' +
+        urgeBlock(c);
+    }
+    if (c.capReached && b.lockAtCap) {
+      return top + '<section class="card lock-card"><span class="mono amber">LOCKED · CAP ' + esc(s.rules.tradeCap) + ' / ' + esc(s.rules.tradeCap) + '</span>' +
+        '<div class="lock-title">Session over for today. Cap reached.</div>' +
+        '<p class="muted" style="margin:0">Unlocks at the next reset, ' + esc(s.resetHour) + '.</p></section>' + urgeBlock(c);
+    }
+    if (c.cdRunning && b.lockDuringCooldown) {
+      var ac = state.activeCooldown;
+      return top + '<section class="card lock-card"><span class="mono amber">COOLDOWN · ' + esc(ac.name) + '</span>' +
+        '<div class="lock-title">Checklist locked · cooldown <span data-cd-left>' + fmtMS((ac.endsAt - Date.now()) / 1000) + '</span> left</div>' +
+        '<button type="button" class="btn lock-o block" data-act="go-tab" data-tab="cooldown">OPEN COOLDOWN</button></section>' + urgeBlock(c);
+    }
+
+    var n = day.trades.length + 1;
+    var pips = c.visible.map(function (it) { return '<span class="pip' + (day.tradeChecks[it.id] ? ' on' : '') + '"></span>'; }).join('');
+    var out = top + '<div class="counter"><h2>TRADE ' + pad2(n) + ' / ' + pad2(s.rules.tradeCap) + '</h2>' +
+      '<div class="pips" aria-label="' + c.armed + ' of ' + c.visible.length + ' armed">' + pips + '<span class="mono muted" style="margin-left:4px">' + c.armed + '/' + c.visible.length + ' ARMED</span></div></div>';
+    state.checklists.trade.categories.forEach(function (cat) {
+      var its = cat.items.filter(function (it) { return !it.afterStopOnly || c.slToday; });
+      if (!its.length) return;
+      out += '<div class="eyebrow" style="margin-top:4px">' + esc(cat.name) + '</div><div class="stack">';
+      its.forEach(function (it) {
+        var on = !!day.tradeChecks[it.id];
+        out += '<button type="button" class="item" data-act="tr-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '">' + cbx(on) +
+          '<span class="txt"><b>' + esc(it.text) + (it.afterStopOnly ? ' <span class="tag amber">AFTER A STOP</span>' : '') + '</b>' +
+          (it.note ? '<small>' + esc(it.note) + '</small>' : '') + '</span></button>';
+      });
+      out += '</div>';
+    });
+    if (day.entered) out += '<div class="enter live" role="status">IN TRADE</div>';
+    else if (!c.allArmed) out += '<button type="button" class="enter off" disabled>' + esc(s.rules.notATradeMsg) + '</button>';
+    else out += holdBtn('enter', b.holdToEnterSec, 'enter live', 'HOLD ' + b.holdToEnterSec + 'S TO ENTER', ' aria-label="Hold ' + b.holdToEnterSec + ' seconds to enter"');
+    out += '<div class="sub-head"><span class="eyebrow">When the trade closes</span></div>' + outcomeButtons();
+    out += urgeBlock(c);
+    return out;
+  }
+  function logTrade(outcome) {
+    var c = tradeCtx();
+    var day = c.day, b = c.s.behaviour;
+    day.trades.push({
+      n: day.trades.length + 1, outcome: outcome,
+      checklistComplete: !!day.entered || (c.allArmed && c.visible.length > 0),
+      enteredViaHold: !!day.entered, at: new Date().toISOString()
+    });
+    day.tradeChecks = {};
+    day.entered = false;
+    save();
+    toast('Trade ' + pad2(day.trades.length) + ' logged · ' + outcome);
+    if (outcome === 'SL' && b.slStartsCooldown) { startCooldown(c.s.presetLinks.sl, 'sl'); return; }
+    if (outcome === 'TP' && b.dayDoneAfterTP) { day.dayDoneShown = true; ui.dayDone = true; save(); }
+    render();
+  }
+
+  /* ==== VIEW: cooldown ==== */
+  var RING_C = 2 * Math.PI * 88;
+  function startCooldown(presetId, trigger) {
+    var p = findPreset(presetId);
+    if (!p) { toast('That preset no longer exists. Check Settings · Preset links.'); return; }
+    function go() {
+      var ac = state.activeCooldown;
+      if (ac) recordCooldown(ac, !ac.finished);
+      var t = Date.now();
+      state.activeCooldown = {
+        presetId: p.id, name: p.name, seconds: p.seconds, startMsg: p.startMsg, endMsg: p.endMsg,
+        steps: clone(p.steps), startedAt: t, endsAt: t + p.seconds * 1000, stepsDone: {}, trigger: trigger || 'manual', finished: false
+      };
+      ui.cdSelected = p.id;
+      ui.dayDone = false;
+      saveNow();
+      unlockAudio();
+      requestWakeLock();
+      ui.tab = 'cooldown';
+      try { sessionStorage.setItem('checkpoint.tab', 'cooldown'); } catch (e) { /* ignore */ }
+      render();
+      window.scrollTo(0, 0);
+    }
+    var cur = state.activeCooldown;
+    if (cur && !cur.finished && cur.endsAt > Date.now()) {
+      confirmModal('Replace the running cooldown?', cur.name + ' has ' + fmtMS((cur.endsAt - Date.now()) / 1000) + ' left. It will be recorded as ended early.', 'Replace', go, 'lock-o');
+    } else go();
+  }
+  function recordCooldown(ac, endedEarly) {
+    getDay(todayKey()).cooldowns.push({
+      presetId: ac.presetId, startedAt: new Date(ac.startedAt).toISOString(),
+      endedAt: new Date(endedEarly ? Date.now() : Math.min(Date.now(), ac.endsAt)).toISOString(),
+      endedEarly: !!endedEarly, trigger: ac.trigger
+    });
+  }
+  function finishCooldownIfDue() {
+    var ac = state.activeCooldown;
+    if (!ac || ac.finished || ac.endsAt > Date.now()) return false;
+    ac.finished = true;
+    saveNow();
+    releaseWakeLock();
+    chime();
+    vibrate([200, 100, 200]);
+    return true;
+  }
+  function viewCooldown() {
+    var ac = state.activeCooldown;
+    var running = !!ac;
+    if (!ui.cdSelected || !findPreset(ui.cdSelected)) ui.cdSelected = running && findPreset(ac.presetId) ? ac.presetId : (state.presets[0] && state.presets[0].id);
+    var out = '<header class="page-head"><h1>Cooldown</h1></header><div class="chips" role="group" aria-label="Presets">' +
+      state.presets.map(function (p) {
+        return '<button type="button" class="chip' + (running ? ' running' : '') + '" data-act="cd-select" data-id="' + esc(p.id) + '" aria-pressed="' + (p.id === ui.cdSelected) + '">' + esc(p.name) + ' · ' + fmtMS(p.seconds) + '</button>';
+      }).join('') + '</div>';
+    var showRunning = running && (ui.cdSelected === ac.presetId || !findPreset(ac.presetId));
+    if (running && !showRunning) {
+      out += '<button type="button" class="btn lock-o block" data-act="cd-select" data-id="' + esc(ac.presetId) + '">Back to running · ' + esc(ac.name) + ' <span data-cd-left>' + fmtMS((ac.endsAt - Date.now()) / 1000) + '</span></button>';
+    }
+    if (showRunning) {
+      var left = Math.max(0, (ac.endsAt - Date.now()) / 1000);
+      var done = ac.finished || left <= 0;
+      var off = RING_C * (1 - (ac.seconds ? left / ac.seconds : 0));
+      out += '<section class="card ' + (done ? 'accent-card' : 'lock-card') + '"><span class="mono ' + (done ? 'accent' : 'amber') + '">' + esc(ac.name) + (done ? ' · DONE' : '') + '</span>' +
+        '<p class="msg" style="margin:6px 0 0">' + esc(done ? ac.endMsg : ac.startMsg) + '</p></section>';
+      out += '<div class="ring-wrap" role="timer" aria-label="Time left"><svg viewBox="0 0 200 200" aria-hidden="true">' +
+        '<circle cx="100" cy="100" r="88" fill="none" stroke="var(--line-soft)" stroke-width="8"/>' +
+        '<circle data-cd-ring cx="100" cy="100" r="88" fill="none" stroke="' + (done ? 'var(--accent)' : 'var(--lock)') + '" stroke-width="8" stroke-linecap="round" stroke-dasharray="' + RING_C.toFixed(2) + '" stroke-dashoffset="' + (done ? 0 : off).toFixed(2) + '"/></svg>' +
+        '<div class="center"><span class="big" data-cd-left>' + (done ? '0:00' : fmtMS(left)) + '</span><span class="mono muted">OF ' + fmtMS(ac.seconds) + '</span></div></div>';
+      if (ac.steps.length) {
+        var firstOpen = ac.steps.filter(function (st) { return !ac.stepsDone[st.id]; })[0];
+        out += '<div class="steps">' + ac.steps.map(function (st) {
+          var on = !!ac.stepsDone[st.id];
+          return '<button type="button" class="item step' + (st === firstOpen ? ' current' : '') + '" data-act="cd-step" data-id="' + esc(st.id) + '" aria-pressed="' + on + '">' + cbx(on) + '<span class="txt"><b>' + esc(st.text) + '</b></span></button>';
+        }).join('') + '</div>';
+      }
+      if (done) out += '<button type="button" class="btn primary block" style="min-height:56px" data-act="cd-done">DONE</button>';
+      else {
+        var hs = state.settings.behaviour.endEarlyHoldSec;
+        out += '<p class="mono dim" style="text-align:center;margin:8px 0 0">No skip button. Ending early is recorded.</p>' +
+          '<button type="button" class="btn block hold" style="min-height:52px;color:var(--muted)" data-hold="endEarly" data-sec="' + hs + '" aria-label="Hold ' + hs + ' seconds to end early">' +
+          '<span class="hold-label">HOLD ' + hs + 'S TO END EARLY</span></button>';
+      }
+      return out;
+    }
+    var p = findPreset(ui.cdSelected);
+    if (!p) return out + '<div class="card muted">No presets. Add one in Settings.</div>';
+    out += '<section class="card"><div class="row between"><h2>' + esc(p.name) + '</h2><span class="mono muted">' + fmtMS(p.seconds) + '</span></div>' +
+      (p.startMsg ? '<p class="muted" style="margin:8px 0 0">' + esc(p.startMsg) + '</p>' : '') +
+      (p.steps.length ? '<ol class="muted" style="margin:10px 0 0;padding-left:20px">' + p.steps.map(function (st) { return '<li>' + esc(st.text) + '</li>'; }).join('') + '</ol>' : '') +
+      '</section><button type="button" class="btn primary block" style="min-height:56px" data-act="cd-start" data-id="' + esc(p.id) + '">START</button>';
+    return out;
+  }
+  function tickCooldownDom() {
+    var ac = state.activeCooldown;
+    if (!ac || ac.finished) return;
+    var left = Math.max(0, (ac.endsAt - Date.now()) / 1000);
+    $$('[data-cd-left]').forEach(function (e) { e.textContent = fmtMS(left); });
+    var ring = $('[data-cd-ring]');
+    if (ring) ring.setAttribute('stroke-dashoffset', (RING_C * (1 - (ac.seconds ? left / ac.seconds : 0))).toFixed(2));
+  }
+
+  /* ==== VIEW: settings ==== */
+  function listCounts(list) {
+    var cats = state.checklists[list].categories;
+    var items = cats.reduce(function (n, c) { return n + c.items.length; }, 0);
+    return cats.length + (cats.length === 1 ? ' category' : ' categories') + ' · ' + items + (items === 1 ? ' item' : ' items');
+  }
+  function pendingRow(key) {
+    var p = pendingFor(key);
+    if (!p) return '';
+    var what = p.label || (p.fromText + ' → ' + p.toText);
+    return '<div class="pending"><span>PENDING · ' + esc(what) + ' · from tomorrow ' + esc(state.settings.resetHour) + '</span>' +
+      '<button type="button" data-act="pending-cancel" data-key="' + esc(key) + '">CANCEL</button></div>';
+  }
+  function sw(on, act, key, label) {
+    return '<div class="switch-row"><span id="lbl-' + esc(key) + '">' + esc(label) + '</span><button type="button" class="switch" role="switch" aria-checked="' + !!on + '" aria-labelledby="lbl-' + esc(key) + '" data-act="' + act + '" data-key="' + esc(key) + '"></button></div>';
+  }
+  var LINK_LABELS = [['sl', 'SL'], ['urge', 'Urge'], ['redDay', 'Red Day'], ['greenDay', 'Green Day'], ['notGood', 'Not good']];
+  var BEHAVIOUR_SW = [['slStartsCooldown', 'SL starts cooldown'], ['dayDoneAfterTP', 'Day-done screen after TP'], ['lockAtCap', 'Lock trade tab at cap'], ['lockDuringCooldown', 'Lock checklist during cooldown']];
+  var HOLD_FIELDS = [['holdToEnterSec', 'Hold to enter (seconds)'], ['endEarlyHoldSec', 'End-early hold (seconds)'], ['urgeHoldSec', 'Urge hold (seconds)']];
+  function viewSettings() {
+    if (ui.editor && ui.editor.type === 'checklist') return viewChecklistEditor(ui.editor.list);
+    if (ui.editor && ui.editor.type === 'preset') {
+      if (findPreset(ui.editor.id)) return viewPresetEditor(ui.editor.id);
+      ui.editor = null;
+    }
+    var s = state.settings, r = s.rules, b = s.behaviour;
+    var out = '<header class="editor-head"><h1>Settings</h1><span class="saved">SAVED</span></header>';
+    if (sessionLive()) {
+      out += '<div class="banner" role="status"><span class="mono">SESSION LIVE</span>Session is live (' + esc(s.session.start) + '–' + esc(s.session.end) + '). Rule changes that loosen your limits apply tomorrow at ' + esc(s.resetHour) + '.</div>';
+    }
+    // 1. Checklists
+    out += '<div class="sec-title">Checklists</div><div class="card list-card">' +
+      [['premarket', 'Premarket'], ['trade', 'Trade'], ['sessionOver', 'Session over']].map(function (l) {
+        return '<button type="button" class="list-row" data-act="open-list" data-list="' + l[0] + '"><span>' + l[1] + '<br><small>' + listCounts(l[0]) + '</small></span><span class="muted" aria-hidden="true">›</span></button>';
+      }).join('') + '</div>';
+    // 2. Presets
+    out += '<div class="sec-title">Cooldown presets</div><div class="card list-card">' +
+      state.presets.map(function (p) {
+        return '<button type="button" class="list-row" data-act="open-preset" data-id="' + esc(p.id) + '"><span>' + esc(p.name) + '<br><small>' + fmtMS(p.seconds) + ' · ' + p.steps.length + (p.steps.length === 1 ? ' step' : ' steps') + '</small></span><span class="muted" aria-hidden="true">›</span></button>' + pendingRowsForPreset(p);
+      }).join('') + '</div><button type="button" class="add-btn" data-act="preset-add">+ ADD PRESET</button>';
+    // 3. Rules
+    out += '<div class="sec-title">Trading rules</div><div class="card">' +
+      '<div class="field"><div class="inline"><span class="lbl mono muted">Trade cap / day</span><div class="stepper">' +
+      '<button type="button" data-act="cap" data-d="-1" aria-label="Lower trade cap">−</button><output aria-live="polite">' + esc(r.tradeCap) + '</output>' +
+      '<button type="button" data-act="cap" data-d="1" aria-label="Raise trade cap">+</button></div></div>' + pendingRow('rules.tradeCap') + '</div>' +
+      '<div class="field"><label for="f-loss">Max daily loss ($)</label><input id="f-loss" data-fk="f-loss" type="number" inputmode="numeric" min="0" step="1" value="' + esc(r.maxDailyLoss) + '" data-change="rule-num" data-key="maxDailyLoss">' + pendingRow('rules.maxDailyLoss') + '</div>' +
+      '<div class="field"><label for="f-risk">Max risk per trade ($)</label><input id="f-risk" data-fk="f-risk" type="number" inputmode="numeric" min="0" step="1" value="' + esc(r.maxRiskPerTrade) + '" data-change="rule-num" data-key="maxRiskPerTrade">' + pendingRow('rules.maxRiskPerTrade') + '</div>' +
+      '<div class="field"><label for="f-nat">"Not a trade" message</label><input id="f-nat" type="text" value="' + esc(r.notATradeMsg) + '" data-change="text-setting" data-path="settings.rules.notATradeMsg"></div></div>';
+    // 4. Preset links
+    out += '<div class="sec-title">Preset links</div><div class="card">' + LINK_LABELS.map(function (l) {
+      return '<div class="field"><label for="lk-' + l[0] + '">' + l[1] + ' starts</label><select id="lk-' + l[0] + '" data-change="link" data-link="' + l[0] + '">' +
+        state.presets.map(function (p) { return '<option value="' + esc(p.id) + '"' + (p.id === s.presetLinks[l[0]] ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('') +
+        '</select>' + pendingRow('presetLinks.' + l[0]) + '</div>';
+    }).join('') + '</div>';
+    // 5. Behaviour
+    out += '<div class="sec-title">Behaviour</div><div class="card">' +
+      BEHAVIOUR_SW.map(function (x) { return '<div class="field">' + sw(b[x[0]], 'beh-switch', x[0], x[1]) + pendingRow('behaviour.' + x[0]) + '</div>'; }).join('') +
+      HOLD_FIELDS.map(function (x) {
+        return '<div class="field"><div class="inline"><label for="h-' + x[0] + '">' + x[1] + '</label><input id="h-' + x[0] + '" class="num-sm" type="number" inputmode="numeric" min="1" max="60" step="1" value="' + esc(b[x[0]]) + '" data-change="hold-num" data-key="' + x[0] + '"></div>' + pendingRow('behaviour.' + x[0]) + '</div>';
+      }).join('') + '</div>';
+    // 6. General
+    var dayOrder = [[1, 'M'], [2, 'T'], [3, 'W'], [4, 'T'], [5, 'F'], [6, 'S'], [0, 'S']];
+    out += '<div class="sec-title">General</div><div class="card">' +
+      '<div class="field"><span class="lbl">Session window</span><div class="row"><input type="time" aria-label="Session start" value="' + esc(s.session.start) + '" data-change="session" data-field="start"><span class="muted">–</span><input type="time" aria-label="Session end" value="' + esc(s.session.end) + '" data-change="session" data-field="end"></div>' +
+      '<span class="hint">After 1 Nov (US DST ends): 21:30–22:40</span>' + pendingRow('session') + '</div>' +
+      '<div class="field"><span class="lbl">Active days</span><div class="day-chips">' + dayOrder.map(function (d) {
+        var names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return '<button type="button" data-act="day" data-dow="' + d[0] + '" aria-pressed="' + (s.activeDays.indexOf(d[0]) >= 0) + '" aria-label="' + names[d[0]] + '">' + d[1] + '</button>';
+      }).join('') + '</div>' + pendingRow('activeDays') + '</div>' +
+      '<div class="field"><div class="inline"><label for="f-reset">Daily reset</label><input id="f-reset" class="num-sm" style="max-width:130px" type="time" value="' + esc(s.resetHour) + '" data-change="reset-hour"></div></div>' +
+      '<div class="field"><label for="f-som">Session-over message</label><textarea id="f-som" data-change="text-setting" data-path="settings.sessionOverMsg">' + esc(s.sessionOverMsg) + '</textarea></div>' +
+      '<div class="field">' + sw(s.sound, 'gen-switch', 'sound', 'Sound') + '</div>' +
+      '<div class="field">' + sw(s.vibration, 'gen-switch', 'vibration', 'Vibration (Android)') + '</div>' +
+      '<div class="field"><span class="lbl">Accent</span><div class="swatches">' + Object.keys(ACCENTS).map(function (k) {
+        return '<button type="button" class="swatch" data-act="accent" data-v="' + k + '" aria-pressed="' + (s.accent === k) + '" aria-label="' + k + '"><i style="background:rgb(' + ACCENTS[k].join(',') + ')"></i></button>';
+      }).join('') + '</div></div></div>';
+    // 7. Data
+    out += '<div class="sec-title">Data</div><div class="card stack">' +
+      '<div class="row"><button type="button" class="btn accent-o" style="flex:1" data-act="export">EXPORT .JSON</button><button type="button" class="btn" style="flex:1" data-act="import">IMPORT</button></div>' +
+      '<span class="mono muted">Last export: ' + (s.lastExportAt ? esc(fmtStamp(new Date(s.lastExportAt))) : 'never') + '</span>' +
+      '<p class="muted" style="margin:0;font-size:14px">Everything stays in this browser. Export regularly.</p>' +
+      '<button type="button" class="btn danger-o" data-act="reset">RESET TO DEFAULTS</button></div>';
+    return out;
+  }
+  function pendingRowsForPreset(p) {
+    return state.pending.filter(function (x) { return x.key.indexOf('preset.' + p.id + '.') === 0; })
+      .map(function (x) { return '<div style="padding:0 10px 8px">' + pendingRow(x.key) + '</div>'; }).join('');
+  }
+  function changeSetting(key, path, to, fromText, toText) {
+    var from = getPath(state, path);
+    var res = propose({ key: key, rule: key.indexOf('presetLinks.') === 0 ? 'presetLinks' : key, from: from, to: to, op: { op: 'set', path: path, value: to }, fromText: fromText, toText: toText });
+    afterPropose(res);
+    return res;
+  }
+
+  /* ==== VIEW: checklist editor ==== */
+  var LIST_TITLES = { premarket: 'Premarket checklist', trade: 'Trade checklist', sessionOver: 'Session-over checklist' };
+  function viewChecklistEditor(list) {
+    var cats = state.checklists[list].categories;
+    var out = '<header class="editor-head"><button type="button" class="icon-btn" data-act="editor-back" aria-label="Back to settings">←</button><h1>' + LIST_TITLES[list] + '</h1><span class="saved">SAVED</span></header>';
+    if (list === 'trade' && sessionLive()) out += '<div class="banner"><span class="mono">SESSION LIVE</span>Deleting or editing trade items applies tomorrow at ' + esc(state.settings.resetHour) + '. Adding applies now.</div>';
+    out += '<div class="dnd-cats">';
+    cats.forEach(function (cat) {
+      out += '<section class="ecat dnd-cat" data-cat-id="' + esc(cat.id) + '"><div class="ecat-bar">' +
+        '<button type="button" class="handle" data-drag="cat" data-id="' + esc(cat.id) + '" data-fk="h-' + esc(cat.id) + '" aria-label="Move category ' + esc(cat.name) + ' (arrow keys)">⠿</button>' +
+        '<input type="text" aria-label="Category name" value="' + esc(cat.name) + '" data-change="cat-name" data-id="' + esc(cat.id) + '" data-fk="cn-' + esc(cat.id) + '">' +
+        '<button type="button" class="icon-btn" data-act="cat-del" data-id="' + esc(cat.id) + '" aria-label="Delete category ' + esc(cat.name) + '">✕</button></div>' +
+        (list === 'trade' ? pendingRow('trade.cat.' + cat.id + '.delete') : '') +
+        '<div class="dnd-list" data-list-id="' + esc(cat.id) + '">';
+      cat.items.forEach(function (it) { out += editorItem(list, it); });
+      out += '</div><button type="button" class="add-btn" data-act="item-add" data-id="' + esc(cat.id) + '">+ ADD ITEM</button></section>';
+    });
+    out += '</div><button type="button" class="add-btn" style="margin-top:4px" data-act="cat-add">+ ADD CATEGORY</button>';
+    return out;
+  }
+  function itemFlags(list, it) {
+    var f = [];
+    if (list === 'premarket') {
+      if (it.time) f.push('<span class="tag">' + esc(it.time) + '</span>');
+      if (it.gate) f.push('<span class="tag">GATE</span>');
+      if (it.optional) f.push('<span class="tag">OPTIONAL</span>');
+    }
+    if (list === 'trade' && it.afterStopOnly) f.push('<span class="tag amber">AFTER STOP</span>');
+    return f.join('');
+  }
+  function editorItem(list, it) {
+    var open = !!ui.expanded[it.id];
+    var id = esc(it.id);
+    var out = '<div class="eitem dnd-row" data-row-id="' + id + '"><div class="erow">' +
+      '<button type="button" class="handle" data-drag="row" data-id="' + id + '" data-fk="h-' + id + '" aria-label="Move item (arrow keys)">⠿</button>' +
+      '<button type="button" class="etext" data-act="ed-expand" data-id="' + id + '" aria-expanded="' + open + '"><span class="t' + (it.text ? '' : ' empty') + '" data-label-for="' + id + '">' + (it.text ? esc(it.text) : 'New item') + '</span><span class="flags">' + itemFlags(list, it) + '</span></button>' +
+      '<button type="button" class="icon-btn" data-act="item-del" data-id="' + id + '" aria-label="Delete item">✕</button></div>';
+    if (list === 'trade') {
+      out += '<div style="padding:0 8px">' + pendingRow('trade.item.' + it.id + '.delete') + pendingRow('trade.item.' + it.id + '.text') + pendingRow('trade.item.' + it.id + '.note') + pendingRow('trade.item.' + it.id + '.afterStopOnly') + '</div>';
+    }
+    if (open) {
+      out += '<div class="eexp">' +
+        '<div class="field"><label for="t-' + id + '">Text</label><input id="t-' + id + '" data-fk="t-' + id + '" type="text" value="' + esc(it.text) + '" placeholder="New item" data-change="item-field" data-field="text" data-id="' + id + '"></div>' +
+        '<div class="field"><label for="n-' + id + '">Note (optional)</label><input id="n-' + id + '" data-fk="n-' + id + '" type="text" value="' + esc(it.note) + '" data-change="item-field" data-field="note" data-id="' + id + '"></div>';
+      if (list === 'premarket') {
+        out += '<div class="field"><label for="tm-' + id + '">Time</label><div class="row"><input id="tm-' + id + '" type="time" value="' + esc(it.time) + '" data-change="item-field" data-field="time" data-id="' + id + '">' +
+          '<button type="button" class="btn ghost" data-act="item-time-clear" data-id="' + id + '">CLEAR</button></div></div>' +
+          '<div class="field">' + sw(it.optional, 'item-flag', 'optional', 'Optional').replace('data-key="optional"', 'data-key="optional" data-id="' + id + '"').replace(/lbl-optional/g, 'lbl-opt-' + id) + '</div>' +
+          '<div class="field">' + sw(it.gate, 'item-flag', 'gate', 'Gate (YES / NO)').replace('data-key="gate"', 'data-key="gate" data-id="' + id + '"').replace(/lbl-gate/g, 'lbl-gate-' + id) + '</div>';
+      }
+      if (list === 'trade') {
+        out += '<div class="field">' + sw(it.afterStopOnly, 'item-flag', 'afterStopOnly', 'After stop only').replace('data-key="afterStopOnly"', 'data-key="afterStopOnly" data-id="' + id + '"').replace(/lbl-afterStopOnly/g, 'lbl-aso-' + id) + '</div>';
+      }
+      out += '</div>';
+    }
+    return out + '</div>';
+  }
+  function listOfEditor() { return ui.editor && ui.editor.type === 'checklist' ? ui.editor.list : null; }
+  function newItem(list) {
+    if (list === 'premarket') return { id: uid(), text: '', note: '', time: '', optional: false, gate: false };
+    if (list === 'trade') return { id: uid(), text: '', note: '', afterStopOnly: false };
+    return { id: uid(), text: '', note: '' };
+  }
+  function moveEntry(kind, id, toListId, index) {
+    var ed = ui.editor;
+    if (ed.type === 'preset') {
+      var p = findPreset(ed.id);
+      var i = p.steps.findIndex(function (s) { return s.id === id; });
+      if (i < 0) return;
+      var st = p.steps.splice(i, 1)[0];
+      p.steps.splice(Math.max(0, Math.min(index, p.steps.length)), 0, st);
+    } else {
+      var cats = state.checklists[ed.list].categories;
+      if (kind === 'cat') {
+        var ci = cats.findIndex(function (c) { return c.id === id; });
+        if (ci < 0) return;
+        var c = cats.splice(ci, 1)[0];
+        cats.splice(Math.max(0, Math.min(index, cats.length)), 0, c);
+      } else {
+        var from = cats.filter(function (c) { return c.items.some(function (x) { return x.id === id; }); })[0];
+        if (!from) return;
+        var it = from.items.splice(from.items.findIndex(function (x) { return x.id === id; }), 1)[0];
+        var to = cats.filter(function (c) { return c.id === toListId; })[0] || from;
+        to.items.splice(Math.max(0, Math.min(index, to.items.length)), 0, it);
+      }
+    }
+    save();
+    ui.focusAfter = 'h-' + id;
+    render();
+    flashSaved();
+  }
+  function moveByKey(kind, id, dir) {
+    var ed = ui.editor;
+    if (ed.type === 'preset') {
+      var p = findPreset(ed.id);
+      var i = p.steps.findIndex(function (s) { return s.id === id; });
+      moveEntry(kind, id, 'steps', i + dir);
+      return;
+    }
+    var cats = state.checklists[ed.list].categories;
+    if (kind === 'cat') {
+      var ci = cats.findIndex(function (c) { return c.id === id; });
+      if (ci + dir < 0 || ci + dir >= cats.length) return;
+      moveEntry(kind, id, null, ci + dir);
+      return;
+    }
+    for (var k = 0; k < cats.length; k++) {
+      var idx = cats[k].items.findIndex(function (x) { return x.id === id; });
+      if (idx < 0) continue;
+      if (idx + dir >= 0 && idx + dir < cats[k].items.length) moveEntry(kind, id, cats[k].id, idx + dir);
+      else if (dir < 0 && k > 0) moveEntry(kind, id, cats[k - 1].id, cats[k - 1].items.length);
+      else if (dir > 0 && k < cats.length - 1) moveEntry(kind, id, cats[k + 1].id, 0);
+      return;
+    }
+  }
+
+  /* ==== VIEW: preset editor ==== */
+  function viewPresetEditor(pid) {
+    var p = findPreset(pid);
+    var id = esc(p.id);
+    var out = '<header class="editor-head"><button type="button" class="icon-btn" data-act="editor-back" aria-label="Back to settings">←</button><h1>' + esc(p.name || 'Preset') + '</h1><span class="saved">SAVED</span></header>';
+    out += '<div class="card">' +
+      '<div class="field"><label for="p-name">Name</label><input id="p-name" type="text" value="' + esc(p.name) + '" data-change="preset-field" data-field="name"></div>' +
+      '<div class="field"><span class="lbl">Duration</span><div class="row"><input type="number" class="num-sm" inputmode="numeric" min="0" max="180" aria-label="Minutes" value="' + Math.floor(p.seconds / 60) + '" data-change="preset-dur" data-part="m"><span class="mono muted">MIN</span>' +
+      '<input type="number" class="num-sm" inputmode="numeric" min="0" max="59" aria-label="Seconds" value="' + (p.seconds % 60) + '" data-change="preset-dur" data-part="s"><span class="mono muted">SEC</span></div>' + pendingRow('preset.' + p.id + '.seconds') + '</div>' +
+      '<div class="field"><label for="p-start">Start message</label><textarea id="p-start" data-change="preset-field" data-field="startMsg">' + esc(p.startMsg) + '</textarea></div>' +
+      '<div class="field"><label for="p-end">End message</label><textarea id="p-end" data-change="preset-field" data-field="endMsg">' + esc(p.endMsg) + '</textarea></div></div>';
+    out += '<div class="sec-title">Steps</div><div class="ecat"><div class="dnd-list" data-list-id="steps">' +
+      p.steps.map(function (st) {
+        var sid = esc(st.id);
+        return '<div class="eitem dnd-row" data-row-id="' + sid + '"><div class="erow">' +
+          '<button type="button" class="handle" data-drag="row" data-id="' + sid + '" data-fk="h-' + sid + '" aria-label="Move step (arrow keys)">⠿</button>' +
+          '<input type="text" style="border-color:transparent;background:none" aria-label="Step text" value="' + esc(st.text) + '" placeholder="New step" data-change="step-text" data-id="' + sid + '" data-fk="st-' + sid + '">' +
+          '<button type="button" class="icon-btn" data-act="step-del" data-id="' + sid + '" aria-label="Delete step">✕</button></div>' +
+          '<div style="padding:0 8px">' + pendingRow('preset.' + p.id + '.step.' + st.id + '.delete') + '</div></div>';
+      }).join('') + '</div><button type="button" class="add-btn" data-act="step-add">+ ADD STEP</button></div>';
+    out += '<button type="button" class="btn danger-o block" style="margin-top:8px" data-act="preset-del" data-id="' + id + '">DELETE PRESET</button>';
+    return out;
+  }
+
+  /* ==== DRAG: pointer reorder ==== */
+  var drag = null;
+  function dragStart(e, h) {
+    if (e.button > 0) return;
+    e.preventDefault();
+    var kind = h.getAttribute('data-drag');
+    var el = h.closest(kind === 'cat' ? '.dnd-cat' : '.dnd-row');
+    if (!el) return;
+    var rect = el.getBoundingClientRect();
+    var ph = document.createElement('div');
+    ph.className = 'drop-ph';
+    ph.style.height = Math.min(rect.height, kind === 'cat' ? 120 : rect.height) + 'px';
+    ph.textContent = 'DROP HERE';
+    el.parentNode.insertBefore(ph, el);
+    el.style.width = rect.width + 'px';
+    el.style.left = rect.left + 'px';
+    el.style.top = rect.top + 'px';
+    el.classList.add('lifted');
+    document.body.classList.add('dragging');
+    drag = { kind: kind, id: h.getAttribute('data-id'), el: el, ph: ph, offY: e.clientY - rect.top, y: e.clientY, handle: h };
+    ui.holding = true;
+    try { h.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    h.addEventListener('pointermove', dragMove);
+    h.addEventListener('pointerup', dragEnd);
+    h.addEventListener('pointercancel', dragEnd);
+    drag.raf = requestAnimationFrame(dragAutoScroll);
+  }
+  function dragMove(e) {
+    if (!drag) return;
+    drag.y = e.clientY;
+    drag.el.style.top = (e.clientY - drag.offY) + 'px';
+    dragPlace();
+  }
+  function dragPlace() {
+    var y = drag.y, ph = drag.ph, el = drag.el;
+    if (drag.kind === 'cat') {
+      var box = el.parentNode;
+      var sibs = $$('.dnd-cat', box).filter(function (x) { return x !== el; });
+      var before = sibs.filter(function (x) { var r = x.getBoundingClientRect(); return y < r.top + Math.min(r.height, 120) / 2; })[0];
+      if (before) box.insertBefore(ph, before); else box.appendChild(ph);
+      return;
+    }
+    var lists = $$('.dnd-list', $('#view'));
+    var best = null, bestD = Infinity;
+    lists.forEach(function (l) {
+      var card = l.closest('.dnd-cat') || l;
+      var r = card.getBoundingClientRect();
+      var d = y < r.top ? r.top - y : (y > r.bottom ? y - r.bottom : 0);
+      if (d < bestD) { bestD = d; best = l; }
+    });
+    if (!best) return;
+    var rows = $$('.dnd-row', best).filter(function (x) { return x !== el && x.parentNode === best; });
+    var bef = rows.filter(function (x) { var r = x.getBoundingClientRect(); return y < r.top + r.height / 2; })[0];
+    if (bef) best.insertBefore(ph, bef); else best.appendChild(ph);
+  }
+  function dragAutoScroll() {
+    if (!drag) return;
+    var edge = 70, bottomEdge = window.innerHeight - (window.innerWidth >= 900 ? 70 : 130);
+    var dy = 0;
+    if (drag.y < edge) dy = -Math.ceil((edge - drag.y) / 5);
+    else if (drag.y > bottomEdge) dy = Math.ceil((drag.y - bottomEdge) / 5);
+    if (dy) { window.scrollBy(0, dy); dragPlace(); }
+    drag.raf = requestAnimationFrame(dragAutoScroll);
+  }
+  function dragEnd() {
+    if (!drag) return;
+    var d = drag;
+    drag = null;
+    cancelAnimationFrame(d.raf);
+    d.handle.removeEventListener('pointermove', dragMove);
+    d.handle.removeEventListener('pointerup', dragEnd);
+    d.handle.removeEventListener('pointercancel', dragEnd);
+    document.body.classList.remove('dragging');
+    ui.holding = false;
+    var parent = d.ph.parentNode;
+    var index, listId = null;
+    if (d.kind === 'cat') {
+      index = $$('.dnd-cat, .drop-ph', parent).filter(function (x) { return x !== d.el && x.parentNode === parent; }).indexOf(d.ph);
+    } else {
+      listId = parent.getAttribute('data-list-id');
+      index = Array.prototype.filter.call(parent.children, function (x) { return x !== d.el && (x.classList.contains('dnd-row') || x === d.ph); }).indexOf(d.ph);
+    }
+    moveEntry(d.kind, d.id, listId, index);
+  }
+
+  /* ==== HOLD: press-and-hold buttons ==== */
+  function bindHolds(root) { $$('[data-hold]', root).forEach(bindHold); }
+  function bindHold(btn) {
+    var sec = Math.max(0.2, +btn.getAttribute('data-sec') || 1);
+    var label = btn.querySelector('.hold-label');
+    var base = label ? label.textContent : '';
+    var start = 0, raf = 0, fired = false;
+    function frame() {
+      var p = Math.min(1, (performance.now() - start) / (sec * 1000));
+      btn.style.setProperty('--fill', p);
+      if (label) label.textContent = 'HOLD · ' + (sec * (1 - p)).toFixed(1) + 'S';
+      if (p >= 1) {
+        fired = true;
+        stop();
+        onHoldComplete(btn.getAttribute('data-hold'));
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    function down(e) {
+      if (btn.disabled || start) return;
+      if (e && e.preventDefault) e.preventDefault();
+      if (e && e.pointerId != null) { try { btn.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ } }
+      unlockAudio();
+      fired = false;
+      start = performance.now();
+      ui.holding = true;
+      raf = requestAnimationFrame(frame);
+    }
+    function stop() {
+      if (!start) return;
+      cancelAnimationFrame(raf);
+      start = 0;
+      ui.holding = false;
+      if (!fired) {
+        btn.style.setProperty('--fill', 0);
+        if (label) label.textContent = base;
+      }
+    }
+    btn.addEventListener('pointerdown', down);
+    btn.addEventListener('pointerup', stop);
+    btn.addEventListener('pointercancel', stop);
+    btn.addEventListener('lostpointercapture', stop);
+    btn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    btn.addEventListener('keydown', function (e) { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) down(e); });
+    btn.addEventListener('keyup', function (e) { if (e.key === ' ' || e.key === 'Enter') stop(); });
+    btn.addEventListener('blur', stop);
+  }
+  function onHoldComplete(kind) {
+    var key = todayKey();
+    if (kind === 'enter') {
+      getDay(key).entered = true;
+      vibrate(60);
+      save();
+      render();
+    } else if (kind === 'urge') {
+      getDay(key).urges.push(new Date().toISOString());
+      vibrate(60);
+      save();
+      startCooldown(state.settings.presetLinks.urge, 'urge');
+    } else if (kind === 'endEarly') {
+      var ac = state.activeCooldown;
+      if (ac) {
+        recordCooldown(ac, true);
+        state.activeCooldown = null;
+        releaseWakeLock();
+        saveNow();
+        toast('Cooldown ended early · recorded');
+      }
+      render();
+    }
+  }
+
+  /* ==== DATA: export/import/reset ==== */
+  function stampName(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + '-' + pad2(d.getHours()) + pad2(d.getMinutes());
+  }
+  function exportData(silent) {
+    var d = new Date();
+    state.settings.lastExportAt = d.toISOString();
+    saveNow();
+    var payload = clone(state);
+    payload.exported_at = d.toISOString();
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'checkpoint-backup-' + stampName(d) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    if (!silent) toast('Exported ' + a.download);
+    if (ui.tab === 'settings' && !ui.editor) render();
+  }
+  function validImport(obj) {
+    return isObj(obj) && obj.schema != null && isObj(obj.checklists);
+  }
+  // Adds categories, items, presets and days whose ids don't exist locally. Returns counts.
+  function mergeImport(local, inc) {
+    var n = { categories: 0, items: 0, presets: 0, days: 0 };
+    ['premarket', 'trade', 'sessionOver'].forEach(function (l) {
+      var incL = inc.checklists[l];
+      if (!incL || !Array.isArray(incL.categories)) return;
+      var locCats = local.checklists[l].categories;
+      var have = {};
+      locCats.forEach(function (c) { c.items.forEach(function (i) { have[i.id] = true; }); });
+      incL.categories.forEach(function (ic) {
+        if (!ic || !ic.id || !Array.isArray(ic.items)) return;
+        var lc = locCats.filter(function (c) { return c.id === ic.id; })[0];
+        if (!lc) {
+          var fresh = clone(ic);
+          fresh.items = fresh.items.filter(function (i) { return i && i.id && !have[i.id]; });
+          fresh.items.forEach(function (i) { have[i.id] = true; });
+          locCats.push(fresh);
+          n.categories++;
+          n.items += fresh.items.length;
+          return;
+        }
+        ic.items.forEach(function (ii, idx) {
+          if (!ii || !ii.id || have[ii.id]) return;
+          var pos = 0;
+          for (var k = idx - 1; k >= 0; k--) {
+            var prevId = ic.items[k] && ic.items[k].id;
+            var at = lc.items.findIndex(function (x) { return x.id === prevId; });
+            if (at >= 0) { pos = at + 1; break; }
+          }
+          lc.items.splice(pos, 0, clone(ii));
+          have[ii.id] = true;
+          n.items++;
+        });
+      });
+    });
+    if (Array.isArray(inc.presets)) {
+      inc.presets.forEach(function (p) {
+        if (!p || !p.id || findPresetIn(local, p.id)) return;
+        local.presets.push(clone(p));
+        n.presets++;
+      });
+    }
+    if (isObj(inc.days)) {
+      Object.keys(inc.days).forEach(function (k) {
+        if (local.days[k]) return;
+        local.days[k] = clone(inc.days[k]);
+        n.days++;
+      });
+    }
+    return n;
+  }
+  function summary(n) {
+    var parts = [];
+    function add(v, one, many) { if (v) parts.push('Added ' + v + ' ' + (v === 1 ? one : many)); }
+    add(n.categories, 'category', 'categories');
+    add(n.items, 'item', 'items');
+    add(n.presets, 'preset', 'presets');
+    add(n.days, 'day', 'days');
+    return parts.length ? parts.join(', ').replace(/, Added/g, ',') + '.' : 'Nothing new to add. Everything was already here.';
+  }
+  function handleImportFile(file) {
+    var fr = new FileReader();
+    fr.onload = function () {
+      var obj;
+      try { obj = JSON.parse(fr.result); } catch (e) { obj = null; }
+      if (!validImport(obj)) { openModal({ title: 'Not a Checkpoint backup', html: '<p>The file needs "schema" and "checklists". Nothing was changed.</p>', actions: [{ label: 'OK', cls: 'ghost' }] }); return; }
+      openModal({
+        title: 'Import backup',
+        html: '<p>' + esc(file.name) + (obj.exported_at ? ' · exported ' + esc(fmtStamp(new Date(obj.exported_at))) : '') + '</p>',
+        actions: [
+          { label: 'Merge (recommended)', cls: 'primary', fn: function () {
+            var n = mergeImport(state, obj);
+            normalise(state);
+            saveNow();
+            render();
+            openModal({ title: 'Merged', html: '<p>' + esc(summary(n)) + ' Your local settings were kept.</p>', actions: [{ label: 'OK', cls: 'ghost' }] });
+          } },
+          { label: 'Replace everything', cls: 'danger-o', fn: function () {
+            typedConfirm({
+              title: 'Replace everything?',
+              text: 'A backup of your current data downloads first. Then everything is replaced by this file. Type REPLACE to confirm.',
+              word: 'REPLACE', okLabel: 'Replace everything',
+              fn: function () {
+                exportData(true);
+                var next = clone(obj);
+                delete next.exported_at;
+                state = normalise(next);
+                saveNow();
+                applyAccent();
+                ui.editor = null;
+                render();
+                toast('Replaced · previous data downloaded as a backup');
+              }
+            });
+          } },
+          { label: 'Cancel', cls: 'ghost' }
+        ]
+      });
+    };
+    fr.readAsText(file);
+  }
+  function resetDefaults() {
+    typedConfirm({
+      title: 'Reset to defaults?',
+      pre: '<button type="button" class="btn accent-o block" id="reset-export">Export a backup first</button>',
+      text: 'Checklists, presets and settings go back to the prefilled defaults. Your day history is kept. Type RESET to confirm.',
+      word: 'RESET', okLabel: 'Reset to defaults',
+      onOpen: function (m) {
+        m.querySelector('#reset-export').addEventListener('click', function (e) { e.currentTarget.textContent = 'Backup downloaded'; exportData(true); });
+      },
+      fn: function () {
+        var d = makeDefaults();
+        d.days = state.days;
+        d.activeCooldown = state.activeCooldown;
+        d.settings.lastExportAt = state.settings.lastExportAt;
+        state = d;
+        saveNow();
+        applyAccent();
+        ui.editor = null;
+        ui.expanded = {};
+        render();
+        toast('Defaults restored · history kept');
+      }
+    });
+  }
+
+  /* ==== EVENTS: actions ==== */
+  var ACTIONS = {
+    'go-tab': function (el) { setTab(el.getAttribute('data-tab')); },
+    'focus': function () { state.settings.focusMode = !state.settings.focusMode; save(); render(); },
+    'pm-show-anyway': function () { ui.showAnyway = todayKey(); render(); },
+    'pm-toggle': function (el) {
+      var pmd = getDay(todayKey()).premarket, id = el.getAttribute('data-id');
+      if (pmd.checked[id]) delete pmd.checked[id]; else pmd.checked[id] = true;
+      pmAfterChange(id, pmd);
+    },
+    'pm-done': function (el) {
+      var pmd = getDay(todayKey()).premarket, id = el.getAttribute('data-id');
+      pmd.checked[id] = true;
+      pmAfterChange(id, pmd);
+    },
+    'pm-gate': function (el) {
+      var pmd = getDay(todayKey()).premarket, id = el.getAttribute('data-id');
+      if (el.getAttribute('data-v') === 'yes') {
+        if (pmd.checked[id]) delete pmd.checked[id]; else { pmd.checked[id] = true; delete pmd.gateNo[id]; }
+      } else {
+        if (pmd.gateNo[id]) delete pmd.gateNo[id]; else { pmd.gateNo[id] = true; delete pmd.checked[id]; }
+      }
+      pmAfterChange(id, pmd);
+    },
+    'pm-later': function (el) {
+      var pmd = getDay(todayKey()).premarket, id = el.getAttribute('data-id');
+      pmd.later = pmd.later.filter(function (x) { return x !== id; });
+      pmd.later.push(id);
+      save();
+      render();
+    },
+    'pm-fold': function (el) {
+      var pmd = getDay(todayKey()).premarket, cid = el.getAttribute('data-cat');
+      var cat = state.checklists.premarket.categories.filter(function (c) { return c.id === cid; })[0];
+      if (!cat) return;
+      pmd.collapsed[cid] = !pmCatFolded(cat, pmd);
+      save();
+      render();
+    },
+    'tr-toggle': function (el) {
+      var day = getDay(todayKey()), id = el.getAttribute('data-id');
+      if (day.tradeChecks[id]) delete day.tradeChecks[id]; else day.tradeChecks[id] = true;
+      save();
+      render();
+    },
+    'so-toggle': function (el) {
+      var day = getDay(todayKey()), id = el.getAttribute('data-id');
+      if (day.sessionOver.checked[id]) delete day.sessionOver.checked[id]; else day.sessionOver.checked[id] = true;
+      save();
+      render();
+    },
+    'log': function (el) { logTrade(el.getAttribute('data-o')); },
+    'day-done-back': function () { ui.dayDone = false; render(); },
+    'start-link': function (el) {
+      var link = el.getAttribute('data-link');
+      startCooldown(state.settings.presetLinks[link], link);
+    },
+    'not-good': function () { startCooldown(state.settings.presetLinks.notGood, 'notGood'); },
+    'cd-select': function (el) { ui.cdSelected = el.getAttribute('data-id'); render(); },
+    'cd-start': function (el) { startCooldown(el.getAttribute('data-id'), 'manual'); },
+    'cd-step': function (el) {
+      var ac = state.activeCooldown, id = el.getAttribute('data-id');
+      if (!ac) return;
+      if (ac.stepsDone[id]) delete ac.stepsDone[id]; else ac.stepsDone[id] = true;
+      save();
+      render();
+    },
+    'cd-done': function () {
+      var ac = state.activeCooldown;
+      if (!ac) return;
+      recordCooldown(ac, false);
+      state.activeCooldown = null;
+      releaseWakeLock();
+      saveNow();
+      render();
+    },
+    // settings
+    'pending-cancel': function (el) { removePending(el.getAttribute('data-key')); save(); render(); flashSaved(); },
+    'open-list': function (el) { ui.editor = { type: 'checklist', list: el.getAttribute('data-list') }; ui.expanded = {}; render(); window.scrollTo(0, 0); },
+    'open-preset': function (el) { ui.editor = { type: 'preset', id: el.getAttribute('data-id') }; render(); window.scrollTo(0, 0); },
+    'editor-back': function () { ui.editor = null; render(); window.scrollTo(0, 0); },
+    'preset-add': function () {
+      var p = { id: uid(), name: 'New preset', seconds: 300, startMsg: '', endMsg: '', steps: [] };
+      state.presets.push(p);
+      save();
+      ui.editor = { type: 'preset', id: p.id };
+      render();
+      window.scrollTo(0, 0);
+    },
+    'cap': function (el) {
+      var r = state.settings.rules;
+      var base = targetValue('rules.tradeCap', r.tradeCap);
+      var to = Math.max(1, Math.min(20, base + (+el.getAttribute('data-d'))));
+      changeSetting('rules.tradeCap', 'settings.rules.tradeCap', to);
+      render();
+    },
+    'beh-switch': function (el) {
+      var k = el.getAttribute('data-key');
+      var to = !targetValue('behaviour.' + k, state.settings.behaviour[k]);
+      changeSetting('behaviour.' + k, 'settings.behaviour.' + k, to, state.settings.behaviour[k] ? 'ON' : 'OFF', to ? 'ON' : 'OFF');
+      render();
+    },
+    'gen-switch': function (el) {
+      var k = el.getAttribute('data-key');
+      state.settings[k] = !state.settings[k];
+      if (k === 'sound' && state.settings.sound) unlockAudio();
+      if (k === 'vibration' && state.settings.vibration) vibrate(40);
+      save();
+      render();
+      flashSaved();
+    },
+    'day': function (el) {
+      var dow = +el.getAttribute('data-dow');
+      var cur = state.settings.activeDays;
+      var base = targetValue('activeDays', cur).slice();
+      var i = base.indexOf(dow);
+      if (i >= 0) base.splice(i, 1); else base.push(dow);
+      base.sort();
+      var names = function (arr) { return arr.length ? arr.slice().sort(function (a, b) { return ((a + 6) % 7) - ((b + 6) % 7); }).map(function (d) { return DOW[d].slice(0, 3); }).join(' ') : 'none'; };
+      changeSetting('activeDays', 'settings.activeDays', base, names(cur), names(base));
+      render();
+    },
+    'accent': function (el) { state.settings.accent = el.getAttribute('data-v'); applyAccent(); save(); render(); flashSaved(); },
+    'export': function () { exportData(false); },
+    'import': function () { var f = $('#import-file'); f.value = ''; f.click(); },
+    'reset': function () { resetDefaults(); },
+    // checklist editor
+    'ed-expand': function (el) {
+      var id = el.getAttribute('data-id');
+      ui.expanded[id] = !ui.expanded[id];
+      render();
+    },
+    'cat-add': function () {
+      var list = listOfEditor();
+      var c = { id: uid(), name: 'NEW CATEGORY', items: [] };
+      state.checklists[list].categories.push(c);
+      save();
+      ui.focusAfter = 'cn-' + c.id;
+      ui.focusScroll = true;
+      render();
+      flashSaved();
+    },
+    'cat-del': function (el) {
+      var list = listOfEditor(), id = el.getAttribute('data-id');
+      var cat = findCat(list, id);
+      if (!cat) return;
+      function doDel() {
+        if (list === 'trade') {
+          afterPropose(propose({ key: 'trade.cat.' + id + '.delete', rule: 'trade.categoryDelete', from: cat.name, to: null, label: 'delete category', op: { op: 'deleteCategory', list: list, catId: id } }));
+        } else {
+          applyOp({ op: 'deleteCategory', list: list, catId: id });
+          save();
+        }
+        render();
+        flashSaved();
+      }
+      if (cat.items.length) confirmModal('Delete "' + cat.name + '"?', 'It has ' + cat.items.length + (cat.items.length === 1 ? ' item' : ' items') + '. They are deleted too.', 'Delete category', doDel, 'danger-o');
+      else doDel();
+    },
+    'item-add': function (el) {
+      var list = listOfEditor(), cat = findCat(list, el.getAttribute('data-id'));
+      if (!cat) return;
+      var it = newItem(list);
+      cat.items.push(it);
+      ui.expanded[it.id] = true;
+      save();
+      ui.focusAfter = 't-' + it.id;
+      ui.focusScroll = true;
+      render();
+      flashSaved();
+    },
+    'item-del': function (el) {
+      var list = listOfEditor(), id = el.getAttribute('data-id');
+      if (list === 'trade') {
+        afterPropose(propose({ key: 'trade.item.' + id + '.delete', rule: 'trade.itemDelete', from: id, to: null, label: 'delete item', op: { op: 'deleteItem', list: list, itemId: id } }));
+      } else {
+        applyOp({ op: 'deleteItem', list: list, itemId: id });
+        save();
+      }
+      render();
+      flashSaved();
+    },
+    'item-time-clear': function (el) {
+      var it = findItem('premarket', el.getAttribute('data-id'));
+      if (it) { it.time = ''; save(); render(); flashSaved(); }
+    },
+    'item-flag': function (el) {
+      var list = listOfEditor(), id = el.getAttribute('data-id'), k = el.getAttribute('data-key');
+      var it = findItem(list, id);
+      if (!it) return;
+      if (list === 'trade' && k === 'afterStopOnly') {
+        var to = !it.afterStopOnly;
+        if (pendingFor('trade.item.' + id + '.afterStopOnly')) removePending('trade.item.' + id + '.afterStopOnly');
+        else afterPropose(propose({ key: 'trade.item.' + id + '.afterStopOnly', rule: 'trade.afterStopOnly', from: !!it.afterStopOnly, to: to, fromText: it.afterStopOnly ? 'ON' : 'OFF', toText: to ? 'after stop only' : 'always', label: to ? 'after stop only' : '', op: { op: 'editItem', list: list, itemId: id, field: 'afterStopOnly', value: to } }));
+      } else {
+        it[k] = !it[k];
+        save();
+      }
+      render();
+      flashSaved();
+    },
+    // preset editor
+    'step-add': function () {
+      var p = findPreset(ui.editor.id);
+      var st = { id: uid(), text: '' };
+      p.steps.push(st);
+      save();
+      ui.focusAfter = 'st-' + st.id;
+      ui.focusScroll = true;
+      render();
+      flashSaved();
+    },
+    'step-del': function (el) {
+      var p = findPreset(ui.editor.id), sid = el.getAttribute('data-id');
+      afterPropose(propose({ key: 'preset.' + p.id + '.step.' + sid + '.delete', rule: 'preset.stepDelete', from: sid, to: null, label: 'delete step', op: { op: 'deleteStep', presetId: p.id, stepId: sid } }));
+      render();
+      flashSaved();
+    },
+    'preset-del': function (el) {
+      var id = el.getAttribute('data-id');
+      var p = findPreset(id);
+      var links = LINK_LABELS.filter(function (l) { return state.settings.presetLinks[l[0]] === id; }).map(function (l) { return l[1]; });
+      if (links.length) {
+        openModal({ title: 'Can\'t delete "' + p.name + '"', html: '<p>It is linked to: ' + esc(links.join(', ')) + '. Choose another preset for ' + (links.length === 1 ? 'that link' : 'those links') + ' in Settings · Preset links first.</p>', actions: [{ label: 'OK', cls: 'ghost' }] });
+        return;
+      }
+      confirmModal('Delete "' + p.name + '"?', 'This preset and its steps are removed.', 'Delete preset', function () {
+        state.presets = state.presets.filter(function (x) { return x.id !== id; });
+        state.pending = state.pending.filter(function (x) { return x.key.indexOf('preset.' + id + '.') !== 0; });
+        save();
+        ui.editor = null;
+        render();
+      }, 'danger-o');
+    }
+  };
+
+  var CHANGES = {
+    'rule-num': function (el) {
+      var k = el.getAttribute('data-key');
+      var v = Math.round(Number(el.value));
+      if (el.value === '' || !isFinite(v) || v < 0) { render(); return; }
+      changeSetting('rules.' + k, 'settings.rules.' + k, v, '$' + state.settings.rules[k], '$' + v);
+      render();
+    },
+    'hold-num': function (el) {
+      var k = el.getAttribute('data-key');
+      var v = Math.round(Number(el.value));
+      if (el.value === '' || !isFinite(v) || v < 1) v = 1;
+      if (v > 60) v = 60;
+      changeSetting('behaviour.' + k, 'settings.behaviour.' + k, v, state.settings.behaviour[k] + 's', v + 's');
+      render();
+    },
+    'text-setting': function (el) { setPath(state, el.getAttribute('data-path'), el.value); save(); flashSaved(); },
+    'link': function (el) {
+      var k = el.getAttribute('data-link');
+      var from = findPreset(state.settings.presetLinks[k]), to = findPreset(el.value);
+      changeSetting('presetLinks.' + k, 'settings.presetLinks.' + k, el.value, from ? from.name : '?', to ? to.name : '?');
+      render();
+    },
+    'session': function (el) {
+      if (!/^\d{2}:\d{2}/.test(el.value)) { render(); return; }
+      var cur = state.settings.session;
+      var base = clone(targetValue('session', cur));
+      base[el.getAttribute('data-field')] = el.value.slice(0, 5);
+      changeSetting('session', 'settings.session', base, cur.start + '–' + cur.end, base.start + '–' + base.end);
+      render();
+    },
+    'reset-hour': function (el) {
+      if (!/^\d{2}:\d{2}/.test(el.value)) { render(); return; }
+      state.settings.resetHour = el.value.slice(0, 5);
+      save();
+      render();
+      flashSaved();
+    },
+    'cat-name': function (el) {
+      var cat = findCat(listOfEditor(), el.getAttribute('data-id'));
+      if (!cat) return;
+      cat.name = el.value.trim() || 'UNTITLED';
+      save();
+      flashSaved();
+    },
+    'item-field': function (el) {
+      var list = listOfEditor(), id = el.getAttribute('data-id'), f = el.getAttribute('data-field');
+      var it = findItem(list, id);
+      if (!it) return;
+      var v = f === 'time' ? (el.value || '').slice(0, 5) : el.value;
+      if (list === 'trade') {
+        var res = propose({ key: 'trade.item.' + id + '.' + f, rule: 'trade.itemEdit', from: it[f], to: v, fromText: '"' + it[f] + '"', toText: '"' + v + '"', op: { op: 'editItem', list: list, itemId: id, field: f, value: v } });
+        afterPropose(res);
+        if (res === 'pending') { setTimeout(render, 0); return; }
+      } else {
+        it[f] = v;
+        save();
+        flashSaved();
+      }
+      var lbl = $('[data-label-for="' + id + '"]');
+      if (lbl && f === 'text') { lbl.textContent = v || 'New item'; lbl.classList.toggle('empty', !v); }
+      if (f === 'time') setTimeout(render, 0);
+    },
+    'preset-field': function (el) {
+      var p = findPreset(ui.editor.id);
+      p[el.getAttribute('data-field')] = el.value;
+      save();
+      flashSaved();
+      if (el.getAttribute('data-field') === 'name') { var h = $('.editor-head h1'); if (h) h.textContent = el.value || 'Preset'; }
+    },
+    'preset-dur': function (el) {
+      var p = findPreset(ui.editor.id);
+      var wrap = el.closest('.row');
+      var m = Math.max(0, Math.round(Number(wrap.querySelector('[data-part="m"]').value) || 0));
+      var s = Math.max(0, Math.min(59, Math.round(Number(wrap.querySelector('[data-part="s"]').value) || 0)));
+      var to = Math.max(1, m * 60 + s);
+      var res = propose({ key: 'preset.' + p.id + '.seconds', rule: 'preset.seconds', from: p.seconds, to: to, fromText: fmtMS(p.seconds), toText: fmtMS(to), op: { op: 'presetSet', presetId: p.id, field: 'seconds', value: to } });
+      if (res === 'noop') removePending('preset.' + p.id + '.seconds');
+      afterPropose(res);
+      render();
+    },
+    'step-text': function (el) {
+      var p = findPreset(ui.editor.id);
+      var st = p.steps.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+      if (st) { st.text = el.value; save(); flashSaved(); }
+    }
+  };
+
+  function bindEvents() {
+    $$('.tab').forEach(function (t) { t.addEventListener('click', function () { setTab(t.getAttribute('data-tab')); }); });
+    var view = $('#view');
+    view.addEventListener('click', function (e) {
+      var el = e.target.closest('[data-act]');
+      if (!el || !view.contains(el) || el.disabled) return;
+      var fn = ACTIONS[el.getAttribute('data-act')];
+      if (fn) fn(el, e);
+    });
+    view.addEventListener('change', function (e) {
+      var el = e.target.closest('[data-change]');
+      if (!el) return;
+      var fn = CHANGES[el.getAttribute('data-change')];
+      if (fn) fn(el, e);
+    });
+    view.addEventListener('pointerdown', function (e) {
+      var h = e.target.closest('[data-drag]');
+      if (h && view.contains(h)) dragStart(e, h);
+    });
+    view.addEventListener('keydown', function (e) {
+      var h = e.target.closest && e.target.closest('[data-drag]');
+      if (!h || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+      e.preventDefault();
+      moveByKey(h.getAttribute('data-drag'), h.getAttribute('data-id'), e.key === 'ArrowUp' ? -1 : 1);
+    });
+    $('#import-file').addEventListener('change', function (e) {
+      var f = e.target.files && e.target.files[0];
+      if (f) handleImportFile(f);
+    });
+    document.addEventListener('pointerdown', unlockAudio, { passive: true });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') { flushSave(); return; }
+      onResume();
+    });
+    window.addEventListener('focus', onResume);
+    window.addEventListener('pagehide', flushSave);
+    window.addEventListener('storage', function (e) {
+      if (e.key !== KEY || !e.newValue) return;
+      try { state = normalise(JSON.parse(e.newValue)); applyAccent(); render(); } catch (err) { /* ignore */ }
+    });
+  }
+  function onResume() {
+    applyDuePending();
+    if (finishCooldownIfDue()) { render(); return; }
+    tickCooldownDom();
+    requestWakeLock();
+    if (!ui.holding && ui.tab !== 'settings') render();
+  }
+
+  /* ==== PWA: service worker ==== */
+  function registerSW() {
+    if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+    var reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (reloading) return;
+      reloading = true;
+      location.reload();
+    });
+    function offer(worker) {
+      toast('Update available', { label: 'Reload', fn: function () { worker.postMessage('SKIP_WAITING'); } }, 0);
+    }
+    navigator.serviceWorker.register('sw.js').then(function (reg) {
+      if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
+      reg.addEventListener('updatefound', function () {
+        var w = reg.installing;
+        if (!w) return;
+        w.addEventListener('statechange', function () {
+          if (w.state === 'installed' && navigator.serviceWorker.controller) offer(w);
+        });
+      });
+      setInterval(function () { reg.update().catch(function () { /* offline */ }); }, 60 * 60 * 1000);
+    }).catch(function () { /* ignore */ });
+  }
+
+  /* ==== BOOT ==== */
+  var lastSlow = 0;
+  function tick() {
+    if (finishCooldownIfDue()) { if (!ui.holding) render(); return; }
+    tickCooldownDom();
+    var t = Date.now();
+    if (t - lastSlow >= 20000) {
+      lastSlow = t;
+      var applied = applyDuePending();
+      if (!ui.holding && !drag && (ui.tab !== 'settings' || (applied && !ui.editor))) render();
+    }
+  }
+  function init() {
+    load();
+    applyDuePending();
+    applyAccent();
+    bindEvents();
+    finishCooldownIfDue();
+    render();
+    if (loadNotice) toast(loadNotice, null, 0);
+    if (navigator.storage && navigator.storage.persist) {
+      try {
+        navigator.storage.persisted().then(function (p) { if (!p) return navigator.storage.persist(); }).catch(function () { /* ignore */ });
+      } catch (e) { /* ignore */ }
+    }
+    requestWakeLock();
+    lastSlow = Date.now();
+    setInterval(tick, 250);
+    registerSW();
+  }
+
+  var api = {
+    init: init,
+    makeDefaults: makeDefaults,
+    tradingDayKey: tradingDayKey,
+    sessionPhase: sessionPhase,
+    isLoosening: isLoosening,
+    mergeImport: mergeImport,
+    escapeHTML: escapeHTML,
+    fillMissing: fillMissing,
+    get state() { return state; },
+    ui: ui
+  };
+  return api;
+})();
+
+if (typeof document !== 'undefined' && document.getElementById('view')) App.init();
+</script>
+</body>
+</html>

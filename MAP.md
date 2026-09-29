@@ -1,0 +1,49 @@
+# MAP: section banners in `index.html`
+
+`index.html` is the whole app: markup, one `<style>` and one `<script>`. Each section starts with a banner comment like `/* ==== STATE: load/save ==== */`. Change instructions use these banners as FIND anchors, so keep the banner text **unique and unchanged**. Sections appear in this order.
+
+## `<style>`
+
+| Banner | Purpose | Key selectors |
+|---|---|---|
+| `/* ==== STYLE: tokens ==== */` | Colour/font tokens on `:root`, base element styles | `--bg`, `--accent`, `--lock`, `--info`, `.mono` |
+| `/* ==== STYLE: layout + tabs ==== */` | Page padding, bottom tab bar (phone) and left rail (≥900px) | `#view`, `.wrap`, `.tabs`, `.tab` |
+| `/* ==== STYLE: components ==== */` | Cards, buttons, pills, tags, progress bar, banner, checkbox | `.card`, `.btn`, `.pill`, `.bar`, `.banner`, `.cb` |
+| `/* ==== STYLE: premarket ==== */` | Now strip, categories, item rows, gate buttons, focus mode | `.now-strip`, `.cat-head`, `.item`, `.gate-btns`, `.focus-wrap` |
+| `/* ==== STYLE: trade ==== */` | Rules cells, session bar, counter + pips, Enter/hold buttons, outcomes, urge | `.rules`, `.session-bar`, `.pip`, `.enter`, `.hold`, `.urge` |
+| `/* ==== STYLE: cooldown ==== */` | Preset chips, ring timer, steps | `.chips`, `.chip`, `.ring-wrap`, `.step` |
+| `/* ==== STYLE: settings + editors ==== */` | Settings fields, stepper, switches, day chips, pending rows, editors, drag visuals | `.field`, `.stepper`, `.switch`, `.pending`, `.handle`, `.lifted`, `.drop-ph` |
+| `/* ==== STYLE: modal + toast ==== */` | In-app modal, toasts, reduced-motion overrides | `.modal-back`, `.modal`, `.toast` |
+
+## `<script>` (everything lives inside the single `App` namespace)
+
+| Banner | Purpose | Key functions |
+|---|---|---|
+| `/* ==== CORE: helpers ==== */` | Constants and small helpers: ids, escaping, time formatting, object paths | `uid`, `escapeHTML` (`esc`), `hmToMin`, `relMin`, `fmtMS`, `fmtDur`, `getPath`, `setPath`, `$`, `$$` |
+| `/* ==== DEFAULTS: prefilled content ==== */` | The whole default data object (checklists, presets, settings) and an empty day | `makeDefaults`, `newDay` |
+| `/* ==== TIME: trading day + session ==== */` | Trading-day key (rolls over at `resetHour`), active days, session phase | `tradingDayKey`, `todayKey`, `isActiveDay`, `sessionPhase`, `sessionInfo`, `sessionLive` |
+| `/* ==== STATE: load/save ==== */` | localStorage `checkpoint.v1`, migration by deep-filling missing keys, corrupt backup, debounced save | `load`, `normalise`, `fillMissing`, `save`, `saveNow`, `getDay`, `findPreset`, `findItem`, `findCat` |
+| `/* ==== RULES: loosening + pending ==== */` | Which changes loosen a rule, the pending queue, applying it after the reset | `LOOSEN`, `isLoosening`, `propose`, `applyOp`, `applyDuePending`, `pendingFor`, `targetValue` |
+| `/* ==== AUDIO + HAPTICS ==== */` | Web Audio chime, vibration, screen wake lock | `unlockAudio`, `chime`, `vibrate`, `requestWakeLock`, `releaseWakeLock` |
+| `/* ==== UI: shell, modal, toast ==== */` | UI state, accent, tab switching, render dispatcher, modal/toast helpers | `ui`, `applyAccent`, `setTab`, `render`, `flashSaved`, `toast`, `openModal`, `confirmModal`, `typedConfirm` |
+| `/* ==== VIEW: premarket ==== */` | Premarket tab: progress, now strip, categories, gates, focus mode | `viewPremarket`, `pmCurrent`, `pmStats`, `pmCatFolded`, `gateButtons`, `pmAfterChange` |
+| `/* ==== VIEW: trade ==== */` | Trade tab: rules, session bar, checklist, hold to enter, outcomes, locks, session-over and day-done screens | `viewTrade`, `tradeCtx`, `viewTradeTop`, `urgeBlock`, `outcomeButtons`, `logTrade` |
+| `/* ==== VIEW: cooldown ==== */` | Cooldown tab, start/replace/record, finishing, per-tick DOM update | `viewCooldown`, `startCooldown`, `recordCooldown`, `finishCooldownIfDue`, `tickCooldownDom` |
+| `/* ==== VIEW: settings ==== */` | Settings root screen (sections 1–7), pending rows, switches | `viewSettings`, `pendingRow`, `sw`, `changeSetting`, `LINK_LABELS`, `BEHAVIOUR_SW`, `HOLD_FIELDS` |
+| `/* ==== VIEW: checklist editor ==== */` | Shared editor for the 3 checklists, move logic (drag and keyboard) | `viewChecklistEditor`, `editorItem`, `newItem`, `moveEntry`, `moveByKey` |
+| `/* ==== VIEW: preset editor ==== */` | Preset editor screen | `viewPresetEditor` |
+| `/* ==== DRAG: pointer reorder ==== */` | Pointer Events drag and drop from ⠿ handles, placeholder, auto-scroll | `dragStart`, `dragMove`, `dragPlace`, `dragAutoScroll`, `dragEnd` |
+| `/* ==== HOLD: press-and-hold buttons ==== */` | Hold-to-confirm buttons (enter, urge, end early) | `bindHolds`, `bindHold`, `onHoldComplete` |
+| `/* ==== DATA: export/import/reset ==== */` | JSON export, import (merge / replace), reset to defaults | `exportData`, `validImport`, `mergeImport`, `handleImportFile`, `resetDefaults` |
+| `/* ==== EVENTS: actions ==== */` | Delegated click actions (`data-act`) and change handlers (`data-change`), global listeners | `ACTIONS`, `CHANGES`, `bindEvents`, `onResume` |
+| `/* ==== PWA: service worker ==== */` | Registers `sw.js`, shows the "Update available · Reload" toast | `registerSW` |
+| `/* ==== BOOT ==== */` | 250ms tick, startup, the public `App` api | `tick`, `init`, `api` |
+
+## Other files
+
+| File | Purpose |
+|---|---|
+| `sw.js` | Service worker. Cache `checkpoint-v1`: network-first for the page, cache-first for icons/manifest, runtime cache for Google Fonts |
+| `manifest.webmanifest` | PWA manifest (relative paths, works under `/Checkpoint/`) |
+| `icons/` | App icons. Regenerate with `python3 tests/make_icons.py` (needs Pillow) |
+| `tests/` | `static_checks.py` (syntax + smart quotes), `unit.test.js` (data, day key, loosening, merge), `browser.test.js` (Playwright smoke test + screenshots) |

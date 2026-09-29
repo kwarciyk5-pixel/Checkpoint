@@ -1,0 +1,7 @@
+# Never commit personal data exported from the app
+checkpoint-backup-*.json
+
+# Local tooling
+node_modules/
+__pycache__/
+.DS_Store
