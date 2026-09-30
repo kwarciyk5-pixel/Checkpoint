@@ -27,14 +27,14 @@
 | `/* ==== AUDIO + HAPTICS ==== */` | Web Audio chime, vibration, screen wake lock | `unlockAudio`, `chime`, `vibrate`, `requestWakeLock`, `releaseWakeLock` |
 | `/* ==== UI: shell, modal, toast ==== */` | UI state, accent, tab switching, render dispatcher, modal/toast helpers | `ui`, `applyAccent`, `setTab`, `render`, `flashSaved`, `toast`, `openModal`, `confirmModal`, `typedConfirm` |
 | `/* ==== VIEW: premarket ==== */` | Premarket tab: progress, now strip, categories, gates, focus mode | `viewPremarket`, `pmCurrent`, `pmStats`, `pmCatFolded`, `gateButtons`, `pmAfterChange` |
-| `/* ==== VIEW: trade ==== */` | Trade tab: rules, session bar, checklist, hold to enter, outcomes, locks, session-over and day-done screens | `viewTrade`, `tradeCtx`, `viewTradeTop`, `urgeBlock`, `outcomeButtons`, `logTrade` |
+| `/* ==== VIEW: trade ==== */` | Trade tab: rules, session bar, checklist, hold to enter, outcomes, locks, session-over and day-done screens | `viewTrade`, `tradeCtx`, `viewTradeTop`, `urgeBlock`, `outcomeButtons`, `logTrade`, `undoTrade` (10s UNDO toast) |
 | `/* ==== VIEW: cooldown ==== */` | Cooldown tab, start/replace/record, finishing, per-tick DOM update | `viewCooldown`, `startCooldown`, `recordCooldown`, `finishCooldownIfDue`, `tickCooldownDom` |
 | `/* ==== VIEW: settings ==== */` | Settings root screen (sections 1–7), pending rows, switches | `viewSettings`, `pendingRow`, `sw`, `changeSetting`, `LINK_LABELS`, `BEHAVIOUR_SW`, `HOLD_FIELDS` |
 | `/* ==== VIEW: checklist editor ==== */` | Shared editor for the 3 checklists, move logic (drag and keyboard) | `viewChecklistEditor`, `editorItem`, `newItem`, `moveEntry`, `moveByKey` |
 | `/* ==== VIEW: preset editor ==== */` | Preset editor screen | `viewPresetEditor` |
 | `/* ==== DRAG: pointer reorder ==== */` | Pointer Events drag and drop from ⠿ handles, placeholder, auto-scroll | `dragStart`, `dragMove`, `dragPlace`, `dragAutoScroll`, `dragEnd` |
 | `/* ==== HOLD: press-and-hold buttons ==== */` | Hold-to-confirm buttons (enter, urge, end early) | `bindHolds`, `bindHold`, `onHoldComplete` |
-| `/* ==== DATA: export/import/reset ==== */` | JSON export, import (merge / replace), reset to defaults | `exportData`, `validImport`, `mergeImport`, `handleImportFile`, `resetDefaults` |
+| `/* ==== DATA: export/import/reset ==== */` | JSON export, import (merge / replace), reset to defaults, clear history, erase all data; Replace/Reset/Clear/Erase blocked while the session is live | `lockedBySession`, `exportData`, `validImport`, `mergeImport`, `handleImportFile`, `resetDefaults`, `exportFirst`, `clearHistory`, `checkpointKeys`, `eraseAll` |
 | `/* ==== EVENTS: actions ==== */` | Delegated click actions (`data-act`) and change handlers (`data-change`), global listeners | `ACTIONS`, `CHANGES`, `bindEvents`, `onResume` |
 | `/* ==== PWA: service worker ==== */` | Registers `sw.js`, shows the "Update available · Reload" toast | `registerSW` |
 | `/* ==== BOOT ==== */` | 250ms tick, startup, the public `App` api | `tick`, `init`, `api` |
@@ -43,7 +43,7 @@
 
 | File | Purpose |
 |---|---|
-| `sw.js` | Service worker. Cache `checkpoint-v1`: network-first for the page, cache-first for icons/manifest, runtime cache for Google Fonts |
+| `sw.js` | Service worker. Cache `checkpoint-v2` (on activate it deletes only old `checkpoint-*` caches, never other apps' caches on the same site): network-first for the page, cache-first for icons/manifest, runtime cache for Google Fonts |
 | `manifest.webmanifest` | PWA manifest (relative paths, works under `/Checkpoint/`) |
 | `icons/` | App icons. Regenerate with `python3 tests/make_icons.py` (needs Pillow) |
-| `tests/` | `static_checks.py` (syntax + smart quotes), `unit.test.js` (data, day key, loosening, merge), `browser.test.js` (Playwright smoke test + screenshots) |
+| `tests/` | `static_checks.py` (syntax + smart quotes), `unit.test.js` (data, day key, loosening, merge), `browser.test.js` (Playwright smoke test + screenshots), `patch1.test.js` (undo, session guards, reset-hour pending, clear history, erase all) |

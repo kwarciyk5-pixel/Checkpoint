@@ -232,7 +232,7 @@ body.dragging{user-select:none;-webkit-user-select:none}
 .toasts{position:fixed;left:0;right:0;bottom:calc(var(--tabh) + env(safe-area-inset-bottom) + 12px);z-index:90;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
 @media (min-width:900px){.toasts{left:220px;bottom:24px}}
 .toast{pointer-events:auto;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 8px 8px 14px;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:520px}
-.toast button{min-height:36px;padding:0 10px;color:var(--accent);font-family:var(--f-mono);font-size:12px;letter-spacing:.1em}
+.toast button{min-height:44px;padding:0 10px;color:var(--accent);font-family:var(--f-mono);font-size:12px;letter-spacing:.1em}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{transition:none !important;animation:none !important}
@@ -430,6 +430,7 @@ var App = (function () {
       trades: [],
       cooldowns: [],
       urges: [],
+      undone: [],
       sessionOver: { checked: {} },
       dayDoneShown: false
     };
@@ -561,7 +562,8 @@ var App = (function () {
     'preset.seconds': 'down', 'preset.stepDelete': 'always',
     'trade.itemAdd': 'never', 'trade.itemDelete': 'always', 'trade.itemEdit': 'always',
     'trade.afterStopOnly': 'on', 'trade.categoryDelete': 'always',
-    'session': 'change', 'activeDays': 'change', 'presetLinks': 'change'
+    'session': 'change', 'activeDays': 'change', 'presetLinks': 'change',
+    'resetHour': 'change'
   };
   function isLoosening(ch) {
     switch (LOOSEN[ch.key]) {
@@ -1064,21 +1066,50 @@ var App = (function () {
     out += urgeBlock(c);
     return out;
   }
+  var UNDO_MS = 10000;
   function logTrade(outcome) {
     var c = tradeCtx();
     var day = c.day, b = c.s.behaviour;
-    day.trades.push({
+    var before = { tradeChecks: clone(day.tradeChecks), entered: !!day.entered, dayDoneShown: !!day.dayDoneShown };
+    var rec = {
       n: day.trades.length + 1, outcome: outcome,
       checklistComplete: !!day.entered || (c.allArmed && c.visible.length > 0),
       enteredViaHold: !!day.entered, at: new Date().toISOString()
-    });
+    };
+    day.trades.push(rec);
     day.tradeChecks = {};
     day.entered = false;
     save();
-    toast('Trade ' + pad2(day.trades.length) + ' logged · ' + outcome);
+    var key = c.key;
+    toast(outcome + ' logged · trade ' + pad2(day.trades.length), { label: 'UNDO', fn: function () { undoTrade(key, rec, before); } }, UNDO_MS);
     if (outcome === 'SL' && b.slStartsCooldown) { startCooldown(c.s.presetLinks.sl, 'sl'); return; }
     if (outcome === 'TP' && b.dayDoneAfterTP) { day.dayDoneShown = true; ui.dayDone = true; save(); }
     render();
+  }
+
+  // Undo of a just-logged outcome. Only the last trade, only within the toast window (+2s grace).
+  function undoTrade(key, rec, before) {
+    if (!state.days[key]) return;
+    var day = getDay(key);
+    var i = day.trades.indexOf(rec);
+    if (i < 0 || i !== day.trades.length - 1 || Date.now() - Date.parse(rec.at) > UNDO_MS + 2000) { toast('Too late to undo'); return; }
+    day.trades.splice(i, 1);
+    var ac = state.activeCooldown;
+    var cancelled = false;
+    if (ac && ac.trigger === 'sl' && rec.outcome === 'SL' && ac.startedAt >= Date.parse(rec.at)) {
+      state.activeCooldown = null;
+      releaseWakeLock();
+      cancelled = true;
+    }
+    if (rec.outcome === 'TP') { day.dayDoneShown = before.dayDoneShown; ui.dayDone = false; }
+    day.tradeChecks = before.tradeChecks;
+    day.entered = before.entered;
+    day.undone.push({ outcome: rec.outcome, n: rec.n, loggedAt: rec.at, undoneAt: new Date().toISOString(), cooldownCancelled: cancelled });
+    saveNow();
+    ui.tab = 'trade';
+    try { sessionStorage.setItem('checkpoint.tab', 'trade'); } catch (e) { /* ignore */ }
+    render();
+    toast('Undone · ' + rec.outcome + ' removed' + (cancelled ? ' · cooldown cancelled' : ''));
   }
 
   /* ==== VIEW: cooldown ==== */
@@ -1250,7 +1281,7 @@ var App = (function () {
         var names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         return '<button type="button" data-act="day" data-dow="' + d[0] + '" aria-pressed="' + (s.activeDays.indexOf(d[0]) >= 0) + '" aria-label="' + names[d[0]] + '">' + d[1] + '</button>';
       }).join('') + '</div>' + pendingRow('activeDays') + '</div>' +
-      '<div class="field"><div class="inline"><label for="f-reset">Daily reset</label><input id="f-reset" class="num-sm" style="max-width:130px" type="time" value="' + esc(s.resetHour) + '" data-change="reset-hour"></div></div>' +
+      '<div class="field"><div class="inline"><label for="f-reset">Daily reset</label><input id="f-reset" class="num-sm" style="max-width:130px" type="time" value="' + esc(s.resetHour) + '" data-change="reset-hour"></div>' + pendingRow('resetHour') + '</div>' +
       '<div class="field"><label for="f-som">Session-over message</label><textarea id="f-som" data-change="text-setting" data-path="settings.sessionOverMsg">' + esc(s.sessionOverMsg) + '</textarea></div>' +
       '<div class="field">' + sw(s.sound, 'gen-switch', 'sound', 'Sound') + '</div>' +
       '<div class="field">' + sw(s.vibration, 'gen-switch', 'vibration', 'Vibration (Android)') + '</div>' +
@@ -1262,7 +1293,12 @@ var App = (function () {
       '<div class="row"><button type="button" class="btn accent-o" style="flex:1" data-act="export">EXPORT .JSON</button><button type="button" class="btn" style="flex:1" data-act="import">IMPORT</button></div>' +
       '<span class="mono muted">Last export: ' + (s.lastExportAt ? esc(fmtStamp(new Date(s.lastExportAt))) : 'never') + '</span>' +
       '<p class="muted" style="margin:0;font-size:14px">Everything stays in this browser. Export regularly.</p>' +
-      '<button type="button" class="btn danger-o" data-act="reset">RESET TO DEFAULTS</button></div>';
+      (sessionLive() ? '<p class="mono muted" style="margin:0">Replace · Reset · Clear · Erase: available after the session</p>' : '') +
+      '<button type="button" class="btn danger-o" data-act="reset"' + (sessionLive() ? ' disabled' : '') + '>RESET TO DEFAULTS</button>' +
+      '<button type="button" class="btn danger-o" data-act="clear-history"' + (sessionLive() ? ' disabled' : '') + '>CLEAR HISTORY</button>' +
+      '<p class="muted" style="margin:0;font-size:14px">Deletes every logged day: trades, cooldowns, urges and ticks. Checklists, presets and settings stay.</p>' +
+      '<button type="button" class="btn danger-o" data-act="erase-all"' + (sessionLive() ? ' disabled' : '') + '>ERASE ALL DATA</button>' +
+      '<p class="muted" style="margin:0;font-size:14px">Back to a fresh install. Only Checkpoint data is deleted; other apps on this site are not touched.</p></div>';
     return out;
   }
   function pendingRowsForPreset(p) {
@@ -1594,6 +1630,11 @@ var App = (function () {
     if (!silent) toast('Exported ' + a.download);
     if (ui.tab === 'settings' && !ui.editor) render();
   }
+  function lockedBySession() {
+    if (!sessionLive()) return false;
+    openModal({ title: 'Available after the session', html: '<p>Replace, reset, clear and erase are off while the session is live, so the record and cap for today stay as they are. Merge still works.</p>', actions: [{ label: 'OK', cls: 'ghost' }] });
+    return true;
+  }
   function validImport(obj) {
     return isObj(obj) && obj.schema != null && isObj(obj.checklists);
   }
@@ -1674,12 +1715,14 @@ var App = (function () {
             render();
             openModal({ title: 'Merged', html: '<p>' + esc(summary(n)) + ' Your local settings were kept.</p>', actions: [{ label: 'OK', cls: 'ghost' }] });
           } },
-          { label: 'Replace everything', cls: 'danger-o', fn: function () {
+          { label: sessionLive() ? 'Replace everything · after the session' : 'Replace everything', cls: 'danger-o', disabled: sessionLive(), fn: function () {
+            if (lockedBySession()) return;
             typedConfirm({
               title: 'Replace everything?',
               text: 'A backup of your current data downloads first. Then everything is replaced by this file. Type REPLACE to confirm.',
               word: 'REPLACE', okLabel: 'Replace everything',
               fn: function () {
+                if (lockedBySession()) return;
                 exportData(true);
                 var next = clone(obj);
                 delete next.exported_at;
@@ -1699,6 +1742,7 @@ var App = (function () {
     fr.readAsText(file);
   }
   function resetDefaults() {
+    if (lockedBySession()) return;
     typedConfirm({
       title: 'Reset to defaults?',
       pre: '<button type="button" class="btn accent-o block" id="reset-export">Export a backup first</button>',
@@ -1708,6 +1752,7 @@ var App = (function () {
         m.querySelector('#reset-export').addEventListener('click', function (e) { e.currentTarget.textContent = 'Backup downloaded'; exportData(true); });
       },
       fn: function () {
+        if (lockedBySession()) return;
         var d = makeDefaults();
         d.days = state.days;
         d.activeCooldown = state.activeCooldown;
@@ -1719,6 +1764,61 @@ var App = (function () {
         ui.expanded = {};
         render();
         toast('Defaults restored · history kept');
+      }
+    });
+  }
+  function exportFirst(m, id) {
+    m.querySelector('#' + id).addEventListener('click', function (e) { e.currentTarget.textContent = 'Backup downloaded'; exportData(true); });
+  }
+  function clearHistory() {
+    if (lockedBySession()) return;
+    typedConfirm({
+      title: 'Clear history?',
+      pre: '<button type="button" class="btn accent-o block" id="clear-export">Export a backup first</button>',
+      text: 'Every logged day is deleted: trades, cooldowns, urges and ticks. A running cooldown stops. Checklists, presets and settings stay. Type CLEAR to confirm.',
+      word: 'CLEAR', okLabel: 'Clear history',
+      onOpen: function (m) { exportFirst(m, 'clear-export'); },
+      fn: function () {
+        if (lockedBySession()) return;
+        state.days = {};
+        state.activeCooldown = null;
+        releaseWakeLock();
+        ui.dayDone = false;
+        ui.showAnyway = null;
+        saveNow();
+        render();
+        toast('History cleared');
+      }
+    });
+  }
+  // Only this app's storage keys. The site (kwarciyk5-pixel.github.io) is shared with other apps, so never wipe the whole of localStorage.
+  function checkpointKeys(keys) {
+    return keys.filter(function (k) { return typeof k === 'string' && (k === KEY || k.indexOf(KEY + '.') === 0); });
+  }
+  function eraseAll() {
+    if (lockedBySession()) return;
+    typedConfirm({
+      title: 'Erase all data?',
+      pre: '<button type="button" class="btn accent-o block" id="erase-export">Export a backup first</button>',
+      text: 'Checkpoint goes back to a fresh install: history, checklists, presets, settings and pending changes are deleted. Without a backup this cannot be undone. Other apps on this site are not touched. Type ERASE to confirm.',
+      word: 'ERASE', okLabel: 'Erase all data',
+      onOpen: function (m) { exportFirst(m, 'erase-export'); },
+      fn: function () {
+        if (lockedBySession()) return;
+        var keys = [];
+        try { for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i)); } catch (e) { /* ignore */ }
+        checkpointKeys(keys).forEach(function (k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } });
+        releaseWakeLock();
+        state = makeDefaults();
+        saveNow();
+        applyAccent();
+        ui.editor = null;
+        ui.expanded = {};
+        ui.dayDone = false;
+        ui.showAnyway = null;
+        ui.cdSelected = null;
+        setTab('premarket');
+        toast('All data erased · fresh start');
       }
     });
   }
@@ -1849,6 +1949,8 @@ var App = (function () {
     'export': function () { exportData(false); },
     'import': function () { var f = $('#import-file'); f.value = ''; f.click(); },
     'reset': function () { resetDefaults(); },
+    'clear-history': function () { clearHistory(); },
+    'erase-all': function () { eraseAll(); },
     // checklist editor
     'ed-expand': function (el) {
       var id = el.getAttribute('data-id');
@@ -1992,10 +2094,10 @@ var App = (function () {
     },
     'reset-hour': function (el) {
       if (!/^\d{2}:\d{2}/.test(el.value)) { render(); return; }
-      state.settings.resetHour = el.value.slice(0, 5);
-      save();
+      var curReset = state.settings.resetHour;
+      var toReset = el.value.slice(0, 5);
+      changeSetting('resetHour', 'settings.resetHour', toReset, curReset, toReset);
       render();
-      flashSaved();
     },
     'cat-name': function (el) {
       var cat = findCat(listOfEditor(), el.getAttribute('data-id'));
@@ -2159,6 +2261,7 @@ var App = (function () {
     sessionPhase: sessionPhase,
     isLoosening: isLoosening,
     mergeImport: mergeImport,
+    checkpointKeys: checkpointKeys,
     escapeHTML: escapeHTML,
     fillMissing: fillMissing,
     get state() { return state; },

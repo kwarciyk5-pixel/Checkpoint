@@ -39,4 +39,4 @@ python3 -m http.server 8765 &       # then, with playwright-core available:
 NODE_PATH=... node tests/browser.test.js /tmp/shots
 ```
 
-If you change `index.html`, bump the cache name in `sw.js` (`checkpoint-v1` → `checkpoint-v2`) so installed copies pick up the update cleanly.
+If you change `index.html`, bump the cache name in `sw.js` (e.g. `checkpoint-v2` → `checkpoint-v3`) so installed copies pick up the update cleanly.

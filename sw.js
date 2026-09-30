@@ -1,5 +1,5 @@
 /* Checkpoint service worker: network-first for the app page, cache-first for icons. */
-var CACHE = 'checkpoint-v1';
+var CACHE = 'checkpoint-v2';
 var FONT_CACHE = 'checkpoint-fonts-v1';
 var PRECACHE = [
   './',
@@ -18,7 +18,7 @@ self.addEventListener('install', function (event) {
 self.addEventListener('activate', function (event) {
   event.waitUntil(
     caches.keys().then(function (keys) {
-      return Promise.all(keys.filter(function (k) { return k !== CACHE && k !== FONT_CACHE; }).map(function (k) { return caches.delete(k); }));
+      return Promise.all(keys.filter(function (k) { return k.indexOf('checkpoint-') === 0 && k !== CACHE && k !== FONT_CACHE; }).map(function (k) { return caches.delete(k); }));
     }).then(function () { return self.clients.claim(); })
   );
 });

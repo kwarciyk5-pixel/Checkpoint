@@ -134,4 +134,15 @@ test('escapeHTML', () => {
   assert.strictEqual(App.escapeHTML('<b a="1">\'&'), '&lt;b a=&quot;1&quot;&gt;&#39;&amp;');
 });
 
+test('patch 1: a reset-hour change is loosening, the same value is not', () => {
+  assert.strictEqual(App.isLoosening({ key: 'resetHour', from: '06:00', to: '05:00' }), true);
+  assert.strictEqual(App.isLoosening({ key: 'resetHour', from: '06:00', to: '07:00' }), true);
+  assert.strictEqual(App.isLoosening({ key: 'resetHour', from: '06:00', to: '06:00' }), false);
+});
+
+test('patch 1: erase touches only Checkpoint keys', () => {
+  const keys = ['checkpoint.v1', 'checkpoint.v1.corrupt-1727700000000', 'sanctuary', 'sanctuary.v1', 'checkpoint.v10', 'checkpointx', 'other'];
+  assert.deepStrictEqual(Array.from(App.checkpointKeys(keys)), ['checkpoint.v1', 'checkpoint.v1.corrupt-1727700000000']);
+});
+
 console.log('\n' + passed + ' tests passed');
