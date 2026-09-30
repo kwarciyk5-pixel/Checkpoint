@@ -223,6 +223,52 @@ input:focus,textarea:focus,select:focus{border-color:var(--accent);outline:none}
 .drop-ph{border:1.5px dashed var(--accent);border-radius:8px;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--accent);background:var(--accent-a);min-height:44px}
 body.dragging{user-select:none;-webkit-user-select:none}
 
+/* ==== STYLE: check-ins + floating window ==== */
+.ci-card{border:1.5px solid var(--accent);border-radius:var(--radius);background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 0 4px var(--accent-a),0 0 28px var(--accent-b)}
+.ci-label{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.ci-text{margin:0;font-size:15px;line-height:1.5;color:var(--text-2)}
+.ci-q{font-size:22px;font-weight:700}
+.ci-answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ci-answers button{min-height:56px;border-radius:10px;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:0 6px}
+.ci-answers .a-good{background:var(--accent);color:var(--bg);font-weight:600}
+.ci-answers .a-notgood{background:var(--surface);color:var(--lock);border:1px solid var(--lock)}
+.ci-answers .a-done{background:var(--surface);color:var(--text);border:1px solid var(--line);font-size:11px}
+.ci-foot{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.ci-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--accent);border-radius:var(--radius);background:var(--accent-a);padding:6px 6px 6px 14px;font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+body.pipwin{min-height:100vh;background:var(--bg)}
+.pw{min-height:100vh;display:flex;flex-direction:column;border:1px solid var(--line)}
+.pw.lit{border:1.5px solid var(--accent);box-shadow:inset 0 0 0 3px var(--accent-a),inset 0 0 36px var(--accent-b)}
+.pw.cool{border:1.5px solid var(--lock);box-shadow:inset 0 0 28px var(--lock-a)}
+.pw-head{height:36px;flex:none;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--line-soft);background:var(--surface-2);font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.pw-head .dot{width:8px;height:8px;border-radius:4px;background:var(--accent)}
+.pw-head b{flex:1;color:var(--text);font-weight:400}
+.pw-body{flex:1;display:flex;flex-direction:column;gap:14px;padding:16px}
+.pw-sess{display:flex;flex-direction:column;gap:6px}
+.pw-sess .top{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.pw-sess .top b{color:var(--text);font-weight:400}
+.pw-sess .track{height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+.pw-sess .track i{display:block;height:100%;border-radius:3px;background:var(--info)}
+.pw-count{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.pw-count .n{font-size:36px;font-weight:700;line-height:1}
+.pw-count .n span{color:var(--dim)}
+.pw-count .side{font-family:var(--f-mono);font-size:11px;color:var(--muted);text-align:right;line-height:1.5}
+.pw .btn,.pw .urge{min-height:44px}
+.pw-ring{display:flex;align-items:center;gap:16px}
+.pw-ring .rw{position:relative;width:110px;height:110px;flex:none}
+.pw-ring svg{width:110px;height:110px;transform:rotate(-90deg)}
+.pw-ring .t{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:26px;font-weight:600}
+.pw-steps{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.pw-steps button{min-height:30px;text-align:left;font-size:14px;font-weight:600;color:var(--text-2)}
+.pw-steps button[aria-pressed="true"]{color:var(--muted);text-decoration:line-through}
+.pw-note{padding:10px 12px;border-radius:8px;background:var(--lock-a);border:1px dashed var(--lock);font-family:var(--f-mono);font-size:11px;color:var(--lock)}
+.pw-undo{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line-soft);background:var(--surface);padding:4px 4px 4px 14px;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--text-2)}
+.pw-undo button{min-height:44px;padding:0 12px;color:var(--accent);font-family:var(--f-mono);font-size:12px;letter-spacing:.1em}
+.pw .item{min-height:40px;padding:6px 10px}
+.ci-row{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.ci-row:last-of-type{border-bottom:0}
+.ci-row .ci-time{width:160px;max-width:42%;flex:none}
+.ci-row textarea{min-height:88px}
+
 /* ==== STYLE: modal + toast ==== */
 .modal-back{position:fixed;inset:0;z-index:80;background:rgba(5,6,8,.75);display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 @media (min-width:600px){.modal-back{align-items:center}}
@@ -237,6 +283,7 @@ body.dragging{user-select:none;-webkit-user-select:none}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{transition:none !important;animation:none !important}
   .bar>i,.pip.on,.card.accent-card{box-shadow:none}
+  .ci-card,.pw.lit,.pw.cool{box-shadow:none}
 }
 </style>
 </head>
@@ -358,7 +405,16 @@ var App = (function () {
         presetLinks: { sl: presets[0].id, urge: presets[2].id, redDay: presets[3].id, greenDay: presets[4].id, notGood: presets[1].id },
         sound: true, vibration: false, focusMode: false,
         sessionOverMsg: 'Is the platform closed? Session should be over. No other accounts. No revenge.',
-        lastExportAt: null
+        lastExportAt: null,
+        checkins: {
+          question: 'How\'s it going?',
+          goodMsg: 'Keep following your rules.',
+          times: [
+            { id: uid(), time: '20:45', text: '15 minutes in. Are you following your rules? The post-open fetch should be ready if you want the updated indicator.' },
+            { id: uid(), time: '21:10', text: 'Remember, you don\'t have to force trades. Chew some mints if you\'re nervous. And don\'t forget to check the higher time frame.' },
+            { id: uid(), time: '21:30', text: 'How\'s your trade today? Is everything okay? Have some water and take a deep breath to reduce cognitive load.' }
+          ]
+        }
       },
       checklists: {
         premarket: {
@@ -418,7 +474,8 @@ var App = (function () {
       presets: presets,
       pending: [],
       days: {},
-      activeCooldown: null
+      activeCooldown: null,
+      meta: { updatedAt: {} }
     };
   }
 
@@ -431,6 +488,8 @@ var App = (function () {
       cooldowns: [],
       urges: [],
       undone: [],
+      checkins: [],
+      dayClosed: null,
       sessionOver: { checked: {} },
       dayDoneShown: false
     };
@@ -506,6 +565,9 @@ var App = (function () {
     });
     if (!Array.isArray(s.pending)) s.pending = [];
     if (!isObj(s.days)) s.days = {};
+    if (!Array.isArray(s.settings.checkins.times)) s.settings.checkins.times = [];
+    if (!isObj(s.meta.updatedAt)) s.meta.updatedAt = {};
+    Object.keys(s.days).forEach(function (k) { if (isObj(s.days[k])) migrateDayRecords(s.days[k]); });
     return s;
   }
   function load() {
@@ -526,7 +588,9 @@ var App = (function () {
   function saveNow() {
     clearTimeout(saveTimer);
     saveTimer = null;
+    stampChanges();
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('Could not save. Storage may be full.'); }
+    saveDevice();
   }
   function save() {
     clearTimeout(saveTimer);
@@ -551,6 +615,58 @@ var App = (function () {
   }
   function findCat(list, id) {
     return state.checklists[list].categories.filter(function (c) { return c.id === id; })[0] || null;
+  }
+
+  /* ==== SYNC PREP: device, record ids, change stamps ==== */
+  // Nothing here syncs yet. It makes later sync (Supabase) exact: every record has an id and the
+  // device that made it, and settings / checklists / presets carry a last-changed time.
+  var DEVICE_KEY = KEY + '.device';
+  var device = null;
+  function defaultDeviceName() {
+    try { return (window.matchMedia && window.matchMedia('(pointer: fine)').matches && window.innerWidth >= 900) ? 'desktop' : 'phone'; } catch (e) { return 'phone'; }
+  }
+  function pipSupported() { return typeof window !== 'undefined' && 'documentPictureInPicture' in window; }
+  function loadDevice() {
+    var d = null;
+    try { d = JSON.parse(localStorage.getItem(DEVICE_KEY) || 'null'); } catch (e) { d = null; }
+    if (!isObj(d)) d = {};
+    if (!d.id) d.id = uid();
+    if (!d.name) d.name = defaultDeviceName();
+    if (typeof d.checkinsHere !== 'boolean') d.checkinsHere = pipSupported();
+    device = d;
+    saveDevice();
+  }
+  function saveDevice() {
+    if (!device) return;
+    try { localStorage.setItem(DEVICE_KEY, JSON.stringify(device)); } catch (e) { /* ignore */ }
+  }
+  function devId() { return device ? device.id : null; }
+  // Older data: urges were plain time strings, and records had no ids. Upgrade in place.
+  function migrateDayRecords(day) {
+    if (Array.isArray(day.urges)) {
+      day.urges = day.urges.map(function (u) { return typeof u === 'string' ? { id: uid(), at: u, device: null } : u; });
+    }
+    ['trades', 'cooldowns', 'undone', 'checkins'].forEach(function (k) {
+      if (!Array.isArray(day[k])) return;
+      day[k].forEach(function (r) { if (isObj(r) && !r.id) r.id = uid(); });
+    });
+  }
+  var STAMP_PARTS = ['settings', 'checklists.premarket', 'checklists.trade', 'checklists.sessionOver', 'presets'];
+  var stampSig = {};
+  function partSig(part) {
+    var v = getPath(state, part);
+    if (part === 'settings') { v = clone(v); delete v.lastExportAt; }
+    return JSON.stringify(v);
+  }
+  function initStamps() { STAMP_PARTS.forEach(function (p) { stampSig[p] = partSig(p); }); }
+  function stampChanges() {
+    if (!state || !state.meta) return;
+    var now = new Date().toISOString();
+    STAMP_PARTS.forEach(function (p) {
+      var sig = partSig(p);
+      if (stampSig[p] !== undefined && stampSig[p] !== sig) state.meta.updatedAt[p] = now;
+      stampSig[p] = sig;
+    });
   }
 
   /* ==== RULES: loosening + pending ==== */
@@ -687,7 +803,8 @@ var App = (function () {
   /* ==== UI: shell, modal, toast ==== */
   var ui = {
     tab: 'premarket', editor: null, expanded: {}, dayDone: false, showAnyway: null,
-    cdSelected: null, holding: false, focusAfter: null
+    cdSelected: null, holding: false, focusAfter: null,
+    manualCheckin: null, pipFlash: null, pipUndo: null, ciSig: '', ciRung: {}
   };
   try {
     var savedTab = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('checkpoint.tab');
@@ -700,6 +817,10 @@ var App = (function () {
     rs.setProperty('--accent', 'rgb(' + c.join(',') + ')');
     rs.setProperty('--accent-a', 'rgba(' + c.join(',') + ',.10)');
     rs.setProperty('--accent-b', 'rgba(' + c.join(',') + ',.35)');
+    if (pip.win) {
+      var ps = pip.win.document.documentElement.style;
+      ['--accent', '--accent-a', '--accent-b'].forEach(function (k) { ps.setProperty(k, rs.getPropertyValue(k)); });
+    }
   }
   function setTab(tab) {
     if (ui.tab === tab && tab === 'settings') ui.editor = null;
@@ -719,7 +840,7 @@ var App = (function () {
     else if (ui.tab === 'trade') html = viewTrade();
     else if (ui.tab === 'cooldown') html = viewCooldown();
     else html = viewSettings();
-    view.innerHTML = '<div class="wrap">' + html + '</div>';
+    view.innerHTML = '<div class="wrap">' + checkinBanner() + html + '</div>';
     bindHolds(view);
     var want = ui.focusAfter || fk;
     ui.focusAfter = null;
@@ -728,6 +849,7 @@ var App = (function () {
       if (el) { try { el.focus({ preventScroll: !ui.focusScroll }); } catch (e) { el.focus(); } }
     }
     ui.focusScroll = false;
+    pipRender();
   }
   function flashSaved() {
     var s = $('.saved');
@@ -973,7 +1095,8 @@ var App = (function () {
     return {
       now: now, key: key, day: day, s: s, slToday: slToday, visible: visible, armed: armed,
       allArmed: armed === visible.length, cdRunning: cdRunning, active: active,
-      phase: sessionPhase(now, s), capReached: day.trades.length >= s.rules.tradeCap
+      phase: sessionPhase(now, s), capReached: day.trades.length >= s.rules.tradeCap,
+      dayClosed: day.dayClosed || null
     };
   }
   function holdBtn(kind, sec, cls, label, extra) {
@@ -992,7 +1115,7 @@ var App = (function () {
   function urgeBlock(c) {
     var b = c.s.behaviour;
     return holdBtn('urge', b.urgeHoldSec, 'urge', 'HOLD ' + b.urgeHoldSec + 'S · I FEEL THE URGE', ' aria-label="Hold ' + b.urgeHoldSec + ' seconds: I feel the urge"') +
-      '<button type="button" class="textbtn" data-act="not-good" style="align-self:center">Not feeling good · take a break</button>';
+      '<button type="button" class="textbtn" data-act="not-good" style="align-self:center">Not feeling good · take a break</button>' + floatButton();
   }
   function outcomeButtons() {
     return '<div class="outcomes">' +
@@ -1010,9 +1133,9 @@ var App = (function () {
         '<div class="stack"><button type="button" class="btn accent-o block" style="min-height:56px" data-act="start-link" data-link="greenDay">GREEN DAY</button>' +
         '<button type="button" class="textbtn" data-act="day-done-back">Back</button></div></div>';
     }
-    var top = viewTradeTop(c);
+    var top = checkinCard() + viewTradeTop(c);
 
-    if (c.active && c.phase === 'after') {
+    if ((c.active && c.phase === 'after') || c.dayClosed) {
       var sod = day.sessionOver.checked;
       var items = '';
       state.checklists.sessionOver.categories.forEach(function (cat) {
@@ -1023,7 +1146,8 @@ var App = (function () {
             '<span class="txt"><b>' + esc(it.text) + '</b>' + (it.note ? '<small>' + esc(it.note) + '</small>' : '') + '</span></button>';
         });
       });
-      return top + '<section class="card lock-card"><span class="mono amber">' + esc(s.session.end) + '</span>' +
+      var soLabel = c.dayClosed && !(c.active && c.phase === 'after') ? (c.dayClosed === 'red' ? 'RED DAY · DONE' : 'GREEN DAY · DONE') : s.session.end;
+      return top + '<section class="card lock-card"><span class="mono amber">' + esc(soLabel) + '</span>' +
         '<h1 style="font-size:32px;margin:6px 0 8px">Session over.</h1><p class="msg" style="margin:0">' + esc(s.sessionOverMsg) + '</p></section>' +
         '<div class="stack">' + items + '</div>' +
         '<div class="row" style="gap:8px"><button type="button" class="btn lock-o block" style="flex:1;min-height:52px" data-act="start-link" data-link="redDay">RED DAY</button>' +
@@ -1074,7 +1198,8 @@ var App = (function () {
     var rec = {
       n: day.trades.length + 1, outcome: outcome,
       checklistComplete: !!day.entered || (c.allArmed && c.visible.length > 0),
-      enteredViaHold: !!day.entered, at: new Date().toISOString()
+      enteredViaHold: !!day.entered, at: new Date().toISOString(),
+      id: uid(), device: devId()
     };
     day.trades.push(rec);
     day.tradeChecks = {};
@@ -1104,7 +1229,7 @@ var App = (function () {
     if (rec.outcome === 'TP') { day.dayDoneShown = before.dayDoneShown; ui.dayDone = false; }
     day.tradeChecks = before.tradeChecks;
     day.entered = before.entered;
-    day.undone.push({ outcome: rec.outcome, n: rec.n, loggedAt: rec.at, undoneAt: new Date().toISOString(), cooldownCancelled: cancelled });
+    day.undone.push({ outcome: rec.outcome, n: rec.n, loggedAt: rec.at, undoneAt: new Date().toISOString(), cooldownCancelled: cancelled, id: uid(), kind: 'trade', device: devId() });
     saveNow();
     ui.tab = 'trade';
     try { sessionStorage.setItem('checkpoint.tab', 'trade'); } catch (e) { /* ignore */ }
@@ -1114,7 +1239,7 @@ var App = (function () {
 
   /* ==== VIEW: cooldown ==== */
   var RING_C = 2 * Math.PI * 88;
-  function startCooldown(presetId, trigger) {
+  function startCooldown(presetId, trigger, opts) {
     var p = findPreset(presetId);
     if (!p) { toast('That preset no longer exists. Check Settings · Preset links.'); return; }
     function go() {
@@ -1136,7 +1261,7 @@ var App = (function () {
       window.scrollTo(0, 0);
     }
     var cur = state.activeCooldown;
-    if (cur && !cur.finished && cur.endsAt > Date.now()) {
+    if (!(opts && opts.force) && cur && !cur.finished && cur.endsAt > Date.now()) {
       confirmModal('Replace the running cooldown?', cur.name + ' has ' + fmtMS((cur.endsAt - Date.now()) / 1000) + ' left. It will be recorded as ended early.', 'Replace', go, 'lock-o');
     } else go();
   }
@@ -1144,7 +1269,8 @@ var App = (function () {
     getDay(todayKey()).cooldowns.push({
       presetId: ac.presetId, startedAt: new Date(ac.startedAt).toISOString(),
       endedAt: new Date(endedEarly ? Date.now() : Math.min(Date.now(), ac.endsAt)).toISOString(),
-      endedEarly: !!endedEarly, trigger: ac.trigger
+      endedEarly: !!endedEarly, trigger: ac.trigger,
+      id: uid(), device: devId()
     });
   }
   function finishCooldownIfDue() {
@@ -1272,6 +1398,7 @@ var App = (function () {
       HOLD_FIELDS.map(function (x) {
         return '<div class="field"><div class="inline"><label for="h-' + x[0] + '">' + x[1] + '</label><input id="h-' + x[0] + '" class="num-sm" type="number" inputmode="numeric" min="1" max="60" step="1" value="' + esc(b[x[0]]) + '" data-change="hold-num" data-key="' + x[0] + '"></div>' + pendingRow('behaviour.' + x[0]) + '</div>';
       }).join('') + '</div>';
+    out += checkinSettings();
     // 6. General
     var dayOrder = [[1, 'M'], [2, 'T'], [3, 'W'], [4, 'T'], [5, 'F'], [6, 'S'], [0, 'S']];
     out += '<div class="sec-title">General</div><div class="card">' +
@@ -1537,6 +1664,317 @@ var App = (function () {
     moveEntry(d.kind, d.id, listId, index);
   }
 
+  /* ==== CHECK-INS ==== */
+  // A check-in is due from its time for CHECKIN_WINDOW_MIN minutes on an active trading day, until answered.
+  // Only the latest due one shows. Days closed with Red/Green Day show none.
+  var CHECKIN_WINDOW_MIN = 60;
+  var ANSWERS = {
+    good: { label: 'Doing good' },
+    notGood: { label: 'Not good', link: 'notGood', trigger: 'notGood' },
+    redDay: { label: 'Red Day', link: 'redDay', trigger: 'redDay', close: 'red' },
+    greenDay: { label: 'Green Day', link: 'greenDay', trigger: 'greenDay', close: 'green' }
+  };
+  function checkinTimes() {
+    var reset = hmToMin(state.settings.resetHour);
+    return state.settings.checkins.times.filter(function (t) { return /^\d{2}:\d{2}/.test(t.time || ''); })
+      .slice().sort(function (a, b) { return relMin(hmToMin(a.time), reset) - relMin(hmToMin(b.time), reset); });
+  }
+  function checkinsActive() { return !!(device && device.checkinsHere); }
+  // Pure: which scheduled check-in is due at `now` for this day record (or null).
+  function dueCheckinFor(times, day, now, resetHour) {
+    if (day && day.dayClosed) return null;
+    var reset = hmToMin(resetHour);
+    var n = relMin(minOfDay(now), reset);
+    var cand = null;
+    times.forEach(function (t) {
+      var m = relMin(hmToMin(t.time), reset);
+      if (m <= n && n - m < CHECKIN_WINDOW_MIN) cand = t;
+    });
+    if (!cand) return null;
+    var answered = (day && day.checkins || []).some(function (r) { return r.checkinId === cand.id; });
+    return answered ? null : cand;
+  }
+  function nextCheckinFor(times, day, now, resetHour) {
+    var reset = hmToMin(resetHour);
+    var n = relMin(minOfDay(now), reset);
+    var done = (day && day.checkins || []).map(function (r) { return r.checkinId; });
+    return times.filter(function (t) { return relMin(hmToMin(t.time), reset) > n && done.indexOf(t.id) < 0; })[0] || null;
+  }
+  // What the check-in UI should show now: { ci, manual } or null.
+  function currentCheckin(now) {
+    now = now || new Date();
+    var key = todayKey(now);
+    var day = state.days[key];
+    if (ui.manualCheckin && ui.manualCheckin === key && !(day && day.dayClosed)) return { ci: null, manual: true };
+    if (!checkinsActive() || !isActiveDay(key)) return null;
+    var ci = dueCheckinFor(checkinTimes(), day, now, state.settings.resetHour);
+    return ci ? { ci: ci, manual: false } : null;
+  }
+  function checkinLabel(cur) { return cur.manual ? 'CHECK-IN' : cur.ci.time + ' CHECK-IN'; }
+  function checkinAnswers() {
+    return '<div class="ci-answers">' +
+      '<button type="button" class="a-good" data-act="ci-answer" data-a="good">Doing good</button>' +
+      '<button type="button" class="a-notgood" data-act="ci-answer" data-a="notGood">Not good</button>' +
+      '<button type="button" class="a-done" data-act="ci-answer" data-a="redDay">Done · Red Day</button>' +
+      '<button type="button" class="a-done" data-act="ci-answer" data-a="greenDay">Done · Green Day</button></div>';
+  }
+  function checkinInner(cur) {
+    var c = state.settings.checkins;
+    return '<span class="ci-label">' + esc(checkinLabel(cur)) + '</span>' +
+      (cur.ci && cur.ci.text ? '<p class="ci-text">' + esc(cur.ci.text) + '</p>' : '') +
+      '<span class="ci-q">' + esc(c.question) + '</span>' + checkinAnswers() +
+      '<span class="ci-foot">' + (cur.manual ? '<button type="button" class="textbtn" style="min-height:36px;padding:0" data-act="ci-cancel">Cancel</button>' : 'Stays lit until you answer.') + '</span>';
+  }
+  // The check-in card at the top of the Trade tab (main window).
+  function checkinCard() {
+    var cur = currentCheckin();
+    return cur ? '<section class="ci-card" role="alert">' + checkinInner(cur) + '</section>' : '';
+  }
+  // A one-line banner on the other tabs.
+  function checkinBanner() {
+    var cur = currentCheckin();
+    if (!cur || ui.tab === 'trade') return '';
+    return '<div class="ci-banner" role="alert"><span>' + esc(checkinLabel(cur)) + ' · ' + esc(state.settings.checkins.question) + '</span>' +
+      '<button type="button" class="btn accent-o" data-act="go-tab" data-tab="trade">ANSWER</button></div>';
+  }
+  function answerCheckin(answer) {
+    var a = ANSWERS[answer];
+    var cur = currentCheckin();
+    if (!a || !cur) return;
+    var key = todayKey();
+    var day = getDay(key);
+    var before = { dayClosed: day.dayClosed || null };
+    var rec = {
+      id: uid(), checkinId: cur.ci ? cur.ci.id : null, time: cur.ci ? cur.ci.time : fmtClock(new Date()),
+      answer: answer, manual: !!cur.manual, at: new Date().toISOString(), device: devId()
+    };
+    day.checkins.push(rec);
+    ui.manualCheckin = null;
+    if (a.close) day.dayClosed = a.close;
+    if (answer === 'good') ui.pipFlash = { msg: state.settings.checkins.goodMsg, until: Date.now() + 5000 };
+    saveNow();
+    undoOffer(a.label + ' logged', function () { undoCheckin(key, rec, before); });
+    if (a.link) startCooldown(state.settings.presetLinks[a.link], a.trigger, { force: true });
+    else { toast(state.settings.checkins.goodMsg); render(); }
+  }
+  function undoCheckin(key, rec, before) {
+    if (!state.days[key]) return;
+    var day = getDay(key);
+    var i = day.checkins.indexOf(rec);
+    if (i < 0 || Date.now() - Date.parse(rec.at) > UNDO_MS + 2000) { toast('Too late to undo'); return; }
+    day.checkins.splice(i, 1);
+    var trig = ANSWERS[rec.answer] && ANSWERS[rec.answer].trigger;
+    var ac = state.activeCooldown;
+    var cancelled = false;
+    if (trig && ac && ac.trigger === trig && ac.startedAt >= Date.parse(rec.at)) {
+      state.activeCooldown = null;
+      releaseWakeLock();
+      cancelled = true;
+    }
+    day.dayClosed = before.dayClosed;
+    day.undone.push({ id: uid(), kind: 'checkin', answer: rec.answer, loggedAt: rec.at, undoneAt: new Date().toISOString(), cooldownCancelled: cancelled, device: devId() });
+    if (rec.manual) ui.manualCheckin = key;
+    ui.pipUndo = null;
+    ui.pipFlash = null;
+    saveNow();
+    ui.tab = 'trade';
+    try { sessionStorage.setItem('checkpoint.tab', 'trade'); } catch (e) { /* ignore */ }
+    render();
+    toast('Undone · ' + ANSWERS[rec.answer].label + ' removed' + (cancelled ? ' · cooldown cancelled' : ''));
+  }
+  // Undo offer shown both as a toast (main window) and as a bar in the floating window.
+  function undoOffer(msg, fn) {
+    var done = false;
+    function once() { if (done) return; done = true; ui.pipUndo = null; fn(); }
+    ui.pipUndo = { msg: msg, fn: once, until: Date.now() + UNDO_MS };
+    toast(msg, { label: 'UNDO', fn: once }, UNDO_MS);
+  }
+  // Called every tick: chime once when a check-in becomes due, re-render when it appears or goes.
+  function checkinTick() {
+    var cur = currentCheckin();
+    var sig = cur ? todayKey() + '|' + (cur.ci ? cur.ci.id : 'manual') : '';
+    if (sig === ui.ciSig) return;
+    var fresh = sig && cur.ci && !ui.ciRung[sig];
+    ui.ciSig = sig;
+    if (fresh) { ui.ciRung[sig] = true; chime(); vibrate([200, 100, 200]); }
+    if (!ui.holding && !drag && ui.tab !== 'settings') render(); else pipRender();
+  }
+
+  /* ==== FLOAT: floating window ==== */
+  // Chrome/Edge Document Picture-in-Picture: a small always-on-top window, same app, same data.
+  var pip = { win: null, sig: '' };
+  function floatButton() {
+    if (!pipSupported()) return '';
+    return pip.win ? '<button type="button" class="btn block" disabled>FLOATING WINDOW OPEN</button>'
+      : '<button type="button" class="btn accent-o block" data-act="pip-open">OPEN FLOATING WINDOW</button>';
+  }
+  function openPip() {
+    if (pip.win) return;
+    if (!pipSupported()) { toast('The floating window needs Chrome or Edge on a computer.'); return; }
+    unlockAudio();
+    window.documentPictureInPicture.requestWindow({ width: 340, height: 460 }).then(attachPip)
+      .catch(function () { toast('Could not open the floating window.'); });
+  }
+  function attachPip(w) {
+    pip.win = w;
+    pip.sig = '';
+    var d = w.document;
+    d.title = 'Checkpoint';
+    var font = document.querySelector('link[href*="fonts.googleapis.com/css2"]');
+    if (font) { var l = d.createElement('link'); l.rel = 'stylesheet'; l.href = font.href; d.head.appendChild(l); }
+    var st = d.createElement('style');
+    st.textContent = document.querySelector('style').textContent;
+    d.head.appendChild(st);
+    d.body.className = 'pipwin';
+    d.body.innerHTML = '<div id="pip-root"></div>';
+    d.body.addEventListener('click', function (e) {
+      var el = e.target.closest('[data-act]');
+      if (!el || el.disabled) return;
+      var fn = ACTIONS[el.getAttribute('data-act')];
+      if (fn) fn(el, e);
+    });
+    d.addEventListener('pointerdown', unlockAudio, { passive: true });
+    w.addEventListener('pagehide', function () { pip.win = null; render(); });
+    // The floating window stays visible over TradingView, so its timer keeps running when the main window is covered.
+    w.setInterval(tick, 250);
+    applyAccent();
+    pipRender(true);
+    render();
+  }
+  function pipMode() {
+    var now = new Date();
+    var c = tradeCtx(now);
+    var ac = state.activeCooldown;
+    if (ui.pipFlash && ui.pipFlash.until > Date.now()) return 'flash';
+    if (ac) return 'cooldown';
+    if (currentCheckin(now)) return 'checkin';
+    if (c.dayClosed || (c.active && c.phase === 'after')) return 'over';
+    return 'main';
+  }
+  function sessionFill(now) {
+    var s = state.settings;
+    var reset = hmToMin(s.resetHour);
+    var n = relMin(minOfDay(now), reset), a = relMin(hmToMin(s.session.start), reset), b = relMin(hmToMin(s.session.end), reset);
+    if (b <= a) return 0;
+    return Math.max(0, Math.min(1, (n - a) / (b - a)));
+  }
+  var PR = 2 * Math.PI * 48;
+  function pipView(mode) {
+    var now = new Date();
+    var c = tradeCtx(now);
+    var s = state.settings;
+    var cls = mode === 'checkin' ? ' lit' : (mode === 'cooldown' ? ' cool' : '');
+    var out = '<div class="pw' + cls + '"><div class="pw-head"><span class="dot"></span><b>CHECKPOINT</b><span>ALWAYS ON TOP</span></div>';
+    if (ui.pipUndo && ui.pipUndo.until > Date.now()) out += '<div class="pw-undo"><span>' + esc(ui.pipUndo.msg) + '</span><button type="button" data-act="pip-undo">UNDO</button></div>';
+    out += '<div class="pw-body">';
+    if (mode === 'flash') {
+      out += '<span class="ci-label">DOING GOOD</span><p class="msg" style="margin:0">' + esc(ui.pipFlash.msg) + '</p>';
+    } else if (mode === 'cooldown') {
+      var ac = state.activeCooldown;
+      var left = Math.max(0, (ac.endsAt - Date.now()) / 1000);
+      var fin = ac.finished || left <= 0;
+      var trigTxt = { notGood: 'NOT GOOD → ', redDay: 'RED DAY → ', greenDay: 'GREEN DAY → ', sl: 'SL → ', urge: 'URGE → ' }[ac.trigger] || '';
+      out += '<span class="ci-label" style="color:' + (fin ? 'var(--accent)' : 'var(--lock)') + '">' + esc(trigTxt + ac.name) + (fin ? ' · DONE' : '') + '</span>' +
+        '<p class="ci-text">' + esc(fin ? ac.endMsg : ac.startMsg) + '</p>' +
+        '<div class="pw-ring"><div class="rw"><svg viewBox="0 0 110 110" aria-hidden="true"><circle cx="55" cy="55" r="48" fill="none" stroke="var(--line-soft)" stroke-width="7"/>' +
+        '<circle data-pcd-ring cx="55" cy="55" r="48" fill="none" stroke="' + (fin ? 'var(--accent)' : 'var(--lock)') + '" stroke-width="7" stroke-linecap="round" stroke-dasharray="' + PR.toFixed(2) + '" stroke-dashoffset="' + (fin ? 0 : PR * (1 - (ac.seconds ? left / ac.seconds : 0))).toFixed(2) + '"/></svg>' +
+        '<span class="t" data-pcd-left>' + (fin ? '0:00' : fmtMS(left)) + '</span></div>' +
+        '<div class="pw-steps">' + ac.steps.map(function (st) {
+          return '<button type="button" data-act="cd-step" data-id="' + esc(st.id) + '" aria-pressed="' + !!ac.stepsDone[st.id] + '">' + esc(st.text) + '</button>';
+        }).join('') + '</div></div>';
+      if (fin) out += '<button type="button" class="btn primary block" data-act="cd-done">DONE</button>';
+      else {
+        out += '<div class="pw-note">Trade checklist locked until the timer ends</div>';
+        var hs = s.behaviour.endEarlyHoldSec;
+        out += '<button type="button" class="btn block hold" style="color:var(--muted)" data-hold="endEarly" data-sec="' + hs + '" aria-label="Hold ' + hs + ' seconds to end early"><span class="hold-label">HOLD ' + hs + 'S TO END EARLY</span></button>';
+      }
+    } else if (mode === 'checkin') {
+      out += checkinInner(currentCheckin(now));
+    } else if (mode === 'over') {
+      var lbl = c.dayClosed && !(c.active && c.phase === 'after') ? (c.dayClosed === 'red' ? 'RED DAY · DONE' : 'GREEN DAY · DONE') : 'SESSION OVER · ' + s.session.end;
+      out += '<span class="ci-label" style="color:var(--lock)">' + esc(lbl) + '</span><span class="ci-q">Session over.</span><p class="ci-text">' + esc(s.sessionOverMsg) + '</p><div class="stack">';
+      state.checklists.sessionOver.categories.forEach(function (cat) {
+        cat.items.forEach(function (it) {
+          var on = !!c.day.sessionOver.checked[it.id];
+          out += '<button type="button" class="item" data-act="so-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '">' + cbx(on) + '<span class="txt"><b>' + esc(it.text) + '</b></span></button>';
+        });
+      });
+      out += '</div>';
+    } else {
+      var si = sessionInfo(now);
+      var cap = s.rules.tradeCap;
+      var n = Math.min(c.day.trades.length + 1, Math.max(cap, 1));
+      var nx = checkinsActive() && c.active ? nextCheckinFor(checkinTimes(), c.day, now, s.resetHour) : null;
+      var side = (c.capReached && s.behaviour.lockAtCap ? 'Cap reached' : 'No cooldown') + '<br>' +
+        (!checkinsActive() ? 'Check-ins off' : (nx ? 'Next check-in ' + esc(nx.time) : 'No more check-ins today'));
+      out += '<div class="pw-sess"><div class="top"><span>SESSION</span><b data-pw-left>' + esc(si.right) + '</b></div><div class="track"><i data-pw-fill style="width:' + Math.round(sessionFill(now) * 100) + '%"></i></div></div>' +
+        '<div class="pw-count"><div><span class="eyebrow" style="font-size:10px">TRADE</span><div class="n">' + pad2(n) + '<span>/' + pad2(cap) + '</span></div></div><span class="side">' + side + '</span></div>' +
+        '<button type="button" class="btn accent-o block" data-act="ci-now">CHECK IN NOW</button>' +
+        holdBtn('urge', s.behaviour.urgeHoldSec, 'urge', 'HOLD ' + s.behaviour.urgeHoldSec + 'S · URGE', ' aria-label="Hold ' + s.behaviour.urgeHoldSec + ' seconds: I feel the urge"');
+    }
+    return out + '</div></div>';
+  }
+  function pipSig(mode) {
+    var now = new Date();
+    var c = tradeCtx(now);
+    var ac = state.activeCooldown;
+    var cur = currentCheckin(now);
+    return JSON.stringify([mode, state.settings.accent, c.day.trades.length, state.settings.rules.tradeCap, c.capReached, c.dayClosed, c.phase, c.active,
+      ac ? [ac.startedAt, ac.finished || ac.endsAt <= Date.now(), ac.stepsDone] : 0, cur ? (cur.ci ? cur.ci.id : 'm') : 0,
+      c.day.sessionOver.checked, !!(ui.pipUndo && ui.pipUndo.until > Date.now()), checkinsActive(),
+      (nextCheckinFor(checkinTimes(), c.day, now, state.settings.resetHour) || {}).id || '', sessionInfo(now).phase]);
+  }
+  function pipRender(force) {
+    if (!pip.win || !state) return;
+    var root = pip.win.document.getElementById('pip-root');
+    if (!root) return;
+    if (ui.holding && !force) return;
+    var mode = pipMode();
+    var sig = pipSig(mode);
+    if (!force && sig === pip.sig) { pipTickDom(); return; }
+    pip.sig = sig;
+    root.innerHTML = pipView(mode);
+    bindHolds(root);
+  }
+  function pipTickDom() {
+    if (!pip.win) return;
+    var d = pip.win.document, now = new Date();
+    var l = d.querySelector('[data-pw-left]');
+    if (l) l.textContent = sessionInfo(now).right;
+    var f = d.querySelector('[data-pw-fill]');
+    if (f) f.style.width = Math.round(sessionFill(now) * 100) + '%';
+    var ac = state.activeCooldown;
+    if (ac && !ac.finished) {
+      var left = Math.max(0, (ac.endsAt - Date.now()) / 1000);
+      var t = d.querySelector('[data-pcd-left]');
+      if (t) t.textContent = fmtMS(left);
+      var r = d.querySelector('[data-pcd-ring]');
+      if (r) r.setAttribute('stroke-dashoffset', (PR * (1 - (ac.seconds ? left / ac.seconds : 0))).toFixed(2));
+    }
+  }
+
+  /* ==== VIEW: check-in settings ==== */
+  function checkinSettings() {
+    var ck = state.settings.checkins;
+    var out = '<div class="sec-title">Check-ins (floating window)</div><div class="card">' +
+      '<div class="field">' + sw(device && device.checkinsHere, 'dev-checkins', 'checkinsHere', 'Check-ins on this device') +
+      '<span class="hint">Chime + glow at each time below, in the floating window and on the Trade tab. Only on trading days.</span></div>';
+    checkinTimes().forEach(function (t) {
+      out += '<div class="ci-row"><input type="time" class="ci-time" aria-label="Check-in time" value="' + esc(t.time) + '" data-change="ci-time" data-id="' + esc(t.id) + '">' +
+        '<textarea aria-label="Check-in message" data-change="ci-text" data-id="' + esc(t.id) + '">' + esc(t.text) + '</textarea>' +
+        '<button type="button" class="icon-btn" aria-label="Delete check-in at ' + esc(t.time) + '" data-act="ci-del" data-id="' + esc(t.id) + '">✕</button></div>';
+    });
+    out += '<button type="button" class="add-btn" data-act="ci-add">+ ADD CHECK-IN</button>' +
+      '<span class="hint" style="display:block;margin-top:6px">After 1 Nov (US DST ends), move these one hour later too.</span>' +
+      '<div class="field"><label for="f-ciq">Question</label><input id="f-ciq" type="text" value="' + esc(ck.question) + '" data-change="text-setting" data-path="settings.checkins.question"></div>' +
+      '<div class="field"><label for="f-cig">"Doing good" message</label><input id="f-cig" type="text" value="' + esc(ck.goodMsg) + '" data-change="text-setting" data-path="settings.checkins.goodMsg"></div>' +
+      '<div class="field"><label for="f-dev">This device</label><input id="f-dev" type="text" value="' + esc(device ? device.name : '') + '" data-change="dev-name">' +
+      '<span class="hint">A label for records made here (for sync later), e.g. desktop or phone.</span></div>' +
+      (pipSupported() ? '<div class="field">' + floatButton() + '</div>' : '<div class="field"><span class="hint">The floating window needs Chrome or Edge on a computer.</span></div>') +
+      '</div>';
+    return out;
+  }
+
   /* ==== HOLD: press-and-hold buttons ==== */
   function bindHolds(root) { $$('[data-hold]', root).forEach(bindHold); }
   function bindHold(btn) {
@@ -1544,6 +1982,8 @@ var App = (function () {
     var label = btn.querySelector('.hold-label');
     var base = label ? label.textContent : '';
     var start = 0, raf = 0, fired = false;
+    // Use the button's own window: the floating window keeps animating while the main window is covered.
+    var W = (btn.ownerDocument && btn.ownerDocument.defaultView) || window;
     function frame() {
       var p = Math.min(1, (performance.now() - start) / (sec * 1000));
       btn.style.setProperty('--fill', p);
@@ -1554,7 +1994,7 @@ var App = (function () {
         onHoldComplete(btn.getAttribute('data-hold'));
         return;
       }
-      raf = requestAnimationFrame(frame);
+      raf = W.requestAnimationFrame(frame);
     }
     function down(e) {
       if (btn.disabled || start) return;
@@ -1564,11 +2004,11 @@ var App = (function () {
       fired = false;
       start = performance.now();
       ui.holding = true;
-      raf = requestAnimationFrame(frame);
+      raf = W.requestAnimationFrame(frame);
     }
     function stop() {
       if (!start) return;
-      cancelAnimationFrame(raf);
+      W.cancelAnimationFrame(raf);
       start = 0;
       ui.holding = false;
       if (!fired) {
@@ -1593,7 +2033,7 @@ var App = (function () {
       save();
       render();
     } else if (kind === 'urge') {
-      getDay(key).urges.push(new Date().toISOString());
+      getDay(key).urges.push({ id: uid(), at: new Date().toISOString(), device: devId() });
       vibrate(60);
       save();
       startCooldown(state.settings.presetLinks.urge, 'urge');
@@ -1882,6 +2322,26 @@ var App = (function () {
     },
     'not-good': function () { startCooldown(state.settings.presetLinks.notGood, 'notGood'); },
     'cd-select': function (el) { ui.cdSelected = el.getAttribute('data-id'); render(); },
+    // check-ins + floating window
+    'ci-answer': function (el) { answerCheckin(el.getAttribute('data-a')); },
+    'ci-now': function () { ui.manualCheckin = todayKey(); render(); },
+    'ci-cancel': function () { ui.manualCheckin = null; render(); },
+    'pip-open': function () { openPip(); },
+    'pip-undo': function () { if (ui.pipUndo) ui.pipUndo.fn(); },
+    'dev-checkins': function () { device.checkinsHere = !device.checkinsHere; saveDevice(); render(); flashSaved(); },
+    'ci-add': function () {
+      state.settings.checkins.times.push({ id: uid(), time: '21:00', text: '' });
+      save();
+      render();
+      flashSaved();
+    },
+    'ci-del': function (el) {
+      var id = el.getAttribute('data-id');
+      state.settings.checkins.times = state.settings.checkins.times.filter(function (t) { return t.id !== id; });
+      save();
+      render();
+      flashSaved();
+    },
     'cd-start': function (el) { startCooldown(el.getAttribute('data-id'), 'manual'); },
     'cd-step': function (el) {
       var ac = state.activeCooldown, id = el.getAttribute('data-id');
@@ -1897,6 +2357,8 @@ var App = (function () {
       state.activeCooldown = null;
       releaseWakeLock();
       saveNow();
+      // A check-in answered Done · Red/Green Day: after its cooldown, show the session-over checklist.
+      if ((ac.trigger === 'redDay' || ac.trigger === 'greenDay') && getDay(todayKey()).dayClosed) { setTab('trade'); return; }
       render();
     },
     // settings
@@ -2078,6 +2540,19 @@ var App = (function () {
       render();
     },
     'text-setting': function (el) { setPath(state, el.getAttribute('data-path'), el.value); save(); flashSaved(); },
+    'ci-time': function (el) {
+      var t = state.settings.checkins.times.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+      if (!t || !/^\d{2}:\d{2}/.test(el.value)) { render(); return; }
+      t.time = el.value.slice(0, 5);
+      save();
+      render();
+      flashSaved();
+    },
+    'ci-text': function (el) {
+      var t = state.settings.checkins.times.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+      if (t) { t.text = el.value; save(); flashSaved(); }
+    },
+    'dev-name': function (el) { device.name = el.value.trim() || defaultDeviceName(); saveDevice(); flashSaved(); },
     'link': function (el) {
       var k = el.getAttribute('data-link');
       var from = findPreset(state.settings.presetLinks[k]), to = findPreset(el.value);
@@ -2228,6 +2703,8 @@ var App = (function () {
   function tick() {
     if (finishCooldownIfDue()) { if (!ui.holding) render(); return; }
     tickCooldownDom();
+    checkinTick();
+    pipRender();
     var t = Date.now();
     if (t - lastSlow >= 20000) {
       lastSlow = t;
@@ -2236,7 +2713,9 @@ var App = (function () {
     }
   }
   function init() {
+    loadDevice();
     load();
+    initStamps();
     applyDuePending();
     applyAccent();
     bindEvents();
@@ -2262,6 +2741,11 @@ var App = (function () {
     isLoosening: isLoosening,
     mergeImport: mergeImport,
     checkpointKeys: checkpointKeys,
+    dueCheckinFor: dueCheckinFor,
+    nextCheckinFor: nextCheckinFor,
+    migrateDayRecords: migrateDayRecords,
+    attachPip: attachPip,
+    get device() { return device; },
     escapeHTML: escapeHTML,
     fillMissing: fillMissing,
     get state() { return state; },

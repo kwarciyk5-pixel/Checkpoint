@@ -145,4 +145,33 @@ test('patch 1: erase touches only Checkpoint keys', () => {
   assert.deepStrictEqual(Array.from(App.checkpointKeys(keys)), ['checkpoint.v1', 'checkpoint.v1.corrupt-1727700000000']);
 });
 
+test('v1.1: check-in due from its time for 60 min, until answered', () => {
+  const times = [{ id: 'a', time: '20:45' }, { id: 'b', time: '21:10' }, { id: 'c', time: '21:30' }];
+  const at = (h, m) => new Date(2026, 9, 1, h, m);
+  const due = (day, h, m) => { const r = App.dueCheckinFor(times, day, at(h, m), '06:00'); return r ? r.id : null; };
+  assert.strictEqual(due(null, 20, 44), null);
+  assert.strictEqual(due(null, 20, 45), 'a');
+  assert.strictEqual(due(null, 21, 9), 'a');
+  assert.strictEqual(due(null, 21, 12), 'b', 'only the latest due one shows');
+  assert.strictEqual(due({ checkins: [{ checkinId: 'b' }] }, 21, 12), null, 'answered');
+  assert.strictEqual(due(null, 22, 31), null, 'expires after 60 min');
+  assert.strictEqual(due({ dayClosed: 'red', checkins: [] }, 21, 31), null, 'none after Red/Green Day');
+  const nx = App.nextCheckinFor(times, { checkins: [] }, at(20, 50), '06:00');
+  assert.strictEqual(nx.id, 'b');
+  assert.strictEqual(App.nextCheckinFor(times, { checkins: [] }, at(21, 35), '06:00'), null);
+});
+
+test('v1.1: defaults have 3 check-ins, a meta stamp map and new day fields', () => {
+  assert.deepStrictEqual(d.settings.checkins.times.map(t => t.time), ['20:45', '21:10', '21:30']);
+  assert.ok(d.settings.checkins.times.every(t => t.id && t.text));
+  assert.deepStrictEqual(d.meta, { updatedAt: {} });
+});
+
+test('v1.1: old records migrate (string urges -> records, ids added)', () => {
+  const day = { urges: ['2026-09-30T13:00:00.000Z'], trades: [{ n: 1, outcome: 'SL' }], cooldowns: [{ presetId: 'x' }] };
+  App.migrateDayRecords(day);
+  assert.strictEqual(day.urges[0].at, '2026-09-30T13:00:00.000Z');
+  assert.ok(day.urges[0].id && day.trades[0].id && day.cooldowns[0].id);
+});
+
 console.log('\n' + passed + ' tests passed');
