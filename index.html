@@ -264,6 +264,8 @@ body.pipwin{min-height:100vh;background:var(--bg)}
 .pw-undo{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line-soft);background:var(--surface);padding:4px 4px 4px 14px;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--text-2)}
 .pw-undo button{min-height:44px;padding:0 12px;color:var(--accent);font-family:var(--f-mono);font-size:12px;letter-spacing:.1em}
 .pw .item{min-height:40px;padding:6px 10px}
+.pw .item .txt b{font-size:14px;line-height:1.3}
+.pw .stack{gap:6px}
 .ci-row{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line-soft)}
 .ci-row:last-of-type{border-bottom:0}
 .ci-row .ci-time{width:160px;max-width:42%;flex:none}
@@ -804,7 +806,7 @@ var App = (function () {
   var ui = {
     tab: 'premarket', editor: null, expanded: {}, dayDone: false, showAnyway: null,
     cdSelected: null, holding: false, focusAfter: null,
-    manualCheckin: null, pipFlash: null, pipUndo: null, ciSig: '', ciRung: {}
+    manualCheckin: null, pipFlash: null, pipUndo: null, ciSig: '', ciRung: {}, pipTrade: false
   };
   try {
     var savedTab = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('checkpoint.tab');
@@ -1206,7 +1208,8 @@ var App = (function () {
     day.entered = false;
     save();
     var key = c.key;
-    toast(outcome + ' logged · trade ' + pad2(day.trades.length), { label: 'UNDO', fn: function () { undoTrade(key, rec, before); } }, UNDO_MS);
+    ui.pipTrade = false;
+    undoOffer(outcome + ' logged · trade ' + pad2(day.trades.length), function () { undoTrade(key, rec, before); });
     if (outcome === 'SL' && b.slStartsCooldown) { startCooldown(c.s.presetLinks.sl, 'sl'); return; }
     if (outcome === 'TP' && b.dayDoneAfterTP) { day.dayDoneShown = true; ui.dayDone = true; save(); }
     render();
@@ -1812,7 +1815,7 @@ var App = (function () {
     if (pip.win) return;
     if (!pipSupported()) { toast('The floating window needs Chrome or Edge on a computer.'); return; }
     unlockAudio();
-    window.documentPictureInPicture.requestWindow({ width: 340, height: 460 }).then(attachPip)
+    window.documentPictureInPicture.requestWindow({ width: 340, height: 600 }).then(attachPip)
       .catch(function () { toast('Could not open the floating window.'); });
   }
   function attachPip(w) {
@@ -1847,8 +1850,10 @@ var App = (function () {
     var ac = state.activeCooldown;
     if (ui.pipFlash && ui.pipFlash.until > Date.now()) return 'flash';
     if (ac) return 'cooldown';
+    if (ui.dayDone) return 'daydone';
     if (currentCheckin(now)) return 'checkin';
     if (c.dayClosed || (c.active && c.phase === 'after')) return 'over';
+    if (ui.pipTrade && !c.day.entered && !(c.capReached && c.s.behaviour.lockAtCap)) return 'trade';
     return 'main';
   }
   function sessionFill(now) {
@@ -1890,6 +1895,25 @@ var App = (function () {
       }
     } else if (mode === 'checkin') {
       out += checkinInner(currentCheckin(now));
+    } else if (mode === 'daydone') {
+      out += '<span class="ci-label">TP LOGGED</span><span class="ci-q">Day done. The TP is the finish, not the start.</span>' +
+        '<button type="button" class="btn accent-o block" data-act="start-link" data-link="greenDay">GREEN DAY</button>' +
+        '<button type="button" class="textbtn" style="align-self:center" data-act="day-done-back">Back</button>';
+    } else if (mode === 'trade') {
+      var bh = s.behaviour;
+      out += '<div class="row between"><span class="ci-label">TRADE ' + pad2(c.day.trades.length + 1) + ' / ' + pad2(s.rules.tradeCap) + '</span>' +
+        '<span class="pips" aria-label="' + c.armed + ' of ' + c.visible.length + ' armed">' + c.visible.map(function (it) { return '<span class="pip' + (c.day.tradeChecks[it.id] ? ' on' : '') + '"></span>'; }).join('') +
+        '<span class="mono muted" style="margin-left:4px">' + c.armed + '/' + c.visible.length + '</span></span></div><div class="stack">';
+      c.visible.forEach(function (it) {
+        var on = !!c.day.tradeChecks[it.id];
+        out += '<button type="button" class="item" data-act="tr-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '">' + cbx(on) +
+          '<span class="txt"><b>' + esc(it.text) + (it.afterStopOnly ? ' <span class="tag amber">AFTER A STOP</span>' : '') + '</b></span></button>';
+      });
+      out += '</div>';
+      if (!c.allArmed) out += '<button type="button" class="enter off" disabled>' + esc(s.rules.notATradeMsg) + '</button>';
+      else out += holdBtn('enter', bh.holdToEnterSec, 'enter live', 'HOLD ' + bh.holdToEnterSec + 'S TO ENTER', ' aria-label="Hold ' + bh.holdToEnterSec + ' seconds to enter"');
+      out += '<span class="eyebrow">When the trade closes</span>' + outcomeButtons() +
+        '<button type="button" class="textbtn" style="align-self:center" data-act="pip-trade-back">Back</button>';
     } else if (mode === 'over') {
       var lbl = c.dayClosed && !(c.active && c.phase === 'after') ? (c.dayClosed === 'red' ? 'RED DAY · DONE' : 'GREEN DAY · DONE') : 'SESSION OVER · ' + s.session.end;
       out += '<span class="ci-label" style="color:var(--lock)">' + esc(lbl) + '</span><span class="ci-q">Session over.</span><p class="ci-text">' + esc(s.sessionOverMsg) + '</p><div class="stack">';
@@ -1909,10 +1933,17 @@ var App = (function () {
         (!checkinsActive() ? 'Check-ins off' : (nx ? 'Next check-in ' + esc(nx.time) : 'No more check-ins today'));
       out += '<div class="pw-sess"><div class="top"><span>SESSION</span><b data-pw-left>' + esc(si.right) + '</b></div><div class="track"><i data-pw-fill style="width:' + Math.round(sessionFill(now) * 100) + '%"></i></div></div>' +
         '<div class="pw-count"><div><span class="eyebrow" style="font-size:10px">TRADE</span><div class="n">' + pad2(n) + '<span>/' + pad2(cap) + '</span></div></div><span class="side">' + side + '</span></div>' +
+        pipTradeEntry(c) +
         '<button type="button" class="btn accent-o block" data-act="ci-now">CHECK IN NOW</button>' +
         holdBtn('urge', s.behaviour.urgeHoldSec, 'urge', 'HOLD ' + s.behaviour.urgeHoldSec + 'S · URGE', ' aria-label="Hold ' + s.behaviour.urgeHoldSec + ' seconds: I feel the urge"');
     }
     return out + '</div></div>';
+  }
+  // Main view of the floating window: IN TRADE + outcome buttons, or the button that opens the trade checklist.
+  function pipTradeEntry(c) {
+    if (c.day.entered) return '<div class="enter live" role="status" style="min-height:48px">IN TRADE</div><span class="eyebrow">When the trade closes</span>' + outcomeButtons();
+    if (c.capReached && c.s.behaviour.lockAtCap) return '';
+    return '<button type="button" class="btn primary block" data-act="pip-trade">TRADE CHECKLIST</button>';
   }
   function pipSig(mode) {
     var now = new Date();
@@ -1921,7 +1952,7 @@ var App = (function () {
     var cur = currentCheckin(now);
     return JSON.stringify([mode, state.settings.accent, c.day.trades.length, state.settings.rules.tradeCap, c.capReached, c.dayClosed, c.phase, c.active,
       ac ? [ac.startedAt, ac.finished || ac.endsAt <= Date.now(), ac.stepsDone] : 0, cur ? (cur.ci ? cur.ci.id : 'm') : 0,
-      c.day.sessionOver.checked, !!(ui.pipUndo && ui.pipUndo.until > Date.now()), checkinsActive(),
+      c.day.sessionOver.checked, c.day.tradeChecks, !!c.day.entered, !!ui.pipTrade, !!ui.dayDone, c.slToday, !!(ui.pipUndo && ui.pipUndo.until > Date.now()), checkinsActive(),
       (nextCheckinFor(checkinTimes(), c.day, now, state.settings.resetHour) || {}).id || '', sessionInfo(now).phase]);
   }
   function pipRender(force) {
@@ -2328,6 +2359,8 @@ var App = (function () {
     'ci-cancel': function () { ui.manualCheckin = null; render(); },
     'pip-open': function () { openPip(); },
     'pip-undo': function () { if (ui.pipUndo) ui.pipUndo.fn(); },
+    'pip-trade': function () { ui.pipTrade = true; render(); },
+    'pip-trade-back': function () { ui.pipTrade = false; render(); },
     'dev-checkins': function () { device.checkinsHere = !device.checkinsHere; saveDevice(); render(); flashSaved(); },
     'ci-add': function () {
       state.settings.checkins.times.push({ id: uid(), time: '21:00', text: '' });
