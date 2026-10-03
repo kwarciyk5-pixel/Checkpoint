@@ -6,14 +6,15 @@
 
 | Banner | Purpose | Key selectors |
 |---|---|---|
-| `/* ==== STYLE: tokens ==== */` | Colour/font tokens on `:root`, base element styles | `--bg`, `--accent`, `--lock`, `--info`, `.mono` |
-| `/* ==== STYLE: layout + tabs ==== */` | Page padding, bottom tab bar (phone) and left rail (≥900px) | `#view`, `.wrap`, `.tabs`, `.tab` |
+| `/* ==== STYLE: tokens ==== */` | Paper tokens on `:root` (+ `[data-theme="dim"]` overrides), legacy aliases (`--accent`→live, `--lock`→cool, `--info`→ink), base element styles | `--bg`, `--ink`, `--live`, `--cool`, `--font-serif`, `.serif`, `.mono` |
+| `/* ==== STYLE: layout + tabs ==== */` | One phone-width column everywhere, state band, bottom nav (hidden unless `body[data-nav="show"]`) | `#view`, `.wrap`, `.band`, `.tabs`, `.tab` |
 | `/* ==== STYLE: components ==== */` | Cards, buttons, pills, tags, progress bar, banner, checkbox | `.card`, `.btn`, `.pill`, `.bar`, `.banner`, `.cb` |
 | `/* ==== STYLE: premarket ==== */` | Now strip, categories, item rows, gate buttons, focus mode | `.now-strip`, `.cat-head`, `.item`, `.gate-btns`, `.focus-wrap` |
 | `/* ==== STYLE: trade ==== */` | Rules cells, session bar, counter + pips, Enter/hold buttons, outcomes, urge | `.rules`, `.session-bar`, `.pip`, `.enter`, `.hold`, `.urge` |
 | `/* ==== STYLE: cooldown ==== */` | Preset chips, ring timer, steps | `.chips`, `.chip`, `.ring-wrap`, `.step` |
 | `/* ==== STYLE: settings + editors ==== */` | Settings fields, stepper, switches, day chips, pending rows, editors, drag visuals | `.field`, `.stepper`, `.switch`, `.pending`, `.handle`, `.lifted`, `.drop-ph` |
 | `/* ==== STYLE: check-ins + floating window ==== */` | Check-in card and banner, floating-window layout (`.pw`, lit / cool states), check-in settings rows | `.ci-card`, `.ci-answers`, `.ci-banner`, `.pw`, `.pw-head`, `.pw-ring`, `.pw-undo`, `.ci-row` |
+| `/* ==== STYLE: home ==== */` | Home screen container (header · centre · actions) | `.home`, `.home-head`, `.home-mid`, `.home-foot` |
 | `/* ==== STYLE: modal + toast ==== */` | In-app modal, toasts, reduced-motion overrides | `.modal-back`, `.modal`, `.toast` |
 
 ## `<script>` (everything lives inside the single `App` namespace)
@@ -27,7 +28,7 @@
 | `/* ==== SYNC PREP: device, record ids, change stamps ==== */` | Device id/name/check-in switch (`checkpoint.v1.device`), ids + device on every record, migration of old records, `meta.updatedAt` stamps | `loadDevice`, `saveDevice`, `devId`, `pipSupported`, `migrateDayRecords`, `initStamps`, `stampChanges` |
 | `/* ==== RULES: loosening + pending ==== */` | Which changes loosen a rule, the pending queue, applying it after the reset | `LOOSEN`, `isLoosening`, `propose`, `applyOp`, `applyDuePending`, `pendingFor`, `targetValue` |
 | `/* ==== AUDIO + HAPTICS ==== */` | Web Audio chime, vibration, screen wake lock | `unlockAudio`, `chime`, `vibrate`, `requestWakeLock`, `releaseWakeLock` |
-| `/* ==== UI: shell, modal, toast ==== */` | UI state, accent, tab switching, render dispatcher, modal/toast helpers | `ui`, `applyAccent`, `setTab`, `render`, `flashSaved`, `toast`, `openModal`, `confirmModal`, `typedConfirm` |
+| `/* ==== UI: shell, modal, toast ==== */` | UI state, theme (auto/light/dim), state band + nav, tab switching, render dispatcher, modal/toast helpers | `ui`, `applyTheme`, `themeFor`, `chromeState`, `applyChrome`, `setTab`, `render`, `flashSaved`, `toast`, `openModal`, `confirmModal`, `typedConfirm` |
 | `/* ==== VIEW: premarket ==== */` | Premarket tab: progress, now strip, categories, gates, focus mode | `viewPremarket`, `pmCurrent`, `pmStats`, `pmCatFolded`, `gateButtons`, `pmAfterChange` |
 | `/* ==== VIEW: trade ==== */` | Trade tab: rules, session bar, checklist, hold to enter, outcomes, locks, session-over and day-done screens | `viewTrade`, `tradeCtx`, `viewTradeTop`, `urgeBlock`, `outcomeButtons`, `logTrade`, `undoTrade` (10s UNDO toast) |
 | `/* ==== VIEW: cooldown ==== */` | Cooldown tab, start/replace/record, finishing, per-tick DOM update | `viewCooldown`, `startCooldown`, `recordCooldown`, `finishCooldownIfDue`, `tickCooldownDom` |
@@ -48,7 +49,7 @@
 
 | File | Purpose |
 |---|---|
-| `sw.js` | Service worker. Cache `checkpoint-v3` (on activate it deletes only old `checkpoint-*` caches, never other apps' caches on the same site): network-first for the page, cache-first for icons/manifest, runtime cache for Google Fonts |
+| `sw.js` | Service worker. Cache `checkpoint-v4` (on activate it deletes only old `checkpoint-*` caches, never other apps' caches on the same site): network-first for the page, cache-first for icons/manifest, runtime cache for Google Fonts |
 | `manifest.webmanifest` | PWA manifest (relative paths, works under `/Checkpoint/`) |
 | `icons/` | App icons. Regenerate with `python3 tests/make_icons.py` (needs Pillow) |
-| `tests/` | `static_checks.py` (syntax + smart quotes), `unit.test.js` (data, day key, loosening, merge), `browser.test.js` (Playwright smoke test + screenshots), `patch1.test.js` (undo, session guards, reset-hour pending, clear history, erase all), `v11.test.js` (floating window, check-ins, answers + undo, Red Day routing, sync-ready records) |
+| `tests/` | `static_checks.py` (syntax + smart quotes), `unit.test.js` (data, day key, loosening, merge), `browser.test.js` (Playwright smoke test + screenshots), `patch1.test.js` (undo, session guards, reset-hour pending, clear history, erase all), `v11.test.js` (floating window, check-ins, answers + undo, Red Day routing, sync-ready records), `paper.test.js` (Part A: tokens, auto/light/dim, band, nav; `FONT_DIR` serves fonts locally for screenshots) |
