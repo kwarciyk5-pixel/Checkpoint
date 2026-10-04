@@ -45,15 +45,16 @@ const at = (d, h, m, s) => new Date(2026, 9, d, h, m, s || 0); // Oct 2026 (1 = 
   assert.strictEqual(await page.locator('[data-act="pip-open"]').count(), 1, 'Trade tab offers OPEN FLOATING WINDOW');
   const [pw] = await Promise.all([
     ctx.waitForEvent('page'),
-    st(() => { const w = window.open('', 'cp-float', 'width=340,height=460'); App.attachPip(w); })
+    st(() => { const w = window.open('', 'cp-float', 'width=360,height=640'); App.attachPip(w); })
   ]);
-  await pw.setViewportSize({ width: 340, height: 460 });
+  await pw.setViewportSize({ width: 360, height: 640 }); // v2 Part G: spec §9 size
   await page.clock.runFor(600);
   const pipText = () => pw.locator('#pip-root').innerText();
   let t = await pipText();
-  assert.ok(/TRADE\s*01\/02/.test(t), 'pip shows trade count: ' + t);
+  // v2 Part G: the floating window shows the home screen (Waiting here) plus a thin check-in line.
+  assert.strictEqual(await pw.locator('.pw-home .home[data-hs="waiting"]').count(), 1, 'pip shows the home screen');
+  assert.ok(/trade 0 of 2/i.test(t), 'pip shows trade count: ' + t);
   assert.ok(t.includes('Next check-in 20:45'), 'next check-in shown');
-  assert.ok(t.includes('MIN LEFT'), 'session time left');
   assert.ok(await page.locator('button', { hasText: 'FLOATING WINDOW OPEN' }).isVisible());
   await pw.screenshot({ path: path.join(OUT, 'v11-pip-main.png') });
 
@@ -106,22 +107,21 @@ const at = (d, h, m, s) => new Date(2026, 9, d, h, m, s || 0); // Oct 2026 (1 = 
   assert.ok((await pipText()).includes('DONE'), 'cooldown finished in pip');
   await pw.locator('[data-act="cd-done"]').click();
   await page.clock.runFor(300);
-  assert.ok(/TRADE/.test(await pipText()), 'back to the main pip view');
+  assert.ok(/trade 0 of 2/i.test(await pipText()), 'back to the home screen in the pip');
 
-  // ---- Urge hold inside the pip
-  await pw.locator('[data-hold="urge"]').evaluate(el => el.scrollIntoView());
-  const ub = await pw.locator('[data-hold="urge"]').boundingBox();
+  // ---- Urge hold inside the pip (v2: "felt the urge, didn't act" logs it, no cooldown)
+  await pw.locator('[data-hold="urgeNote"]').evaluate(el => el.scrollIntoView());
+  const ub = await pw.locator('[data-hold="urgeNote"]').boundingBox();
   await pw.mouse.move(ub.x + ub.width / 2, ub.y + ub.height / 2);
   await pw.mouse.down();
   await page.clock.runFor(3200);
   await pw.mouse.up();
   await page.clock.runFor(200);
-  assert.strictEqual(await st(() => App.state.activeCooldown && App.state.activeCooldown.trigger), 'urge', 'urge hold works in the pip');
+  assert.strictEqual(await st(() => App.state.activeCooldown), null, 'urge note starts no cooldown');
   d1 = await day('2026-10-01');
   assert.strictEqual(typeof d1.urges[0], 'object');
-  assert.ok(d1.urges[0].id && d1.urges[0].device === dev.id);
-  await page.clock.runFor(91000);
-  await pw.locator('[data-act="cd-done"]').click();
+  assert.ok(d1.urges[0].id && d1.urges[0].device === dev.id, 'urge hold works in the pip');
+  assert.ok(/1 urge resisted/.test(await pipText()));
 
   // ---- Manual check-in -> Done · Red Day -> Red Day cooldown -> session-over checklist
   await pw.locator('[data-act="ci-now"]').click();
@@ -134,7 +134,9 @@ const at = (d, h, m, s) => new Date(2026, 9, d, h, m, s || 0); // Oct 2026 (1 = 
   await pw.locator('[data-act="cd-done"]').click();
   await page.clock.runFor(300);
   t = await pipText();
-  assert.ok(t.includes('RED DAY · DONE') && t.includes('Session over.'), 'session-over checklist after Red Day: ' + t);
+  // v2 Part G: home Done (dark, with the close-out ticks) replaces the v1 session-over view in the pip.
+  assert.ok(t.includes('Day closed.'), 'Done after Red Day: ' + t);
+  assert.strictEqual(await pw.evaluate(() => document.documentElement.getAttribute('data-home')), 'done', 'dark Done in the pip');
   await pw.locator('[data-act="so-toggle"]').first().click();
   assert.strictEqual(await st(() => App.state.days['2026-10-01'].dayClosed), 'red');
   // v2: the main window shows the home Done screen; the Trade tab still shows session over
@@ -153,7 +155,7 @@ const at = (d, h, m, s) => new Date(2026, 9, d, h, m, s || 0); // Oct 2026 (1 = 
   await page.clock.setSystemTime(at(2, 20, 35));
   await page.clock.runFor(21000);
   t = await pipText();
-  assert.ok(/TRADE\s*01\/02/.test(t), 'new day resets: ' + t);
+  assert.ok(/trade 0 of 2/i.test(t), 'new day resets: ' + t);
   await page.locator('[data-act="log"][data-o="SCRATCH"]').click();
   const tr = (await day('2026-10-02')).trades[0];
   assert.ok(tr.id && tr.device === dev.id, 'trade has id + device');
@@ -181,7 +183,10 @@ const at = (d, h, m, s) => new Date(2026, 9, d, h, m, s || 0); // Oct 2026 (1 = 
   await page.locator('[data-act="dev-checkins"]').click();
   await page.clock.runFor(400);
   assert.strictEqual(await st(() => App.device.checkinsHere), false);
-  assert.ok((await pipText()).includes('Check-ins off'));
+  // v2 Part G: the day is done here (cap lowered to 1 after a trade), so the pip shows Done with no check-in line.
+  assert.strictEqual(await pw.locator('.pw.lit').count(), 0, 'no check-in lights up with check-ins off');
+  assert.strictEqual(await pw.locator('.pw-home .home[data-hs="done"]').count(), 1);
+  assert.strictEqual(await pw.locator('.pw-ci').count(), 0, 'no check-in line on Done');
 
   // ---- Old data migrates: string urges become records
   const n = await st(() => { const d = { urges: ['2026-09-30T13:00:00.000Z'], trades: [{ n: 1, outcome: 'SL' }] }; App.migrateDayRecords(d); return d; });

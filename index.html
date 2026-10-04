@@ -283,6 +283,15 @@ body.pipwin{min-height:100vh;background:var(--bg)}
 .pw-undo{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line-soft);padding:4px 4px 4px 14px;font-size:12px;color:var(--text-2)}
 .pw-undo button{min-height:44px;padding:0 12px;color:var(--ink);font-size:13px;font-weight:600;text-decoration:underline}
 .pw .item{min-height:40px;padding:6px 10px}
+/* v2 Part G: the floating window shows the home screen, its band as the top border, a thin check-in line. */
+.pw-home[data-s="live"]{border-top-color:var(--live)}
+.pw-home[data-s="cool"]{border-top-color:var(--cool)}
+.pw-home[data-s="done"]{border-top-color:var(--live)}
+.pw-home .pw-body{padding:0 16px;gap:0}
+.pipwin .home{min-height:calc(100vh - 6px - 40px)}
+.pw-ci{flex:none;height:40px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 6px 0 16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.pw-ci button{min-height:36px;padding:0 10px;font-size:12px;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.pipwin [data-act="go-tab"]{display:none} /* page links switch the main window, not this one */
 .ci-row{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line-soft)}
 .ci-row:last-of-type{border-bottom:0}
 .ci-row .ci-time{width:160px;max-width:42%;flex:none}
@@ -351,6 +360,27 @@ body[data-nav="hidden"] .home{min-height:calc(100dvh - var(--bandh) - env(safe-a
 }
 :root[data-home="done"] .band{background:var(--live)}
 :root[data-home="done"] .done-circle small{color:#7A736A}
+
+/* Short screens (the 360 × 640 floating window, small phones): smaller rings, tighter gaps. */
+@media (max-height:780px){
+  .rings{width:176px;height:176px}
+  .rings i:nth-child(1){width:176px;height:176px}
+  .rings i:nth-child(2){width:124px;height:124px}
+  .rings i:nth-child(3){width:72px;height:72px}
+  .home-mid{gap:18px;padding:12px 0}
+  .home-line,.wl span{font-size:24px}
+  .wl{min-height:62px}
+  .home-head .big-n{font-size:36px}
+  .home-foot{gap:4px}
+  .home-foot .btn,.outcome2 .btn{min-height:56px}
+  .done-circle{width:132px;height:132px;font-size:40px}
+  .home[data-hs="done"] .home-mid{gap:14px}
+  .home .so-row{min-height:38px}
+  .home .ring-wrap{width:120px}
+  .home[data-hs="cooldown"] .home-mid{gap:10px;padding:8px 0}
+  .home .steps .item{min-height:34px;padding:2px 8px;font-size:13px}
+  .home .ring-wrap .big{font-size:36px}
+}
 
 /* ==== STYLE: today ==== */
 /* Part C: premarket roll-ups (Body · Plan · Accounts · Desk), the Today card editor, the due-item line, Practising. */
@@ -1897,39 +1927,40 @@ var App = (function () {
       '<div class="home-foot"><button type="button" class="btn block" data-act="home-show-anyway">Show the day anyway</button></div>';
   }
   // Per tick: minutes since the open, the countdown, elapsed time in trade and the word loop. No re-render.
-  function tickHomeDom() {
-    if (ui.tab !== 'home' || !state) return;
+  function tickHomeDom(doc) {
+    if (!state) return;
+    if (!doc) { if (ui.tab !== 'home') return; doc = document; } // Part G: also the floating window's document
     var now = new Date();
     // Part C: a timed premarket item comes up at its time (re-render, unless she is typing).
-    var hm = $('.home[data-hs="premarket"]');
-    if (hm) {
+    var hm = $('.home[data-hs="premarket"]', doc);
+    if (hm && doc === document) {
       var dd = state.days[todayKey(now)];
       var due = dueTimedItem((dd && dd.premarket) || EMPTY_PMD, now);
       var shown = hm.getAttribute('data-due') || '';
       var ae = document.activeElement;
       if ((due ? due.id : '') !== shown && !(ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName))) { render(); return; }
     }
-    var mEls = $$('[data-home-min]');
+    var mEls = $$('[data-home-min]', doc);
     if (mEls.length) {
       var m = minText(sessionMinFor(state, now));
       mEls.forEach(function (e) { if (e.textContent !== m) e.textContent = m; });
     }
-    var st = $('[data-home-start]');
+    var st = $('[data-home-start]', doc);
     if (st) {
       var txt = startsText({ key: todayKey(now), now: now });
       if (st.textContent !== txt) st.textContent = txt;
     }
-    var el = $('[data-home-el]');
+    var el = $('[data-home-el]', doc);
     var day = state.days[todayKey(now)];
     if (el && day && day.enteredAt) {
       var sec = Math.max(0, (now.getTime() - Date.parse(day.enteredAt)) / 1000);
       var t = fmtMS(Math.floor(sec));
       if (el.textContent !== t) el.textContent = t;
-      wordLoopTick(sec);
+      wordLoopTick(sec, doc);
     }
   }
-  function wordLoopTick(sec) {
-    var wl = $('.wl[data-wl]');
+  function wordLoopTick(sec, doc) {
+    var wl = $('.wl[data-wl]', doc);
     if (!wl) return;
     var i = wordIndex(sec);
     if (+wl.getAttribute('data-wl') === i) return;
@@ -2635,12 +2666,12 @@ var App = (function () {
       '</section><button type="button" class="btn primary block" style="min-height:56px" data-act="cd-start" data-id="' + esc(p.id) + '">START</button>';
     return out;
   }
-  function tickCooldownDom() {
+  function tickCooldownDom(doc) { // Part G: doc = the floating window's document when it shows home
     var ac = state.activeCooldown;
     if (!ac || ac.finished) return;
     var left = Math.max(0, (ac.endsAt - Date.now()) / 1000);
-    $$('[data-cd-left]').forEach(function (e) { e.textContent = fmtMS(left); });
-    var ring = $('[data-cd-ring]');
+    $$('[data-cd-left]', doc).forEach(function (e) { e.textContent = fmtMS(left); });
+    var ring = $('[data-cd-ring]', doc);
     if (ring) ring.setAttribute('stroke-dashoffset', (RING_C * (1 - (ac.seconds ? left / ac.seconds : 0))).toFixed(2));
   }
 
@@ -3132,7 +3163,7 @@ var App = (function () {
     if (pip.win) return;
     if (!pipSupported()) { toast('The floating window needs Chrome or Edge on a computer.'); return; }
     unlockAudio();
-    window.documentPictureInPicture.requestWindow({ width: 340, height: 460 }).then(attachPip)
+    window.documentPictureInPicture.requestWindow({ width: 360, height: 640 }).then(attachPip) // v2 Part G: spec §9 size
       .catch(function () { toast('Could not open the floating window.'); });
   }
   function attachPip(w) {
@@ -3148,9 +3179,20 @@ var App = (function () {
     d.body.className = 'pipwin';
     d.body.innerHTML = '<div id="pip-root"></div>';
     d.body.addEventListener('click', function (e) {
+      // v2 Part G: a tap outside an open roll-up row closes it, as in the main window.
+      if (ui.ruOpen && !e.target.closest('.ru-open') && !e.target.closest('[data-act="ru"]')) {
+        ui.ruOpen = null;
+        if (!e.target.closest('[data-act]')) { render(); return; }
+      }
       var el = e.target.closest('[data-act]');
       if (!el || el.disabled) return;
       var fn = ACTIONS[el.getAttribute('data-act')];
+      if (fn) fn(el, e);
+    });
+    d.body.addEventListener('change', function (e) { // v2 Part G: the home screen's fields (Today card)
+      var el = e.target.closest('[data-change]');
+      if (!el) return;
+      var fn = CHANGES[el.getAttribute('data-change')];
       if (fn) fn(el, e);
     });
     d.addEventListener('pointerdown', unlockAudio, { passive: true });
@@ -3161,15 +3203,25 @@ var App = (function () {
     pipRender(true);
     render();
   }
+  // v2 Part G (spec §9): 'home' = the home screen, whatever state the day is in. Cooldown and check-in keep
+  // their own views; an open trade is never covered by a check-in; Done (home) replaces the v1 session-over view.
   function pipMode() {
     var now = new Date();
-    var c = tradeCtx(now);
     var ac = state.activeCooldown;
     if (ui.pipFlash && ui.pipFlash.until > Date.now()) return 'flash';
+    var hst = homeNow(now).state;
+    if (hst === 'intrade') return 'home';
+    if (hst === 'cooldown' && ac && ac.trigger === 'sl') return 'home'; // after a stop: home Cooldown (with "I left the desk")
     if (ac) return 'cooldown';
     if (currentCheckin(now)) return 'checkin';
-    if (c.dayClosed || (c.active && c.phase === 'after')) return 'over';
-    return 'main';
+    return 'home';
+  }
+  function pipCheckinLine(now) {
+    var c = tradeCtx(now);
+    if (!c.active || c.dayClosed) return '';
+    var nx = checkinsActive() ? nextCheckinFor(checkinTimes(), c.day, now, state.settings.resetHour) : null;
+    return '<div class="pw-ci"><span>' + (!checkinsActive() ? 'Check-ins off' : (nx ? 'Next check-in ' + esc(nx.time) : 'No more check-ins today')) + '</span>' +
+      '<button type="button" data-act="ci-now">Check in now</button></div>';
   }
   function sessionFill(now) {
     var w = sessionWindow(todayKey(now), state.settings);
@@ -3182,8 +3234,14 @@ var App = (function () {
     var c = tradeCtx(now);
     var s = state.settings;
     var cls = mode === 'checkin' ? ' lit' : (mode === 'cooldown' ? ' cool' : '');
-    var out = '<div class="pw' + cls + '"><div class="pw-head"><span class="dot"></span><b>CHECKPOINT</b><span>ALWAYS ON TOP</span></div>';
-    if (ui.pipUndo && ui.pipUndo.until > Date.now()) out += '<div class="pw-undo"><span>' + esc(ui.pipUndo.msg) + '</span><button type="button" data-act="pip-undo">UNDO</button></div>';
+    var undo = ui.pipUndo && ui.pipUndo.until > Date.now() ? '<div class="pw-undo"><span>' + esc(ui.pipUndo.msg) + '</span><button type="button" data-act="pip-undo">UNDO</button></div>' : '';
+    if (mode === 'home') {
+      var hsn = homeNow(now);
+      var lockd = homeLocked(hsn.state) || hsn.state === 'done';
+      return '<div class="pw pw-home" data-s="' + (HOME_BAND[hsn.state] || 'wait') + '">' + undo +
+        '<div class="pw-body">' + viewHome(hsn) + '</div>' + (lockd ? '' : pipCheckinLine(now)) + '</div>';
+    }
+    var out = '<div class="pw' + cls + '"><div class="pw-head"><span class="dot"></span><b>CHECKPOINT</b><span>ALWAYS ON TOP</span></div>' + undo;
     out += '<div class="pw-body">';
     if (mode === 'flash') {
       out += '<span class="ci-label">DOING GOOD</span><p class="msg" style="margin:0">' + esc(ui.pipFlash.msg) + '</p>';
@@ -3234,6 +3292,11 @@ var App = (function () {
   }
   function pipSig(mode) {
     var now = new Date();
+    if (mode === 'home') { // v2 Part G: re-render on a state change or any change to the day, never on a tick
+      var hsn = homeNow(now);
+      return JSON.stringify([mode, homeSig(hsn), hsn.day, ui.ruOpen, state.activeCooldown, !!(ui.pipUndo && ui.pipUndo.until > Date.now()), checkinsActive(),
+        (nextCheckinFor(checkinTimes(), hsn.day || {}, now, state.settings.resetHour) || {}).id || '', state.settings.rules, state.checklists]);
+    }
     var c = tradeCtx(now);
     var ac = state.activeCooldown;
     var cur = currentCheckin(now);
@@ -3252,11 +3315,15 @@ var App = (function () {
     if (!force && sig === pip.sig) { pipTickDom(); return; }
     pip.sig = sig;
     root.innerHTML = pipView(mode);
+    // v2 Part G: Done is the dark inverted screen in the floating window too.
+    var de = pip.win.document.documentElement, hd = mode === 'home' && homeNow().state === 'done' ? 'done' : '';
+    if (de.getAttribute('data-home') !== hd) de.setAttribute('data-home', hd);
     bindHolds(root);
   }
   function pipTickDom() {
     if (!pip.win) return;
     var d = pip.win.document, now = new Date();
+    if (d.querySelector('.pw-home')) { tickHomeDom(d); tickCooldownDom(d); } // v2 Part G: +N min, countdown, elapsed, word loop, cooldown
     var l = d.querySelector('[data-pw-left]');
     if (l) l.textContent = sessionInfo(now).right;
     var f = d.querySelector('[data-pw-fill]');

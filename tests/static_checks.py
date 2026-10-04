@@ -30,4 +30,23 @@ for name, src in sources.items():
                 print("smart quote %r in %s line %d: %s" % (ch, name, n, line.strip()[:80]))
 print(("PASS" if hits == 0 else "FAIL") + "  smart quotes: %d hits" % hits)
 ok = ok and hits == 0
+
+# v2 Part G: the <style> block's braces must balance, and an @media block must close before the next
+# section banner (a lost "}" once nested every later section inside a media query).
+html = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+css = re.search(r"<style>([\s\S]*?)</style>", html).group(1)
+depth, bad = 0, []
+for m in re.finditer(r"/\*[\s\S]*?\*/|[{}]", css):
+    t = m.group(0)
+    if t.startswith("/*"):
+        if t.startswith("/* ==== ") and depth:
+            bad.append(t)
+        continue
+    depth += 1 if t == "{" else -1
+    if depth < 0:
+        bad.append("extra }")
+        depth = 0
+css_ok = depth == 0 and not bad
+print(("PASS" if css_ok else "FAIL") + "  css braces balance" + ("" if css_ok else ": open %d, %s" % (depth, bad[:3])))
+ok = ok and css_ok
 sys.exit(0 if ok else 1)
