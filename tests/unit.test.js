@@ -26,12 +26,12 @@ function test(name, fn) {
 // JSON round-trip so objects from the sandbox realm compare cleanly with deepStrictEqual.
 const d = JSON.parse(JSON.stringify(App.makeDefaults()));
 
-test('premarket: 23 items in 5 categories, 4 gates, 1 optional', () => {
+test('premarket: 22 items in 5 categories (Part C dropped "Pyae knows"), 4 gates, 1 optional', () => {
   const cats = d.checklists.premarket.categories;
   const items = cats.flatMap(c => c.items);
   assert.strictEqual(cats.length, 5);
   assert.deepStrictEqual(cats.map(c => c.name), ['BODY', 'DAYTIME', 'DESK', 'LOCKS', 'DATA']);
-  assert.strictEqual(items.length, 23);
+  assert.strictEqual(items.length, 22);
   assert.strictEqual(items.filter(i => i.gate).length, 4);
   assert.strictEqual(items.filter(i => i.optional).length, 1);
   assert.strictEqual(items.find(i => i.optional).text, 'Watch MQ videos');

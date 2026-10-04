@@ -46,13 +46,14 @@ async function shot(page, name, full) {
   const phone = { width: 390, height: 844 };
   let { ctx, page } = await newPage(browser, phone, at(19, 41), errors);
 
-  // ---- Premarket
+  // ---- Premarket (the v1 checklist view; home shows the Part C roll-ups instead)
+  await go(page, 'premarket');
   const count = () => page.locator('.page-head .progress .mono').textContent();
-  assert.strictEqual(await count(), '0 / 22');
+  assert.strictEqual(await count(), '0 / 21');
   await page.locator('.item', { hasText: 'Watch MQ videos' }).click();
-  assert.strictEqual(await count(), '0 / 22', 'optional item does not count');
+  assert.strictEqual(await count(), '0 / 21', 'optional item does not count');
   await page.locator('.item', { hasText: 'Read 1BB brief' }).click();
-  assert.strictEqual(await count(), '1 / 22');
+  assert.strictEqual(await count(), '1 / 21');
   await page.locator('[aria-label="Slept enough: no"]').first().click();
   assert.ok(await page.locator('.banner', { hasText: 'Observation day' }).isVisible());
   await page.locator('[aria-label="Slept enough: yes"]').first().click();

@@ -75,7 +75,7 @@ async function routeFonts(ctx) {
   assert.ok((await page.locator('.home-head').textContent()).includes('MON 05 OCT'));
   assert.ok(await page.locator('[data-home-start]', { hasText: 'Starts in 6h 30m' }).isVisible());
   assert.ok(await page.locator('.home-sub', { hasText: 'Session 20:30–21:40 · 09:30 ET' }).isVisible());
-  assert.ok(await page.locator('.home .now-strip').isVisible(), 'premarket checklist on home (roll-ups come in Part C)');
+  assert.strictEqual(await page.locator('.home .ru-row').count(), 4, 'premarket roll-ups on home (Part C)');
   await both('premarket');
   await page.locator('.home-head [data-tab="settings"]').click();
   assert.strictEqual(await st(() => App.ui.tab), 'settings');
@@ -87,7 +87,8 @@ async function routeFonts(ctx) {
 
   // Today card (Part C will edit it; set directly here): S1 ungraded, S2 grade B, S3 grade A
   await st(() => {
-    const k = Object.keys(App.state.days).sort().pop();
+    const k = App.homeNow().key; // Part C: rendering premarket no longer creates the day record
+    App.state.days[k] = App.state.days[k] || {};
     App.state.days[k].today = { setups: [
       { id: 's1', text: 'S1 long 30871-30900 · absorption + ES 7782 · SL 30845 TP 30952', grade: null },
       { id: 's2', text: 'S2 short 30990 · failed auction', grade: 'B' },
@@ -233,7 +234,9 @@ async function routeFonts(ctx) {
   // ---- Observation day (gate answered no): no start button
   await to(at(8, 14, 0));
   assert.strictEqual(await hs(), 'premarket');
+  await page.locator('.ru-row[data-k="body"]').click(); // Part C: the gates live in the Body roll-up
   await page.locator('.home [aria-label="Slept enough: no"]').first().click();
+  assert.strictEqual(await page.locator('[data-ru-st="body"]').textContent(), 'observation day');
   await to(at(8, 20, 35));
   assert.strictEqual(await hs(), 'observe');
   assert.ok(await page.locator('.home-line', { hasText: 'Observation day.' }).isVisible());

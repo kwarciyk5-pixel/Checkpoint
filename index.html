@@ -352,6 +352,38 @@ body[data-nav="hidden"] .home{min-height:calc(100dvh - var(--bandh) - env(safe-a
 :root[data-home="done"] .band{background:var(--live)}
 :root[data-home="done"] .done-circle small{color:#7A736A}
 
+/* ==== STYLE: today ==== */
+/* Part C: premarket roll-ups (Body · Plan · Accounts · Desk), the Today card editor, the due-item line, Practising. */
+.ru{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.ru-sec{border-bottom:1px solid var(--line)}
+.ru-row{width:100%;min-height:56px;display:flex;align-items:center;gap:12px;text-align:left;padding:8px 2px}
+.ru-name{flex:1;min-width:0;font-family:var(--font-serif);font-size:22px;line-height:1.2}
+.ru-name small{display:block;font-family:var(--font-sans);font-size:12px;color:var(--muted);margin-top:2px}
+.ru-name small:empty{display:none}
+.ru-st{font-size:13px;color:var(--muted);white-space:nowrap}
+.ru-st.ok{font-size:20px;color:var(--live-ink)}
+.ru-row .chev{color:var(--dim);transition:transform .15s ease}
+.ru-row[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.ru-body{display:flex;flex-direction:column;gap:6px;padding:2px 0 14px}
+.ru-body .item{min-height:44px;padding:6px 10px}
+.ru-now{display:flex;align-items:center;gap:10px;border:1px solid var(--ink);border-radius:4px;padding:6px 6px 6px 12px;min-height:52px}
+.ru-now-t{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.ru-now-x{flex:1;min-width:0;font-size:15px}
+.ru-now .gate-btns{margin:0}
+.ru-tick{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.ru-practise{margin:6px 0 0;font-family:var(--font-serif);font-size:22px;line-height:1.35;display:flex;flex-direction:column;gap:6px}
+.ru-practise-empty{align-self:flex-start;margin-top:4px;padding-left:2px}
+.card-ed{display:flex;flex-direction:column;gap:8px;padding-bottom:6px}
+.su-row{display:flex;flex-direction:column;gap:6px}
+.grades{display:flex;gap:6px;flex-wrap:wrap}
+.grades .pill{min-height:36px;min-width:48px;padding:0 12px}
+.ed-2{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.su-row textarea{min-height:64px;font-size:15px;line-height:1.35}
+.ed-2 .grades{min-height:46px;align-items:center}
+.ru-practise .eyebrow{font-family:var(--font-sans)}
+.ed-2 > div{display:flex;flex-direction:column;gap:6px}
+.card-ed .stepper{align-self:flex-start}
+
 /* ==== STYLE: modal + toast ==== */
 .modal-back{position:fixed;inset:0;z-index:80;background:rgba(28,26,23,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 @media (min-width:600px){.modal-back{align-items:center}}
@@ -443,10 +475,12 @@ var App = (function () {
   var AFTER_SL_STEPS = ['Two physiological sighs', 'Stand up, leave the desk', 'One minute: in 4, out 8, looking far away', 'Cold water on the face (optional — try it once on a calm day first)'];
   var SESSION_OVER_ITEMS = ['Accounts locked', 'Charts closed (Pyae\'s too)', 'Away from the desk'];
   function makeDefaults() {
-    function cat(name, items) { return { id: uid(), name: name, items: items }; }
-    function pm(text, note, time, flags) {
+    function cat(name, items, row) { var c = { id: uid(), name: name, items: items }; if (row) c.row = row; return c; }
+    function pm(text, note, time, flags, role) {
       flags = flags || '';
-      return { id: uid(), text: text, note: note || '', time: time || '', optional: flags === 'optional', gate: flags === 'gate' };
+      var it = { id: uid(), text: text, note: note || '', time: time || '', optional: flags === 'optional', gate: flags === 'gate' };
+      if (role) it.role = role; // v2 Part C: 'plan' = the plan item, 'lock' = a platform-side lock (Accounts roll-up)
+      return it;
     }
     function tr(text, note, afterStopOnly) { return { id: uid(), text: text, note: note || '', afterStopOnly: !!afterStopOnly }; }
     function so(text) { return { id: uid(), text: text, note: '' }; }
@@ -512,33 +546,32 @@ var App = (function () {
               pm('Physically OK', 'Not depleted or unwell', '', 'gate'),
               pm('Concentration OK', '', '', 'gate'),
               pm('Stress manageable', '', '', 'gate')
-            ]),
+            ], 'body'),
             cat('DAYTIME', [
               pm('Dump to Claude', 'MQ newsletter · Paralia newsletter · 1BB brief · Daily Structural levels · MQ levels'),
               pm('Watch MQ videos', '', '', 'optional'),
               pm('Read 1BB brief')
-            ]),
+            ], 'plan'),
             cat('DESK', [
               pm('Prepare zones in chart', '', '19:30'),
-              pm('Trade plan for the day'),
+              pm('Trade plan for the day', '', '', '', 'plan'),
               pm('ATAS ready'),
               pm('1BB screenshot', 'Dashboard + Engine', '20:00'),
               pm('OVN screenshot')
-            ]),
+            ], 'desk'),
             cat('LOCKS', [
               pm('Check account settings'),
-              pm('Copier on'),
-              pm('Platform daily loss −$600, auto-flatten ON'),
-              pm('Max order size = planned contracts'),
+              pm('Copier on', '', '', '', 'lock'),
+              pm('Platform daily loss −$600, auto-flatten ON', '', '', '', 'lock'),
+              pm('Max order size = planned contracts', '', '', '', 'lock'),
               pm('Every copy-group account has more than $600 left before its drawdown limit'),
-              pm('Pyae knows today\'s plan and cap'),
               pm('After-session exit decided', 'Gym, leave the room')
-            ]),
+            ], 'accounts'),
             cat('DATA', [
               pm('Premarket fetches in → build data', '', '20:12'),
               pm('Drink water', '', '20:20'),
               pm('Post-open fetch', '', '20:45')
-            ])
+            ], 'desk')
           ]
         },
         trade: {
@@ -704,8 +737,10 @@ var App = (function () {
       else ss.tz = 'local';
     }
     var firstV2 = !(isObj(s.meta) && s.meta.v2b);
+    var firstV2c = !(isObj(s.meta) && s.meta.v2c);
     fillMissing(s, defs);
     if (firstV2) migrateV2(s);
+    if (firstV2c) migrateV2C(s);
     if (!Array.isArray(s.presets) || !s.presets.length) s.presets = defs.presets;
     Object.keys(s.settings.presetLinks).forEach(function (k) {
       if (!findPresetIn(s, s.settings.presetLinks[k])) s.settings.presetLinks[k] = s.presets[0].id;
@@ -747,6 +782,21 @@ var App = (function () {
       so[0].items = SESSION_OVER_ITEMS.map(function (t) { return { id: uid(), text: t, note: '' }; });
     }
   }
+  // v2 Part C, once per data set: roll-up rows on the premarket categories, roles on the plan item and
+  // the three platform locks (matched by their prefilled text), and the dropped "Pyae knows" line goes
+  // if it is still the prefilled text (handover §7, 3 Oct). Edited items are left as they are.
+  function migrateV2C(s) {
+    s.meta.v2c = true;
+    var ROLE = {
+      'Trade plan for the day': 'plan', 'Copier on': 'lock',
+      'Platform daily loss −$600, auto-flatten ON': 'lock', 'Max order size = planned contracts': 'lock'
+    };
+    s.checklists.premarket.categories.forEach(function (c) {
+      if (!c.row && CAT_ROW[String(c.name).toUpperCase()]) c.row = CAT_ROW[String(c.name).toUpperCase()];
+      c.items = c.items.filter(function (it) { return !(it.text === 'Pyae knows today\'s plan and cap' && !it.note); });
+      c.items.forEach(function (it) { if (!it.role && ROLE[it.text]) it.role = ROLE[it.text]; });
+    });
+  }
   function load() {
     var raw = null;
     try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
@@ -776,7 +826,9 @@ var App = (function () {
   function flushSave() { if (saveTimer) saveNow(); }
   function getDay(key) {
     if (!state.days[key]) state.days[key] = newDay();
-    return fillMissing(state.days[key], newDay());
+    var d = fillMissing(state.days[key], newDay());
+    if (!isObj(d.today)) d.today = carryToday(state, key); // v2 Part C: contracts + practising carry over
+    return d;
   }
   function findPresetIn(s, id) {
     for (var i = 0; i < s.presets.length; i++) if (s.presets[i].id === id) return s.presets[i];
@@ -984,7 +1036,8 @@ var App = (function () {
   var ui = {
     tab: 'home', editor: null, expanded: {}, dayDone: false, showAnyway: null,
     cdSelected: null, holding: false, focusAfter: null,
-    manualCheckin: null, pipFlash: null, pipUndo: null, ciSig: '', ciRung: {}, homeSig: ''
+    manualCheckin: null, pipFlash: null, pipUndo: null, ciSig: '', ciRung: {}, homeSig: '',
+    ruOpen: null // v2 Part C: the open premarket roll-up row
   };
   try {
     var savedTab = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('checkpoint.tab');
@@ -1289,13 +1342,103 @@ var App = (function () {
     return c.tp > c.sl ? 'green' : (c.sl > c.tp ? 'red' : null);
   }
 
+  /* ==== TODAY: card ==== */
+  // Part C (spec §3). day.today = { setups: [{id, text, grade}] (max 2), contracts, practising, band }.
+  // contracts and practising carry over from the last day that had a card; setups and grades start empty
+  // each trading day (the day key rolls at the reset hour). Lines are free text, never parsed.
+  var GRADES = ['A+', 'A', 'B'];
+  var MAX_SETUPS = 2;
+  // Premarket category → roll-up row. A category without `row` goes by its name; anything else is Desk.
+  var CAT_ROW = { BODY: 'body', DAYTIME: 'plan', DESK: 'desk', DATA: 'desk', LOCKS: 'accounts' };
+  var ROLLUPS = [['body', 'Body'], ['plan', 'Plan'], ['accounts', 'Accounts'], ['desk', 'Desk']];
+  function rowOfCat(cat) {
+    if (cat && ROLLUPS.some(function (r) { return r[0] === cat.row; })) return cat.row;
+    return CAT_ROW[String(cat && cat.name || '').toUpperCase()] || 'desk';
+  }
+  function carryToday(s, key) {
+    var keys = Object.keys(s.days).filter(function (k) { return k < key && isObj(s.days[k]) && isObj(s.days[k].today); }).sort();
+    var last = keys.length ? s.days[keys[keys.length - 1]].today : {};
+    var ct = Math.round(Number(last.contracts));
+    return {
+      setups: [], contracts: isFinite(ct) && ct >= 1 ? ct : 2,
+      practising: typeof last.practising === 'string' ? last.practising : '', band: 'normal'
+    };
+  }
+  // Read-only view of a day's card (a day without one shows what would carry over).
+  function cardFor(s, key) {
+    var d = s.days[key];
+    var c = d && isObj(d.today) ? d.today : carryToday(s, key);
+    return {
+      setups: Array.isArray(c.setups) ? c.setups.filter(isObj).slice(0, MAX_SETUPS) : [],
+      contracts: c.contracts, practising: String(c.practising || ''), band: c.band === 'low' ? 'low' : 'normal'
+    };
+  }
+  function setupLines(card) { return card.setups.filter(function (x) { return String(x.text || '').trim(); }); }
+  function itemsOfRow(s, row) {
+    var out = [];
+    s.checklists.premarket.categories.forEach(function (c) {
+      var r = rowOfCat(c);
+      c.items.forEach(function (it) {
+        var ir = it.role === 'plan' ? 'plan' : r; // the plan item shows (and counts) under Plan, not Desk
+        if (ir === row) out.push(it);
+      });
+    });
+    return out;
+  }
+  // Roll-up state per row: ok (✓) · no (a gate answered no → observation day) · open, with done/req.
+  function rollupsFor(s, day, key) {
+    var pmd = (day && day.premarket) || { checked: {}, gateNo: {} };
+    var chk = pmd.checked || {}, no = pmd.gateNo || {};
+    function count(list) {
+      var req = list.filter(function (it) { return !it.optional; });
+      return { req: req.length, done: req.filter(function (it) { return chk[it.id]; }).length };
+    }
+    var out = {};
+    var body = itemsOfRow(s, 'body'), gates = body.filter(function (it) { return it.gate; });
+    var bc = count(gates.length ? gates : body);
+    out.body = { st: gates.some(function (it) { return no[it.id]; }) ? 'no' : (bc.req && bc.done === bc.req ? 'ok' : 'open'), done: bc.done, req: bc.req };
+    var card = cardFor(s, key), plan = itemsOfRow(s, 'plan');
+    var planTicked = plan.some(function (it) { return it.role === 'plan' && chk[it.id]; });
+    var pc = count(plan);
+    out.plan = { st: setupLines(card).length || planTicked ? 'ok' : 'open', done: pc.done, req: pc.req, setups: setupLines(card).length };
+    var acc = itemsOfRow(s, 'accounts'), locks = acc.filter(function (it) { return it.role === 'lock'; });
+    var ac = count(locks.length ? locks : acc);
+    out.accounts = { st: ac.req && ac.done === ac.req ? 'ok' : 'open', done: ac.done, req: ac.req };
+    var dc = count(itemsOfRow(s, 'desk'));
+    out.desk = { st: dc.req && dc.done === dc.req ? 'ok' : 'open', done: dc.done, req: dc.req };
+    return out;
+  }
+  // Paste helper: one setup per line, blank lines dropped, first two kept.
+  function pasteSplit(text) {
+    return String(text || '').split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean).slice(0, MAX_SETUPS);
+  }
+  // The card to change (creates today's record and its card if needed).
+  function editCard() {
+    var day = getDay(todayKey());
+    var c = day.today;
+    if (!Array.isArray(c.setups)) c.setups = [];
+    return c;
+  }
+  // A timed premarket item whose time has come and is still open (the one-line reminder).
+  function dueTimedItem(pmd, now) {
+    var reset = hmToMin(state.settings.resetHour), nr = relMin(minOfDay(now), reset);
+    var best = null, bestT = -1;
+    pmAll().forEach(function (it) {
+      if (!it.time || it.optional || pmResolved(it, pmd)) return;
+      var t = relMin(hmToMin(it.time), reset);
+      if (t <= nr && t > bestT) { best = it; bestT = t; }
+    });
+    return best;
+  }
+
   /* ==== VIEW: home ==== */
   function viewHome(hs) {
     var fn = {
       premarket: homePremarket, waiting: homeWaiting, observe: homeWaiting, looking: homeLooking,
       intrade: homeInTrade, cooldown: homeCooldown, done: homeDone, offday: homeOffday
     }[hs.state];
-    return '<div class="home" data-hs="' + hs.state + '">' + fn(hs) + '</div>';
+    var due = hs.state === 'premarket' ? dueTimedItem((hs.day && hs.day.premarket) || EMPTY_PMD, hs.now) : null;
+    return '<div class="home" data-hs="' + hs.state + '"' + (hs.state === 'premarket' ? ' data-due="' + esc(due ? due.id : '') + '"' : '') + '>' + fn(hs) + '</div>';
   }
   function homeHead(left, right) { return '<header class="home-head"><span>' + left + '</span><span>' + right + '</span></header>'; }
   var SETTINGS_LINK = '<button type="button" class="textbtn" data-act="go-tab" data-tab="settings">Settings</button>';
@@ -1329,7 +1472,7 @@ var App = (function () {
       '<div class="home-mid top"><div class="home-text" style="align-items:flex-start;gap:4px">' +
       '<p class="home-line" style="text-align:left" data-home-start>' + esc(startsText(hs)) + '</p>' +
       '<p class="home-sub" style="text-align:left">Session ' + esc(t.start) + '–' + esc(t.end) + ny + '</p></div>' +
-      viewPremarket() + '</div>';
+      todayPremarket(hs) + '</div>';
   }
   function homeWaiting(hs) {
     var s = state.settings, day = hs.day || {}, c = dayCounts(day);
@@ -1462,6 +1605,15 @@ var App = (function () {
   function tickHomeDom() {
     if (ui.tab !== 'home' || !state) return;
     var now = new Date();
+    // Part C: a timed premarket item comes up at its time (re-render, unless she is typing).
+    var hm = $('.home[data-hs="premarket"]');
+    if (hm) {
+      var dd = state.days[todayKey(now)];
+      var due = dueTimedItem((dd && dd.premarket) || EMPTY_PMD, now);
+      var shown = hm.getAttribute('data-due') || '';
+      var ae = document.activeElement;
+      if ((due ? due.id : '') !== shown && !(ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName))) { render(); return; }
+    }
     var mEls = $$('[data-home-min]');
     if (mEls.length) {
       var m = minText(sessionMinFor(state, now));
@@ -1495,6 +1647,97 @@ var App = (function () {
     on.setAttribute('aria-hidden', 'true');
     on.classList.remove('on');
     next.classList.add('on');
+  }
+
+  /* ==== VIEW: today ==== */
+  // Part C. Premarket on home: the due timed item as one line, four roll-up rows (Body · Plan · Accounts ·
+  // Desk) that open one at a time inline and close on a tap outside, the Today card editor inside Plan,
+  // and the Practising sentence. Reads the day; never creates it.
+  var EMPTY_PMD = { checked: {}, gateNo: {}, later: [], collapsed: {} };
+  function todayPremarket(hs) {
+    var day = hs.day, pmd = (day && day.premarket) || EMPTY_PMD;
+    var ru = rollupsFor(state, day, hs.key), card = cardFor(state, hs.key);
+    var out = '';
+    var due = dueTimedItem(pmd, hs.now);
+    if (due) {
+      out += '<div class="ru-now" role="status"><span class="ru-now-t">' + esc(due.time) + '</span><span class="ru-now-x">' + esc(due.text) + '</span>' +
+        (due.gate ? gateButtons(due, pmd, false) : '<button type="button" class="ru-tick" data-act="pm-done" data-id="' + esc(due.id) + '" aria-label="Done: ' + esc(due.text) + '">' + cbx(false) + '</button>') + '</div>';
+    }
+    out += '<div class="ru">';
+    ROLLUPS.forEach(function (r) {
+      var k = r[0], open = ui.ruOpen === k, sa = ruStatText(k, ru[k]);
+      var sum = k === 'plan' ? '<small data-ru-sum>' + esc(planSummary(ru.plan, card)) + '</small>' : '';
+      out += '<section class="ru-sec' + (open ? ' ru-open' : '') + '" data-ru="' + k + '"><button type="button" class="ru-row" data-act="ru" data-k="' + k + '" aria-expanded="' + open + '">' +
+        '<span class="ru-name">' + esc(r[1]) + sum + '</span><span class="ru-st ' + ru[k].st + '" data-ru-st="' + k + '">' + esc(sa) + '</span>' +
+        '<span class="chev" aria-hidden="true">›</span></button>';
+      if (open) {
+        out += '<div class="ru-body">' + (k === 'plan' ? cardEditorHtml(card) : '');
+        var items = itemsOfRow(state, k);
+        if (k === 'plan' && items.length) out += '<span class="eyebrow" style="margin-top:6px">Checklist</span>';
+        items.forEach(function (it) { out += pmItemHtml(it, pmd); });
+        if (!items.length && k !== 'plan') out += '<div class="ru-stat" style="padding:8px">No items</div>';
+        out += '</div>';
+      }
+      out += '</section>';
+    });
+    out += '</div>';
+    return out + '<div data-ru-pr>' + practiseHtml(card) + '</div>';
+  }
+  function ruStatText(k, st) {
+    if (st.st === 'ok') return '✓';
+    if (st.st === 'no') return 'observation day';
+    if (k === 'plan') return 'no setup yet';
+    return st.done + ' / ' + st.req;
+  }
+  function planSummary(st, card) {
+    return st.setups ? st.setups + (st.setups === 1 ? ' setup' : ' setups') + ' · ' + card.contracts + ' contracts' + (card.band === 'low' ? ' · low risk' : '') : '';
+  }
+  function practiseHtml(card) {
+    return card.practising.trim() ? '<p class="ru-practise"><span class="eyebrow">Practising</span>' + esc(card.practising) + '</p>'
+      : '<button type="button" class="textbtn ru-practise-empty" data-act="ru" data-k="plan">What are you practising today?</button>';
+  }
+  // After typing in the card: update the Plan row and the Practising line in place. A re-render here
+  // would replace the element under her finger, and the tap that caused the blur would be lost.
+  function refreshPlanRow() {
+    var key = todayKey(), ru = rollupsFor(state, state.days[key], key), card = cardFor(state, key);
+    var st = $('[data-ru-st="plan"]'), sum = $('[data-ru-sum]'), pr = $('[data-ru-pr]');
+    if (st) { st.textContent = ruStatText('plan', ru.plan); st.className = 'ru-st ' + ru.plan.st; }
+    if (sum) sum.textContent = planSummary(ru.plan, card);
+    if (pr) {
+      var h = practiseHtml(card);
+      if (pr.innerHTML !== h) pr.innerHTML = h;
+    }
+  }
+  function pmItemHtml(it, pmd) {
+    var note = it.note ? '<small>' + esc(it.note) + '</small>' : '';
+    var tag = it.optional ? ' <span class="tag">OPTIONAL</span>' : '';
+    var time = it.time ? '<span class="time">' + esc(it.time) + '</span>' : '';
+    if (it.gate) {
+      return '<div class="item gate' + (it.optional ? ' optional' : '') + '"><span class="txt"><b>' + esc(it.text) + tag + '</b>' + note + '</span>' + time + gateButtons(it, pmd, false) + '</div>';
+    }
+    var on = !!pmd.checked[it.id];
+    return '<button type="button" class="item' + (it.optional ? ' optional' : '') + '" data-act="pm-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '">' +
+      cbx(on, it.optional) + '<span class="txt"><b>' + esc(it.text) + tag + '</b>' + note + '</span>' + time + '</button>';
+  }
+  function cardEditorHtml(card) {
+    var out = '<div class="card-ed"><div class="row between"><span class="eyebrow">Setups</span>' +
+      '<button type="button" class="textbtn" data-act="paste-setups">Paste setups</button></div>';
+    for (var i = 0; i < MAX_SETUPS; i++) {
+      var su = card.setups[i] || { text: '', grade: null };
+      out += '<div class="su-row"><textarea rows="2" data-change="card-setup" data-i="' + i + '" data-fk="su-' + i + '" aria-label="Setup ' + (i + 1) + '" autocomplete="off" ' +
+        'placeholder="' + (i ? 'S2 …' : 'S1 long 30871-30900 · trigger · SL · TP') + '">' + esc(su.text || '') + '</textarea>' +
+        '<div class="grades" role="group" aria-label="Grade, setup ' + (i + 1) + '">' + GRADES.map(function (g) {
+          return '<button type="button" class="pill" data-act="card-grade" data-i="' + i + '" data-g="' + g + '" aria-pressed="' + (su.grade === g) + '">' + g + '</button>';
+        }).join('') + '</div></div>';
+    }
+    out += '<div class="ed-2"><div><span class="eyebrow">Contracts</span><div class="stepper">' +
+      '<button type="button" data-act="card-ct" data-d="-1" aria-label="One contract less">−</button><output aria-live="polite">' + esc(card.contracts) + '</output>' +
+      '<button type="button" data-act="card-ct" data-d="1" aria-label="One contract more">+</button></div></div>' +
+      '<div><span class="eyebrow">Risk band</span><div class="grades">' +
+      '<button type="button" class="pill" data-act="card-band" data-v="normal" aria-pressed="' + (card.band !== 'low') + '">Normal</button>' +
+      '<button type="button" class="pill" data-act="card-band" data-v="low" aria-pressed="' + (card.band === 'low') + '">Low</button></div></div></div>' +
+      '<label class="eyebrow" for="card-pr">Practising</label><input type="text" id="card-pr" data-change="card-practising" data-fk="practising" autocomplete="off" placeholder="One sentence, carried to tomorrow" value="' + esc(card.practising) + '">';
+    return out + '</div>';
   }
 
   /* ==== VIEW: premarket ==== */
@@ -3023,6 +3266,57 @@ var App = (function () {
         });
     },
     'home-show-anyway': function () { ui.showAnyway = todayKey(); render(); },
+    // v2 Today card + roll-ups (Part C)
+    'ru': function (el) {
+      var k = el.getAttribute('data-k');
+      ui.ruOpen = ui.ruOpen === k ? null : k;
+      render();
+      if (ui.ruOpen) { var sec = $('[data-ru="' + k + '"]'); if (sec && sec.scrollIntoView) sec.scrollIntoView({ block: 'nearest' }); }
+    },
+    'card-grade': function (el) {
+      var c = editCard(), i = +el.getAttribute('data-i'), g = el.getAttribute('data-g');
+      var su = c.setups[i] || (c.setups[i] = { id: uid(), text: '', grade: null });
+      su.grade = su.grade === g ? null : g;
+      save(); render();
+    },
+    'card-ct': function (el) {
+      var c = editCard(), n = Math.round(Number(c.contracts)) || 2;
+      c.contracts = Math.max(1, Math.min(99, n + Number(el.getAttribute('data-d'))));
+      save(); render();
+    },
+    'card-band': function (el) { editCard().band = el.getAttribute('data-v') === 'low' ? 'low' : 'normal'; save(); render(); },
+    'paste-setups': function () {
+      function use(text) {
+        var lines = pasteSplit(text);
+        if (!lines.length) { toast('Nothing to paste.'); return; }
+        var c = editCard();
+        lines.forEach(function (t, i) {
+          var su = c.setups[i];
+          if (su) { su.text = t; su.grade = null; } else c.setups[i] = { id: uid(), text: t, grade: null };
+        });
+        save(); render();
+        toast(lines.length === 1 ? '1 setup pasted' : lines.length + ' setups pasted');
+      }
+      function manual() {
+        var ta = null; // the modal is gone before its button runs, so keep the field from onOpen
+        openModal({
+          title: 'Paste setups',
+          html: '<p>One setup per line. The first two lines are used.</p><textarea id="paste-ta" aria-label="Setups" rows="4"></textarea>',
+          onOpen: function (m) { ta = m.querySelector('#paste-ta'); if (ta) ta.focus(); },
+          actions: [
+            { label: 'Use these', cls: 'primary', fn: function () { use(ta ? ta.value : ''); } },
+            { label: 'Cancel', cls: 'ghost' }
+          ]
+        });
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          navigator.clipboard.readText().then(function (t) { if (pasteSplit(t).length) use(t); else manual(); }, manual);
+          return;
+        }
+      } catch (e) { /* fall through */ }
+      manual();
+    },
     // settings
     'pending-cancel': function (el) { removePending(el.getAttribute('data-key')); save(); render(); flashSaved(); },
     'open-list': function (el) { ui.editor = { type: 'checklist', list: el.getAttribute('data-list') }; ui.expanded = {}; render(); window.scrollTo(0, 0); },
@@ -3186,6 +3480,15 @@ var App = (function () {
   };
 
   var CHANGES = {
+    // v2 Today card (Part C)
+    'card-setup': function (el) {
+      var c = editCard(), i = +el.getAttribute('data-i'), t = el.value.replace(/\s*\n\s*/g, ' ').trim(); // one line per setup
+      var su = c.setups[i];
+      if (su) su.text = t; else if (t) c.setups[i] = { id: uid(), text: t, grade: null };
+      for (var j = 0; j < c.setups.length; j++) if (!c.setups[j]) c.setups[j] = { id: uid(), text: '', grade: null };
+      save(); refreshPlanRow();
+    },
+    'card-practising': function (el) { editCard().practising = el.value.trim(); save(); refreshPlanRow(); },
     'rule-num': function (el) {
       var k = el.getAttribute('data-key');
       var v = Math.round(Number(el.value));
@@ -3329,6 +3632,11 @@ var App = (function () {
     $$('.tab').forEach(function (t) { t.addEventListener('click', function () { setTab(t.getAttribute('data-tab')); }); });
     var view = $('#view');
     view.addEventListener('click', function (e) {
+      // v2 Part C: a tap outside the open roll-up row closes it (and the tap still does what it does).
+      if (ui.ruOpen && !e.target.closest('.ru-open') && !e.target.closest('[data-act="ru"]')) {
+        ui.ruOpen = null;
+        if (!e.target.closest('[data-act]')) { render(); return; }
+      }
       var el = e.target.closest('[data-act]');
       if (!el || !view.contains(el) || el.disabled) return;
       var fn = ACTIONS[el.getAttribute('data-act')];
@@ -3468,6 +3776,13 @@ var App = (function () {
     setupRowsFor: setupRowsFor,
     seriesDayFor: seriesDayFor,
     wordIndex: wordIndex,
+    // v2 Part C
+    carryToday: carryToday,
+    cardFor: cardFor,
+    rollupsFor: rollupsFor,
+    rowOfCat: rowOfCat,
+    itemsOfRow: itemsOfRow,
+    pasteSplit: pasteSplit,
     WORD_LOOP: WORD_LOOP,
     HOME_STATES: HOME_STATES,
     homeNow: function () { return homeNow(); },
