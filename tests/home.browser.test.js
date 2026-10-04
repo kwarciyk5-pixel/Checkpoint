@@ -71,7 +71,7 @@ async function routeFonts(ctx) {
   assert.strictEqual(await hs(), 'premarket');
   assert.strictEqual(await st(() => App.ui.tab), 'home');
   assert.strictEqual(await nav(), 'show');
-  assert.deepStrictEqual(await page.locator('.tab').allTextContents(), ['TODAY', 'TRADE']);
+  assert.deepStrictEqual(await page.locator('.tab').allTextContents(), ['TODAY', 'TRADE', 'LOG', 'STATS']); // Part E adds LOG + STATS
   assert.ok((await page.locator('.home-head').textContent()).includes('MON 05 OCT'));
   assert.ok(await page.locator('[data-home-start]', { hasText: 'Starts in 6h 30m' }).isVisible());
   assert.ok(await page.locator('.home-sub', { hasText: 'Session 20:30–21:40 · 09:30 ET' }).isVisible());

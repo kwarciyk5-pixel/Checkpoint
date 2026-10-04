@@ -136,7 +136,8 @@ async function routeFonts(ctx) {
   assert.strictEqual(file.locks['Copier on'], true);
   assert.strictEqual(file.urges, 1);
   assert.strictEqual(file.events[file.events.length - 1].type, 'export');
-  assert.ok(await page.locator('[data-act="export-today"]', { hasText: 'Export today again' }).isVisible());
+  assert.ok(await page.locator('[data-act="export-today"]', { hasText: 'Export again' }).isVisible());
+  assert.ok(await page.locator('.done-acts [data-tab="stats"]').isVisible(), 'Stats link on Done (Part E)');
   fs.writeFileSync(path.join(OUT, 'checkpoint-' + KEY + '.json'), JSON.stringify(file, null, 2));
 
   // ---- Claude's fill comes back (written here); Wed 14:00 Premarket asks for it

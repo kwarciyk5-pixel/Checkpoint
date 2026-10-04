@@ -389,8 +389,54 @@ body[data-nav="hidden"] .home{min-height:calc(100dvh - var(--bandh) - env(safe-a
 .badges{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 .badge{font-size:12px;letter-spacing:.04em;padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2)}
 .home-foot .done-export{min-height:52px;font-size:15px}
+.done-acts{display:flex;align-items:center;gap:12px}
+.done-acts .done-export{flex:1}
 .ru-fill{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted);border:1px dashed var(--line);border-radius:4px;padding:4px 4px 4px 12px}
 .ru-fill-acts{display:flex;gap:2px}
+
+/* ==== STYLE: stats + log ==== */
+/* Part E: the Stats page (hero, calendar, edge, 2×2, per-day blocks vs cap, pass bar, baseline) and the Log list. */
+.stats{max-width:430px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:4px;padding-bottom:24px}
+.st-hero{padding:18px 0 14px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line)}
+.st-big{font-family:var(--font-serif);font-size:72px;line-height:1}
+.st-big small{font-size:30px;color:var(--muted);margin-left:2px}
+.st-cap{font-size:14px;color:var(--muted)}
+.st-row{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted)}
+.st-row b{font-family:var(--font-serif);font-size:20px;font-weight:400;color:var(--ink);margin-right:2px}
+.st-note{font-size:13px;color:var(--muted)}
+.st-sec{display:flex;flex-direction:column;gap:10px;padding:16px 0;border-bottom:1px solid var(--line)}
+.st-sec:last-child{border-bottom:0}
+.st-cal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.st-day{height:40px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;border:1px solid transparent;color:var(--muted)}
+.st-day.clean{background:var(--ink);color:var(--bg)}
+.st-day.sat{background:var(--wait);color:var(--ink)}
+.st-day.breach{background:var(--cool);color:#1C1A17}
+.st-day.unfilled,.st-day.today{border-color:var(--ink);color:var(--ink)}
+.st-day.future{border:1px dashed var(--line)}
+.st-day.pad{visibility:hidden}
+.st-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.st-legend span{display:inline-flex;align-items:center;gap:6px}
+.st-legend .st-day{display:inline-block;width:12px;height:12px;border-radius:2px}
+.st-grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:12px}
+.st-grid3 > div,.st-2x2 > div{display:flex;flex-direction:column;gap:2px}
+.st-grid3 b,.st-2x2 b{font-family:var(--font-serif);font-size:24px;font-weight:400}
+.st-grid3 small,.st-2x2 small{font-size:12px;color:var(--muted)}
+.st-2x2{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.st-2x2 > div{background:var(--bg);padding:12px}
+.st-2x2 > div.b b{color:var(--cool-ink)}
+.st-bars{position:relative;display:flex;align-items:flex-end;gap:4px;min-height:calc(var(--max) * 14px + 4px);padding-top:4px;border-bottom:1px solid var(--line)}
+.st-bars::after{content:'';position:absolute;left:0;right:0;bottom:calc(var(--cap) * 14px);border-top:1px dashed var(--muted)}
+.st-bar{flex:1;min-width:0;max-width:22px;display:flex;flex-direction:column-reverse;gap:2px}
+.st-bar i,.st-blk{display:block;height:12px;background:var(--ink);border-radius:2px}
+.st-bar i.early,.st-blk.early{background:transparent;border:1.5px solid var(--cool)}
+.st-bar i.over{opacity:.5}
+.st-blk{width:12px}
+.st-base .st-row b{font-size:18px}
+.st-sec .bar{flex:none;height:6px}
+.lg{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.lg li{display:flex;gap:12px;font-size:14px;padding:5px 0;border-bottom:1px solid var(--line-soft)}
+.lg li:last-child{border-bottom:0}
+.lg time{color:var(--muted);font-variant-numeric:tabular-nums;flex:none;width:42px}
 
 /* ==== STYLE: modal + toast ==== */
 .modal-back{position:fixed;inset:0;z-index:80;background:rgba(28,26,23,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
@@ -416,6 +462,8 @@ body[data-nav="hidden"] .toasts{bottom:calc(env(safe-area-inset-bottom) + 16px)}
     <div class="brand"><img src="icons/icon-192.png" alt="">CHECKPOINT</div>
     <button class="tab" role="tab" data-tab="home" aria-selected="true">TODAY</button>
     <button class="tab" role="tab" data-tab="trade" aria-selected="false">TRADE</button>
+    <button class="tab" role="tab" data-tab="log" aria-selected="false">LOG</button>
+    <button class="tab" role="tab" data-tab="stats" aria-selected="false">STATS</button>
   </nav>
   <main id="view"></main>
 </div>
@@ -523,7 +571,7 @@ var App = (function () {
         resetHour: '06:00',
         activeDays: [1, 2, 3, 4, 5],
         session: { start: '09:30', end: '10:40', tz: 'America/New_York', observeMin: 15 },
-        series: { start: '2026-10-06', days: 20 },
+        series: { start: '2026-10-06', days: 20, passTarget: 3000 },
         rules: {
           tradeCap: 2, maxDailyLoss: 600, maxRiskPerTrade: 300, notATradeMsg: 'Not a trade. Arm every check first.',
           rrFloor: 1.5, rrPreferred: 2, doneTp: 2, doneSl: 2, greenCap: null
@@ -1052,7 +1100,7 @@ var App = (function () {
   };
   try {
     var savedTab = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('checkpoint.tab');
-    if (savedTab && /^(home|trade|cooldown|settings)$/.test(savedTab)) ui.tab = savedTab;
+    if (savedTab && /^(home|trade|cooldown|settings|log|stats)$/.test(savedTab)) ui.tab = savedTab;
   } catch (e) { /* ignore */ }
 
   // Paper theme. auto = dim from 19:00 TH until the daily reset, or whenever the OS is in dark mode.
@@ -1112,6 +1160,8 @@ var App = (function () {
     else if (ui.tab === 'premarket') html = viewPremarket();
     else if (ui.tab === 'trade') html = viewTrade();
     else if (ui.tab === 'cooldown') html = viewCooldown();
+    else if (ui.tab === 'stats') html = viewStats(); // v2 Part E
+    else if (ui.tab === 'log') html = viewLog(); // v2 Part E
     else html = viewSettings();
     var banner = ui.tab === 'home' && (homeLocked(hs.state) || hs.state === 'done') ? '' : checkinBanner();
     view.innerHTML = '<div class="wrap">' + banner + html + '</div>';
@@ -1836,7 +1886,8 @@ var App = (function () {
     var ac = state.activeCooldown;
     if (ac && !ac.finished) out += '<button type="button" class="textbtn" data-act="go-tab" data-tab="cooldown">' + esc(ac.name) + ' cooldown · <span data-cd-left>' + fmtMS((ac.endsAt - Date.now()) / 1000) + '</span> left</button>';
     var exported = hasEvent(day, 'export');
-    out += '<button type="button" class="btn block done-export" data-act="export-today" data-key="' + esc(hs.key) + '">' + (exported ? 'Export today again' : 'Export today') + '</button>';
+    out += '<div class="done-acts"><button type="button" class="btn done-export" data-act="export-today" data-key="' + esc(hs.key) + '">' + (exported ? 'Export again' : 'Export today') + '</button>' +
+      '<button type="button" class="textbtn" data-act="go-tab" data-tab="stats">Stats</button></div>'; // Part E
     return out + '</div>';
   }
   function homeOffday(hs) {
@@ -1987,6 +2038,171 @@ var App = (function () {
       '<button type="button" class="pill" data-act="card-band" data-v="normal" aria-pressed="' + (card.band !== 'low') + '">Normal</button>' +
       '<button type="button" class="pill" data-act="card-band" data-v="low" aria-pressed="' + (card.band === 'low') + '">Low</button></div></div></div>' +
       '<label class="eyebrow" for="card-pr">Practising</label><input type="text" id="card-pr" data-change="card-practising" data-fk="practising" autocomplete="off" placeholder="One sentence, carried to tomorrow" value="' + esc(card.practising) + '">';
+    return out + '</div>';
+  }
+
+  /* ==== STATS: series numbers ==== */
+  // Part E (spec §6). Pure: reads the series days, their trades and Claude's fill. Results in R, never dollars.
+  // Days without a fill count as "unfilled"; no verdict before the last series day.
+  var BASELINE = { winRate: 40, offPlan: '150/175', perDay: 20 }; // Aug–Sep 2026, from aug-sep-2026-trades.csv
+  function seriesKeysFor(settings) {
+    var se = settings.series, out = [];
+    if (!isObj(se) || !/^\d{4}-\d{2}-\d{2}$/.test(se.start || '')) return out;
+    var d = keyToDate(se.start);
+    for (var i = 0; i < 1000 && out.length < se.days; i++) {
+      if (settings.activeDays.indexOf(d.getDay()) >= 0) out.push(d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()));
+      d.setDate(d.getDate() + 1);
+    }
+    return out;
+  }
+  function rateOf(list) {
+    if (!list.length) return null;
+    var wins = list.filter(function (t) { return t.r > 0; });
+    var sum = function (a) { return a.reduce(function (x, t) { return x + t.r; }, 0); };
+    return { n: list.length, winRate: Math.round(wins.length / list.length * 100), avgR: sum(list) / list.length, avgWinR: wins.length ? sum(wins) / wins.length : null };
+  }
+  function statsFor(s, now) {
+    var keys = seriesKeysFor(s.settings), today = tradingDayKey(now, s.settings.resetHour);
+    var sd = seriesDayFor(today, s.settings);
+    var all = [], perDay = [], calendar = [], urges = 0;
+    var grid = { CW: 0, CL: 0, BW: 0, BL: 0 };
+    keys.forEach(function (k) {
+      var day = s.days[k] || null;
+      var app = day && Array.isArray(day.trades) ? day.trades : [];
+      var byId = {};
+      app.forEach(function (t) { byId[t.id] = t; });
+      urges += day && Array.isArray(day.urges) ? day.urges.length : 0;
+      var f = day && isObj(day.filled) ? day.filled : null;
+      (f && Array.isArray(f.trades) ? f.trades : []).forEach(function (ft) {
+        if (!ft) return;
+        var at = byId[ft.id] || {};
+        var r = Number(ft.r);
+        all.push({ key: k, r: isFinite(r) ? r : 0, hasR: isFinite(r), clean: ft.clean === true, box: ft.box, trigger: !!(ft.checks && ft.checks.trigger), early: !!at.earlyWindow });
+        if (grid[ft.box] !== undefined) grid[ft.box]++;
+      });
+      var cls;
+      if (k > today) cls = 'future';
+      else {
+        var p = pointsFor(s, k, now);
+        if (p.clean === false) cls = 'breach';
+        else if (p.clean === true) cls = !app.length && hasEvent(day, 'sitout') ? 'sat' : 'clean';
+        else cls = !app.length && hasEvent(day, 'sitout') ? 'sat' : (k === today ? 'today' : 'unfilled');
+      }
+      calendar.push({ key: k, cls: cls });
+      if (k <= today) perDay.push({ key: k, n: app.length, early: app.filter(function (t) { return t.earlyWindow; }).length });
+    });
+    var withR = all.filter(function (t) { return t.hasR; });
+    var conf = rateOf(withR.filter(function (t) { return t.trigger; }));
+    var early = withR.filter(function (t) { return t.early; }), other = withR.filter(function (t) { return !t.early; });
+    var risk = Math.max(1, Number(s.settings.rules.maxRiskPerTrade) || 300);
+    var target = Number(s.settings.series && s.settings.series.passTarget) || 3000;
+    var ss = seriesStatsFor(s, now);
+    return {
+      day: sd ? Math.max(0, Math.min(sd.n, sd.of)) : 0, of: keys.length, final: !!sd && sd.n >= keys.length,
+      trades: all.length, clean: all.filter(function (t) { return t.clean; }).length,
+      cleanRate: all.length ? Math.round(all.filter(function (t) { return t.clean; }).length / all.length * 100) : null,
+      streak: ss.streak, best: ss.best, total: ss.total, level: ss.level, badges: Object.keys(ss.badges),
+      edge: conf, breakEven: { r2: 33, r15: 40 }, grid: grid, perDay: perDay, cap: s.settings.rules.tradeCap,
+      calendar: calendar, urges: urges,
+      passR: withR.reduce(function (a, t) { return a + t.r; }, 0), targetR: target / risk,
+      earlyVs: early.length >= 5 && other.length >= 5 ? { early: rateOf(early), other: rateOf(other) } : null,
+      earlyCounts: { early: early.length, other: other.length }
+    };
+  }
+
+  /* ==== VIEW: stats + log ==== */
+  // Part E. Stats: process first (clean rate, series, streak), then edge in R, then the calendar. No dollars,
+  // no red, no "today" highlight. Log: each day's events as a plain list, newest day first.
+  function fmtR(x) { return (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(2).replace(/\.?0+$/, '') + 'R'; }
+  function viewStats() {
+    var st = statsFor(state, new Date());
+    var out = '<div class="stats"><header class="home-head"><span>Stats</span><span>' + (st.of ? 'day ' + st.day + ' of ' + st.of : '') + '</span></header>';
+    out += '<section class="st-hero"><div class="st-big" data-st="clean">' + (st.cleanRate == null ? '—' : st.cleanRate + '<small>%</small>') + '</div>' +
+      '<div class="st-cap">clean trades' + (st.trades ? ' · ' + st.clean + ' of ' + st.trades : ' · none filled yet') + '</div>' +
+      '<div class="st-row"><span><b>' + st.streak + '</b> clean-day streak</span><span>best <b>' + st.best + '</b></span><span><b>' + st.urges + '</b> urges resisted</span></div>' +
+      '<div class="st-note">' + (st.final ? 'Series complete. Read it whole.' : 'No verdict before day ' + st.of + '.') + '</div></section>';
+    // Points
+    out += '<section class="st-sec"><span class="eyebrow">Points · behaviour only</span><div class="st-row"><span><b>' + st.total + '</b> pts</span><span>' + esc(st.level) + '</span></div>' +
+      (st.badges.length ? '<div class="badges" style="justify-content:flex-start">' + st.badges.map(function (b) { return '<span class="badge">' + esc(b) + '</span>'; }).join('') + '</div>' : '') + '</section>';
+    // Calendar
+    out += '<section class="st-sec"><span class="eyebrow">Series</span><div class="st-cal" role="list">';
+    if (st.calendar.length) {
+      var pad = (keyToDate(st.calendar[0].key).getDay() + 6) % 7;
+      for (var i = 0; i < Math.min(pad, 4); i++) out += '<span class="st-day pad" aria-hidden="true"></span>';
+    }
+    st.calendar.forEach(function (c) {
+      var lbl = { clean: 'clean', sat: 'sat out', breach: 'breach', unfilled: 'unfilled', future: 'to come', today: 'today' }[c.cls];
+      out += '<span class="st-day ' + c.cls + '" role="listitem" aria-label="' + esc(fmtDayKey(c.key)) + ': ' + lbl + '">' + keyToDate(c.key).getDate() + '</span>';
+    });
+    out += '</div><div class="st-legend"><span><i class="st-day clean"></i>clean</span><span><i class="st-day sat"></i>sat out</span><span><i class="st-day breach"></i>breach</span><span><i class="st-day unfilled"></i>unfilled</span></div></section>';
+    // Edge
+    var e = st.edge;
+    out += '<section class="st-sec"><span class="eyebrow">Edge · confirmed-trigger trades</span>' +
+      (e ? '<div class="st-grid3"><div><b>' + e.winRate + '%</b><small>win rate</small></div><div><b>' + fmtR(e.avgR) + '</b><small>avg per trade</small></div><div><b>' + (e.avgWinR == null ? '—' : fmtR(e.avgWinR)) + '</b><small>avg win</small></div></div>' +
+        '<div class="st-note">' + e.n + ' trades · break-even 33% at 1:2, 40% at 1:1.5</div>'
+        : '<div class="st-note">Shows after the first filled trade with a confirmed trigger. Break-even: 33% at 1:2, 40% at 1:1.5.</div>') + '</section>';
+    // 2x2
+    var g = st.grid;
+    out += '<section class="st-sec"><span class="eyebrow">Clean / broken × win / loss</span><div class="st-2x2">' +
+      [['CW', 'clean win'], ['CL', 'clean loss'], ['BW', 'broken win'], ['BL', 'broken loss']].map(function (x) {
+        return '<div class="' + (x[0][0] === 'B' ? 'b' : 'c') + '"><b>' + g[x[0]] + '</b><small>' + x[1] + '</small></div>';
+      }).join('') + '</div></section>';
+    // Trades per day vs cap
+    var max = Math.max(st.cap, 1);
+    st.perDay.forEach(function (d) { if (d.n > max) max = d.n; });
+    out += '<section class="st-sec"><span class="eyebrow">Trades per day · cap ' + esc(st.cap) + '</span><div class="st-bars" style="--max:' + max + ';--cap:' + st.cap + '">';
+    st.perDay.forEach(function (d) {
+      var blocks = '';
+      for (var j = 0; j < d.n; j++) blocks += '<i class="' + (j < d.early ? 'early' : '') + (j >= st.cap ? ' over' : '') + '"></i>';
+      out += '<span class="st-bar" aria-label="' + esc(fmtDayKey(d.key)) + ': ' + d.n + ' trades' + (d.early ? ', ' + d.early + ' in the early window' : '') + '">' + blocks + '</span>';
+    });
+    if (!st.perDay.length) out += '<span class="st-note">From day 1.</span>';
+    out += '</div><div class="st-legend"><span><i class="st-blk"></i>trade</span><span><i class="st-blk early"></i>early window</span><span>September: up to ' + BASELINE.perDay + ' a day</span></div></section>';
+    // Pass progress
+    var pct = st.targetR ? Math.max(0, Math.min(100, st.passR / st.targetR * 100)) : 0;
+    out += '<section class="st-sec"><span class="eyebrow">Pass progress</span><div class="st-row"><span><b>' + fmtR(st.passR) + '</b> of ' + st.targetR.toFixed(1) + 'R</span></div>' +
+      '<div class="bar" role="progressbar" aria-label="Pass progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(pct) + '"><i style="width:' + pct.toFixed(1) + '%"></i></div></section>';
+    // Early vs others
+    var ev = st.earlyVs;
+    out += '<section class="st-sec"><span class="eyebrow">Early window vs the rest</span>' + (ev
+      ? '<div class="st-grid3"><div><b>' + ev.early.winRate + '% · ' + fmtR(ev.early.avgR) + '</b><small>first 15 min (' + ev.early.n + ')</small></div><div><b>' + ev.other.winRate + '% · ' + fmtR(ev.other.avgR) + '</b><small>after (' + ev.other.n + ')</small></div></div>'
+      : '<div class="st-note">Shows once there are 5 of each (now ' + st.earlyCounts.early + ' early, ' + st.earlyCounts.other + ' after).</div>') + '</section>';
+    // Baseline
+    out += '<section class="st-sec st-base"><span class="eyebrow">Aug–Sep baseline</span><div class="st-row"><span><b>' + BASELINE.winRate + '%</b> wins</span><span><b>' + BASELINE.offPlan + '</b> off-plan</span><span>up to <b>' + BASELINE.perDay + '</b> trades a day</span></div></section>';
+    return out + '</div>';
+  }
+  var EVENT_LABEL = {
+    gate_yes: 'Gate yes', gate_no: 'Gate no', plan_ready: 'Plan ready', locks_ready: 'Accounts locked', desk_ready: 'Desk ready',
+    start_looking: 'Started looking', enter: 'Entered', stopped: 'Stopped', target: 'Target', undo: 'Undo', urge: 'Urge',
+    left_desk: 'Left the desk', cooldown_start: 'Cooldown started', cooldown_end: 'Cooldown ended', sitout: 'Sat out',
+    early_warning_shown: 'Early-window warning', greencap: 'Green cap hit', dll: 'Daily loss hit', export: 'Exported', import: 'Imported a fill'
+  };
+  function eventLabel(e) {
+    var t = String(e.type || '');
+    if (/^setup_pick:/.test(t)) return 'Picked ' + (e.detail || 'a setup');
+    if (/^check_tick:/.test(t)) return 'Check ' + t.split(':')[1] + (e.detail ? ' · ' + e.detail : '');
+    var l = EVENT_LABEL[t] || t;
+    if ((t === 'gate_yes' || t === 'gate_no') && e.detail) return l + ' · ' + e.detail;
+    if (t === 'cooldown_start' && e.detail) return l + ' · ' + e.detail;
+    if (t === 'cooldown_end' && e.detail === 'early') return l + ' early';
+    if (t === 'urge' && e.detail === 'resisted') return 'Urge resisted';
+    if (t === 'import' && e.detail) return l + ' · ' + fmtDayKey(e.detail);
+    return l;
+  }
+  function viewLog() {
+    var keys = Object.keys(state.days).filter(function (k) {
+      var d = state.days[k];
+      return isObj(d) && Array.isArray(d.events) && d.events.length;
+    }).sort().reverse().slice(0, 14);
+    var out = '<div class="stats"><header class="home-head"><span>Log</span><span>' + (keys.length ? keys.length + (keys.length === 1 ? ' day' : ' days') : '') + '</span></header>';
+    if (!keys.length) return out + '<p class="st-note" style="margin-top:24px">Every tap during the day is listed here, with its time.</p></div>';
+    keys.forEach(function (k) {
+      var d = state.days[k], f = d.filled ? ' · filled' : '';
+      out += '<section class="st-sec"><span class="eyebrow">' + esc(fmtDayKey(k)) + f + '</span><ol class="lg">' + d.events.map(function (e) {
+        var hm = String(e.t || '').slice(11, 16);
+        return '<li><time>' + esc(hm) + '</time><span>' + esc(eventLabel(e)) + '</span></li>';
+      }).join('') + '</ol></section>';
+    });
     return out + '</div>';
   }
 
@@ -2504,6 +2720,8 @@ var App = (function () {
       '<div class="field"><div class="inline"><label for="f-obs">Early window after the open (minutes)</label><input id="f-obs" class="num-sm" type="number" inputmode="numeric" min="0" max="60" step="1" value="' + esc(observeMinOf(s)) + '" data-change="session-num" data-field="observeMin"></div></div>' +
       '<div class="field"><span class="lbl">Series</span><div class="row"><input type="date" aria-label="Series start" value="' + esc(s.series.start) + '" data-change="series" data-field="start"><input class="num-sm" type="number" inputmode="numeric" min="1" max="200" step="1" aria-label="Series length in trading days" value="' + esc(s.series.days) + '" data-change="series" data-field="days"></div>' +
       '<span class="hint">Start date and length in trading days (Premarket shows day N of 20).</span></div>' +
+      '<div class="field"><label for="f-pass">Pass target ($)</label><input id="f-pass" class="num-sm" type="number" inputmode="numeric" min="100" step="100" value="' + esc(s.series.passTarget) + '" data-change="series" data-field="passTarget">' +
+      '<span class="hint">Stats shows pass progress in R only: this ÷ max risk per trade = ' + esc((s.series.passTarget / Math.max(1, s.rules.maxRiskPerTrade)).toFixed(1)) + ' R.</span></div>' +
       '<div class="field"><span class="lbl">Active days</span><div class="day-chips">' + dayOrder.map(function (d) {
         var names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         return '<button type="button" data-act="day" data-dow="' + d[0] + '" aria-pressed="' + (s.activeDays.indexOf(d[0]) >= 0) + '" aria-label="' + names[d[0]] + '">' + d[1] + '</button>';
@@ -3816,6 +4034,7 @@ var App = (function () {
     'series': function (el) {
       var f = el.getAttribute('data-field');
       if (f === 'start') { if (!/^\d{4}-\d{2}-\d{2}$/.test(el.value)) { render(); return; } state.settings.series.start = el.value; }
+      else if (f === 'passTarget') { var pt = Math.round(Number(el.value)); if (!isFinite(pt) || pt < 1) { render(); return; } state.settings.series.passTarget = pt; save(); render(); flashSaved(); return; }
       else { var n = Math.round(Number(el.value)); if (!isFinite(n) || n < 1) { render(); return; } state.settings.series.days = Math.min(200, n); }
       save();
       flashSaved();
@@ -4072,6 +4291,10 @@ var App = (function () {
     dayBadgesFor: dayBadgesFor,
     levelFor: levelFor,
     isoLocal: isoLocal,
+    // v2 Part E
+    statsFor: statsFor,
+    seriesKeysFor: seriesKeysFor,
+    eventLabel: eventLabel,
     WORD_LOOP: WORD_LOOP,
     HOME_STATES: HOME_STATES,
     homeNow: function () { return homeNow(); },
