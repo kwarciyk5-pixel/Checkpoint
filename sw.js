@@ -1,5 +1,5 @@
 /* Checkpoint service worker: network-first for the app page, cache-first for icons. */
-var CACHE = 'checkpoint-v6';
+var CACHE = 'checkpoint-v7';
 var FONT_CACHE = 'checkpoint-fonts-v1';
 var PRECACHE = [
   './',

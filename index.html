@@ -384,6 +384,14 @@ body[data-nav="hidden"] .home{min-height:calc(100dvh - var(--bandh) - env(safe-a
 .ed-2 > div{display:flex;flex-direction:column;gap:6px}
 .card-ed .stepper{align-self:flex-start}
 
+/* ==== STYLE: log + points ==== */
+/* Part D: badge chips and Export on Done, the "not filled yet" line on Premarket. */
+.badges{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.badge{font-size:12px;letter-spacing:.04em;padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2)}
+.home-foot .done-export{min-height:52px;font-size:15px}
+.ru-fill{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted);border:1px dashed var(--line);border-radius:4px;padding:4px 4px 4px 12px}
+.ru-fill-acts{display:flex;gap:2px}
+
 /* ==== STYLE: modal + toast ==== */
 .modal-back{position:fixed;inset:0;z-index:80;background:rgba(28,26,23,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 @media (min-width:600px){.modal-back{align-items:center}}
@@ -414,6 +422,7 @@ body[data-nav="hidden"] .toasts{bottom:calc(env(safe-area-inset-bottom) + 16px)}
 <div id="modal-root"></div>
 <div id="toast-root" class="toasts" aria-live="polite"></div>
 <input type="file" id="import-file" accept="application/json,.json" class="sr" tabindex="-1" aria-hidden="true">
+<input type="file" id="import-filled" accept="application/json,.json" class="sr" tabindex="-1" aria-hidden="true">
 <script>
 var App = (function () {
   'use strict';
@@ -614,7 +623,9 @@ var App = (function () {
       dayDoneShown: false,
       // v2 home (Part B)
       looking: null, lookingLeftAt: null, enteredAt: null, enteredSetup: null,
-      dllHit: null, greenCapHit: null, sitouts: [], leftDesk: []
+      dllHit: null, greenCapHit: null, sitouts: [], leftDesk: [],
+      // v2 Part D: the day's event log (append-only) and Claude's end-of-day fill (from Import filled)
+      events: [], filled: null
     };
   }
 
@@ -1431,6 +1442,228 @@ var App = (function () {
     return best;
   }
 
+  /* ==== LOG: events ==== */
+  // Part D (spec §4). day.events = [{t, type, detail}], append-only: nothing here ever edits or removes one.
+  // t is local ISO with offset. Export today writes checkpoint-YYYY-MM-DD.json for Claude's EOD fill;
+  // Import filled stores the returned `filled` on that day and never touches its events.
+  function isoLocal(d) {
+    var o = -d.getTimezoneOffset(), a = Math.abs(o);
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()) +
+      (o >= 0 ? '+' : '-') + pad2(Math.floor(a / 60)) + ':' + pad2(a % 60);
+  }
+  function logEvent(type, detail, key) {
+    var day = getDay(key || todayKey());
+    if (!Array.isArray(day.events)) day.events = [];
+    var ev = { t: isoLocal(new Date()), type: type };
+    if (detail !== undefined && detail !== null && detail !== '') ev.detail = String(detail);
+    day.events.push(ev);
+    return ev;
+  }
+  function hasEvent(day, type) { return !!(day && Array.isArray(day.events) && day.events.some(function (e) { return e.type === type; })); }
+  function countEvents(day, type) { return day && Array.isArray(day.events) ? day.events.filter(function (e) { return e.type === type; }).length : 0; }
+  // plan_ready / locks_ready / desk_ready: once per day, the first time that roll-up turns ✓.
+  var READY_EVENTS = [['plan', 'plan_ready'], ['accounts', 'locks_ready'], ['desk', 'desk_ready']];
+  function logReady(key) {
+    key = key || todayKey();
+    var day = state.days[key];
+    if (!day) return;
+    var ru = rollupsFor(state, day, key);
+    READY_EVENTS.forEach(function (r) { if (ru[r[0]].st === 'ok' && !hasEvent(day, r[1])) logEvent(r[1], '', key); });
+  }
+  var OUTCOME_EVENT = { SL: 'stopped', TP: 'target' };
+  function exportTodayFor(s, key) {
+    var day = s.days[key] || {};
+    var gates = {}, locks = {};
+    var pmd = day.premarket || { checked: {}, gateNo: {} };
+    itemsOfRow(s, 'body').filter(function (it) { return it.gate; }).forEach(function (it) {
+      gates[it.text] = pmd.checked && pmd.checked[it.id] ? 'yes' : (pmd.gateNo && pmd.gateNo[it.id] ? 'no' : null);
+    });
+    itemsOfRow(s, 'accounts').forEach(function (it) { locks[it.text] = !!(pmd.checked && pmd.checked[it.id]); });
+    var tz = 'local';
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'local'; } catch (e) { /* ignore */ }
+    var card = cardFor(s, key);
+    return {
+      v: 2, date: key, tz: tz, today: clone(card), gates: gates, locks: locks,
+      events: clone(Array.isArray(day.events) ? day.events : []),
+      trades: (day.trades || []).map(function (t) {
+        var su = (card.setups || []).filter(function (x) { return x.id === t.setupId; })[0];
+        return {
+          id: t.id, setupId: t.setupId || null, setup: su ? su.text : null, grade: t.grade || null,
+          enteredAt: t.enteredAt || null, closedAt: t.closedAt || t.at || null, outcome: String(t.outcome || '').toLowerCase(),
+          earlyWindow: !!t.earlyWindow, openOffsetMin: t.openOffsetMin == null ? null : t.openOffsetMin, checklistComplete: !!t.checklistComplete
+        };
+      }),
+      urges: (day.urges || []).length, points: pointsFor(s, key, new Date()), filled: day.filled || null
+    };
+  }
+  function downloadJSON(name, obj) {
+    var blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  }
+  function exportToday(key) {
+    key = key || todayKey();
+    logEvent('export', '', key);
+    saveNow();
+    downloadJSON('checkpoint-' + key + '.json', exportTodayFor(state, key));
+    toast('Exported checkpoint-' + key + '.json');
+  }
+  // A returned day file: { v: 2, date, filled: {trades: [...], offplanFills: [...], dayClean, pointsAdj, comment} }.
+  function validFilled(obj) {
+    return isObj(obj) && obj.v === 2 && /^\d{4}-\d{2}-\d{2}$/.test(obj.date || '') && isObj(obj.filled) &&
+      (obj.filled.trades === undefined || Array.isArray(obj.filled.trades)) &&
+      (obj.filled.offplanFills === undefined || Array.isArray(obj.filled.offplanFills));
+  }
+  // Pure merge: only day.filled changes. Returns the merged day (a new day record if none existed).
+  function mergeFilled(s, obj) {
+    var day = s.days[obj.date];
+    if (!day) { day = s.days[obj.date] = newDay(); day.today = carryToday(s, obj.date); }
+    var f = clone(obj.filled);
+    if (!Array.isArray(f.trades)) f.trades = [];
+    if (!Array.isArray(f.offplanFills)) f.offplanFills = [];
+    f.importedAt = new Date().toISOString();
+    day.filled = f;
+    return day;
+  }
+  function handleFilledFile(file) {
+    var fr = new FileReader();
+    fr.onload = function () {
+      var obj;
+      try { obj = JSON.parse(fr.result); } catch (e) { obj = null; }
+      if (!validFilled(obj)) {
+        var why = isObj(obj) && obj.v === 2 && obj.filled === null ? 'This day file is not filled yet. Send it to Claude for the end-of-day fill first.' : 'This is not a filled Checkpoint day file (v 2, date, filled). Nothing was changed.';
+        openModal({ title: 'Not imported', html: '<p>' + esc(why) + '</p>', actions: [{ label: 'OK', cls: 'ghost' }] });
+        return;
+      }
+      var had = !!(state.days[obj.date] && state.days[obj.date].filled);
+      mergeFilled(state, obj);
+      if (obj.date !== todayKey()) logEvent('import', obj.date);
+      saveNow();
+      render();
+      toast((had ? 'Fill replaced · ' : 'Filled · ') + fmtDayKey(obj.date));
+    };
+    fr.readAsText(file);
+  }
+  // The last day before `key` that had trades and still has no fill (for the Premarket prompt).
+  function unfilledBefore(s, key) {
+    var keys = Object.keys(s.days).filter(function (k) {
+      var d = s.days[k];
+      return k < key && isObj(d) && Array.isArray(d.trades) && d.trades.length && !d.filled;
+    }).sort();
+    var k = keys[keys.length - 1];
+    if (!k) return null;
+    var age = (keyToDate(key) - keyToDate(k)) / 86400000;
+    return age <= 7 ? k : null;
+  }
+
+  /* ==== POINTS: behaviour score ==== */
+  // Part D (spec §5). Computed from events + trades + filled every time; never stored as truth.
+  // Behaviour only: a clean loss scores like a clean win, and no number here comes from P&L.
+  var LEVELS = [[0, 'Observer'], [300, 'Gatekeeper'], [800, 'Custodian'], [1500, 'Operator']];
+  var DONE_RULE_REASONS = ['tp', 'sl', 'cap', 'dll', 'green', 'time', 'closed'];
+  // doneReasonFor checks "window closed" against now's own day; scoring a past day needs that day's window.
+  function dayReasonFor(s, day, key, now) {
+    var r = doneReasonFor(s, day, now);
+    if (r === 'time' && now.getTime() <= sessionWindow(key, s.settings).end) r = null;
+    if (!r && now.getTime() > sessionWindow(key, s.settings).end) r = 'time';
+    return r;
+  }
+  // When the day became done, as a time (ms), or null.
+  function doneAtFor(s, day, key, now) {
+    var reason = dayReasonFor(s, day, key, now);
+    if (!reason) return null;
+    var r = s.settings.rules, t = day.trades || [];
+    function nth(list, n) { var x = list[n - 1]; return x ? Date.parse(x.closedAt || x.at) : null; }
+    if (reason === 'dll') return Date.parse(day.dllHit);
+    if (reason === 'green') return Date.parse(day.greenCapHit);
+    if (reason === 'tp') return nth(t.filter(function (x) { return x.outcome === 'TP'; }), r.doneTp || 2);
+    if (reason === 'sl') return nth(t.filter(function (x) { return x.outcome === 'SL'; }), r.doneSl || 2);
+    if (reason === 'cap') return nth(t, r.tradeCap);
+    if (reason === 'closed') {
+      var ci = (day.checkins || []).filter(function (c) { return /^done/.test(String(c.answer || '')); })[0];
+      return ci ? Date.parse(ci.at) : sessionWindow(key, s.settings).end;
+    }
+    return sessionWindow(key, s.settings).end;
+  }
+  function pointsFor(s, key, now) {
+    var day = s.days[key] || {};
+    var f = isObj(day.filled) ? day.filled : null;
+    var items = [];
+    function add(k, n, pts) { if (n > 0 && pts) items.push({ k: k, n: n, pts: n * pts }); }
+    if (hasEvent(day, 'locks_ready')) add('locks', 1, 10);
+    if (hasEvent(day, 'plan_ready')) add('plan', 1, 10);
+    var sd = seriesDayFor(key, s.settings);
+    add('sitout', Math.min(1, countEvents(day, 'sitout')), sd && sd.n >= 1 && sd.n <= 5 ? 25 : 15);
+    var ft = f && Array.isArray(f.trades) ? f.trades : [];
+    add('clean', ft.filter(function (t) { return t && t.clean === true; }).length, 20);
+    add('urge', Math.min(2, (day.urges || []).length), 5);
+    add('leftDesk', countEvents(day, 'left_desk'), 10);
+    var sod = (day.sessionOver && day.sessionOver.checked) || {};
+    var charts = [];
+    s.checklists.sessionOver.categories.forEach(function (c) { c.items.forEach(function (it) { if (/chart/i.test(it.text)) charts.push(it); }); });
+    if (charts.some(function (it) { return sod[it.id]; })) add('charts', 1, 10);
+    var off = f && Array.isArray(f.offplanFills) ? f.offplanFills : [];
+    add('offplan', off.length, -30);
+    var bw = ft.filter(function (t) { return t && t.box === 'BW'; }).length;
+    add('brokenWin', bw, -30);
+    var doneAt = doneAtFor(s, day, key, now);
+    var after = 0;
+    if (doneAt != null && isFinite(doneAt)) {
+      after = (day.trades || []).filter(function (t) { var e = Date.parse(t.enteredAt || t.at); return isFinite(e) && e > doneAt; }).length;
+    }
+    after += off.filter(function (o) { return o && o.afterDone; }).length;
+    var reason = dayReasonFor(s, day, key, now);
+    var kept = !!reason && DONE_RULE_REASONS.indexOf(reason) >= 0 && after === 0;
+    if (kept) add('doneKept', 1, 25);
+    add('afterDone', after, -50);
+    if (day.dllHit) add('dll', 1, -50);
+    var adj = f && isFinite(Number(f.pointsAdj)) ? Math.round(Number(f.pointsAdj)) : 0;
+    if (adj) items.push({ k: 'adj', n: 1, pts: adj });
+    var total = items.reduce(function (a, x) { return a + x.pts; }, 0);
+    var clean = null;
+    if (f) {
+      clean = ft.every(function (t) { return t && t.clean === true; }) && !off.length && after === 0 && f.dayClean !== false;
+    }
+    return { total: total, items: items, clean: clean, filled: !!f, dangerousGreen: bw > 0, doneKept: kept, reason: reason };
+  }
+  function levelFor(total) {
+    var l = LEVELS[0][1];
+    LEVELS.forEach(function (x) { if (total >= x[0]) l = x[1]; });
+    return l;
+  }
+  // Series-wide: total (never reset), clean-day streak (a breach resets it; unfilled days are skipped), badges.
+  function seriesStatsFor(s, now) {
+    var keys = Object.keys(s.days).filter(function (k) { return /^\d{4}-\d{2}-\d{2}$/.test(k) && isObj(s.days[k]); }).sort();
+    var total = 0, streak = 0, best = 0, cleanDays = 0, badges = {};
+    keys.forEach(function (k) {
+      var p = pointsFor(s, k, now);
+      total += p.total;
+      if (p.clean === true) { streak++; cleanDays++; if (streak > best) best = streak; }
+      else if (p.clean === false) streak = 0;
+      dayBadgesFor(s, k, now, p).forEach(function (b) { if (!badges[b]) badges[b] = k; });
+      if (best >= 5 && !badges['5 clean days']) badges['5 clean days'] = k;
+    });
+    return { total: total, level: levelFor(total), streak: streak, best: best, cleanDays: cleanDays, badges: badges };
+  }
+  function dayBadgesFor(s, key, now, p) {
+    var day = s.days[key] || {}, out = [];
+    p = p || pointsFor(s, key, now);
+    var f = isObj(day.filled) ? day.filled : null;
+    var byId = {};
+    (day.trades || []).forEach(function (t) { byId[t.id] = t; });
+    if (f && (f.trades || []).some(function (t) { return t && (t.box === 'CL' || (t.clean === true && byId[t.id] && byId[t.id].outcome === 'SL')); })) out.push('clean loss');
+    if (p.reason === 'tp' && p.doneKept) out.push('two and done');
+    var sl = (day.trades || []).some(function (t) { return t.outcome === 'SL'; });
+    if (sl && hasEvent(day, 'left_desk')) out.push('walked away');
+    if (hasEvent(day, 'sitout')) out.push('sat out right');
+    return out;
+  }
+  function fmtPts(n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + ' pts'; }
+
   /* ==== VIEW: home ==== */
   function viewHome(hs) {
     var fn = {
@@ -1576,13 +1809,22 @@ var App = (function () {
       green: 'cap', time: esc(sessionTimes(hs.key).end), closed: 'closed'
     }[reason];
     var names = { TP: 'target', SL: 'stop', SCRATCH: 'scratch', MANUAL: 'manual' };
-    var sub = (day.trades || []).map(function (t) { return names[t.outcome] || String(t.outcome).toLowerCase(); }).concat([urgeText(day)]).join(' · ');
+    // Part D: each trade shows clean / breach once Claude's fill is in; until then its outcome. Points are behaviour only.
+    var fillById = {};
+    if (day.filled && Array.isArray(day.filled.trades)) day.filled.trades.forEach(function (ft) { if (ft && ft.id) fillById[ft.id] = ft; });
+    var pts = pointsFor(state, hs.key, hs.now);
+    var sub = (day.trades || []).map(function (t) {
+      var ft = fillById[t.id];
+      return ft ? (ft.clean === true ? 'clean' : 'breach') : (names[t.outcome] || String(t.outcome).toLowerCase());
+    }).concat([urgeText(day), fmtPts(pts.total)]).join(' · ');
+    var badges = dayBadgesFor(state, hs.key, hs.now, pts);
     var colour = dayColourFor(reason, day, c);
     var p = colour ? findPreset(s.presetLinks[colour === 'red' ? 'redDay' : 'greenDay']) : null;
     var sod = (day.sessionOver && day.sessionOver.checked) || {};
     var out = homeHead('Done', SETTINGS_LINK) +
       '<div class="home-mid" style="gap:24px"><div class="done-circle" aria-hidden="true">' + circle + '</div><div class="home-text">' +
-      '<p class="home-line">' + esc(DONE_TEXT[reason]).replace(/\n/g, '<br>') + '</p><p class="home-sub">' + esc(sub) + '</p>' +
+      '<p class="home-line">' + esc(DONE_TEXT[reason]).replace(/\n/g, '<br>') + '</p><p class="home-sub" data-done-sub>' + esc(sub) + '</p>' +
+      (badges.length ? '<div class="badges">' + badges.map(function (b) { return '<span class="badge">' + esc(b) + '</span>'; }).join('') + '</div>' : '') +
       (p && p.startMsg ? '<p class="done-msg">' + esc(p.startMsg) + '</p>' : '') + '</div></div><div class="home-foot"><div>';
     state.checklists.sessionOver.categories.forEach(function (cat) {
       cat.items.forEach(function (it) {
@@ -1593,6 +1835,8 @@ var App = (function () {
     out += '</div>';
     var ac = state.activeCooldown;
     if (ac && !ac.finished) out += '<button type="button" class="textbtn" data-act="go-tab" data-tab="cooldown">' + esc(ac.name) + ' cooldown · <span data-cd-left>' + fmtMS((ac.endsAt - Date.now()) / 1000) + '</span> left</button>';
+    var exported = hasEvent(day, 'export');
+    out += '<button type="button" class="btn block done-export" data-act="export-today" data-key="' + esc(hs.key) + '">' + (exported ? 'Export today again' : 'Export today') + '</button>';
     return out + '</div>';
   }
   function homeOffday(hs) {
@@ -1658,6 +1902,12 @@ var App = (function () {
     var day = hs.day, pmd = (day && day.premarket) || EMPTY_PMD;
     var ru = rollupsFor(state, day, hs.key), card = cardFor(state, hs.key);
     var out = '';
+    var uf = unfilledBefore(state, hs.key);
+    if (uf) {
+      out += '<div class="ru-fill" role="status"><span>' + esc(fmtDayKey(uf)) + ' isn\'t filled yet.</span>' +
+        '<span class="ru-fill-acts"><button type="button" class="textbtn" data-act="export-today" data-key="' + esc(uf) + '">Export</button>' +
+        '<button type="button" class="textbtn" data-act="import-filled">Import filled</button></span></div>';
+    }
     var due = dueTimedItem(pmd, hs.now);
     if (due) {
       out += '<div class="ru-now" role="status"><span class="ru-now-t">' + esc(due.time) + '</span><span class="ru-now-x">' + esc(due.text) + '</span>' +
@@ -1892,6 +2142,7 @@ var App = (function () {
       var st = pmStats(cat.items, pmd);
       if (st.req > 0 && st.done === st.req) pmd.collapsed[cat.id] = true;
     }
+    logReady(); // v2 Part D: plan_ready / locks_ready / desk_ready, once each
     save();
     render();
   }
@@ -2031,6 +2282,7 @@ var App = (function () {
     rec.openOffsetMin = openMin === null ? null : Math.floor(openMin);
     rec.earlyWindow = openMin !== null && openMin >= 0 && openMin < observeMinOf(c.s);
     day.trades.push(rec);
+    logEvent(OUTCOME_EVENT[outcome] || String(outcome).toLowerCase(), rec.id, c.key);
     day.tradeChecks = {};
     day.entered = false;
     day.enteredAt = null;
@@ -2064,6 +2316,7 @@ var App = (function () {
     day.enteredAt = before.enteredAt;
     day.enteredSetup = before.enteredSetup;
     day.undone.push({ outcome: rec.outcome, n: rec.n, loggedAt: rec.at, undoneAt: new Date().toISOString(), cooldownCancelled: cancelled, id: uid(), kind: 'trade', device: devId() });
+    logEvent('undo', rec.id, key);
     saveNow();
     ui.tab = 'trade';
     try { sessionStorage.setItem('checkpoint.tab', 'trade'); } catch (e) { /* ignore */ }
@@ -2084,6 +2337,7 @@ var App = (function () {
         presetId: p.id, name: p.name, seconds: p.seconds, startMsg: p.startMsg, endMsg: p.endMsg,
         steps: clone(p.steps), startedAt: t, endsAt: t + p.seconds * 1000, stepsDone: {}, trigger: trigger || 'manual', finished: false
       };
+      logEvent('cooldown_start', trigger || 'manual');
       ui.cdSelected = p.id;
       ui.dayDone = false;
       saveNow();
@@ -2107,6 +2361,7 @@ var App = (function () {
       endedEarly: !!endedEarly, trigger: ac.trigger,
       id: uid(), device: devId()
     });
+    logEvent('cooldown_end', endedEarly ? 'early' : ac.trigger);
   }
   function finishCooldownIfDue() {
     var ac = state.activeCooldown;
@@ -2263,6 +2518,8 @@ var App = (function () {
     // 7. Data
     out += '<div class="sec-title">Data</div><div class="card stack">' +
       '<div class="row"><button type="button" class="btn accent-o" style="flex:1" data-act="export">EXPORT .JSON</button><button type="button" class="btn" style="flex:1" data-act="import">IMPORT</button></div>' +
+      '<div class="row"><button type="button" class="btn" style="flex:1" data-act="export-today">EXPORT TODAY</button><button type="button" class="btn" style="flex:1" data-act="import-filled">IMPORT FILLED</button></div>' +
+      '<p class="muted" style="margin:0;font-size:14px">Export today = the day file for Claude\'s end-of-day fill. Import filled = the file Claude sends back. It adds the fill to that day and changes nothing else.</p>' +
       '<span class="mono muted">Last export: ' + (s.lastExportAt ? esc(fmtStamp(new Date(s.lastExportAt))) : 'never') + '</span>' +
       '<p class="muted" style="margin:0;font-size:14px">Everything stays in this browser. Export regularly.</p>' +
       (sessionLive() ? '<p class="mono muted" style="margin:0">Replace · Reset · Clear · Erase: available after the session</p>' : '') +
@@ -2876,11 +3133,13 @@ var App = (function () {
       dd.enteredAt = new Date().toISOString();
       dd.enteredSetup = (dd.looking && dd.looking.setupId) || null;
       dd.looking = null;
+      logEvent('enter', dd.enteredSetup);
       vibrate(60);
       save();
       render();
     } else if (kind === 'urge') {
       getDay(key).urges.push({ id: uid(), at: new Date().toISOString(), device: devId() });
+      logEvent('urge');
       vibrate(60);
       save();
       startCooldown(state.settings.presetLinks.urge, 'urge');
@@ -2888,6 +3147,7 @@ var App = (function () {
       // v2 home: "felt the urge, didn't act". Logged only; no cooldown (it would cover the In-trade screen).
       var du = getDay(key);
       du.urges.push({ id: uid(), at: new Date().toISOString(), device: devId(), resisted: true });
+      logEvent('urge', 'resisted');
       vibrate(60);
       save();
       render();
@@ -3135,10 +3395,11 @@ var App = (function () {
     },
     'pm-gate': function (el) {
       var pmd = getDay(todayKey()).premarket, id = el.getAttribute('data-id');
+      var git = findItem('premarket', id);
       if (el.getAttribute('data-v') === 'yes') {
-        if (pmd.checked[id]) delete pmd.checked[id]; else { pmd.checked[id] = true; delete pmd.gateNo[id]; }
+        if (pmd.checked[id]) delete pmd.checked[id]; else { pmd.checked[id] = true; delete pmd.gateNo[id]; logEvent('gate_yes', git && git.text); }
       } else {
-        if (pmd.gateNo[id]) delete pmd.gateNo[id]; else { pmd.gateNo[id] = true; delete pmd.checked[id]; }
+        if (pmd.gateNo[id]) delete pmd.gateNo[id]; else { pmd.gateNo[id] = true; delete pmd.checked[id]; logEvent('gate_no', git && git.text); }
       }
       pmAfterChange(id, pmd);
     },
@@ -3159,7 +3420,12 @@ var App = (function () {
     },
     'tr-toggle': function (el) {
       var day = getDay(todayKey()), id = el.getAttribute('data-id');
-      if (day.tradeChecks[id]) delete day.tradeChecks[id]; else day.tradeChecks[id] = true;
+      if (day.tradeChecks[id]) delete day.tradeChecks[id];
+      else {
+        day.tradeChecks[id] = true;
+        var vis = tradeCtx().visible || [], ix = vis.map(function (x) { return x.id; }).indexOf(id);
+        logEvent('check_tick:' + (ix + 1), (findItem('trade', id) || {}).text);
+      }
       save();
       render();
     },
@@ -3222,6 +3488,8 @@ var App = (function () {
       if (day.lookingLeftAt && Date.now() - Date.parse(day.lookingLeftAt) > 10 * 60000) day.tradeChecks = {};
       day.looking = { at: new Date().toISOString(), setupId: null };
       day.lookingLeftAt = null;
+      logEvent('start_looking');
+      if (isEarlyFor(state, new Date())) logEvent('early_warning_shown');
       save();
       render();
       window.scrollTo(0, 0);
@@ -3237,6 +3505,7 @@ var App = (function () {
       var day = getDay(todayKey());
       if (!day.looking) return;
       day.looking.setupId = el.getAttribute('data-id');
+      logEvent('setup_pick:' + day.looking.setupId, (findSetup(day, day.looking.setupId) || {}).text);
       save();
       render();
     },
@@ -3244,6 +3513,7 @@ var App = (function () {
       var day = getDay(todayKey());
       day.sitouts.push({ id: uid(), at: new Date().toISOString(), device: devId() });
       day.looking = null;
+      logEvent('sitout');
       save();
       render();
       toast('Sitting out · logged');
@@ -3251,6 +3521,7 @@ var App = (function () {
     'left-desk': function () {
       var day = getDay(todayKey());
       day.leftDesk.push({ id: uid(), at: new Date().toISOString(), device: devId() });
+      logEvent('left_desk');
       save();
       render();
     },
@@ -3261,6 +3532,7 @@ var App = (function () {
         (dll ? 'The platform flattened you at the daily loss limit.' : 'The account reached its green cap.') + ' The day ends here.',
         'Yes, the day is done', function () {
           getDay(todayKey())[dll ? 'dllHit' : 'greenCapHit'] = new Date().toISOString();
+          logEvent(dll ? 'dll' : 'greencap');
           saveNow();
           render();
         });
@@ -3294,6 +3566,7 @@ var App = (function () {
           var su = c.setups[i];
           if (su) { su.text = t; su.grade = null; } else c.setups[i] = { id: uid(), text: t, grade: null };
         });
+        logReady();
         save(); render();
         toast(lines.length === 1 ? '1 setup pasted' : lines.length + ' setups pasted');
       }
@@ -3365,6 +3638,8 @@ var App = (function () {
     },
     'theme': function (el) { state.settings.theme = el.getAttribute('data-v'); applyTheme(); save(); render(); flashSaved(); },
     'export': function () { exportData(false); },
+    'export-today': function (el) { exportToday(el.getAttribute('data-key') || todayKey()); if (ui.tab === 'home') render(); },
+    'import-filled': function () { var f = $('#import-filled'); f.value = ''; f.click(); },
     'import': function () { var f = $('#import-file'); f.value = ''; f.click(); },
     'reset': function () { resetDefaults(); },
     'clear-history': function () { clearHistory(); },
@@ -3486,6 +3761,7 @@ var App = (function () {
       var su = c.setups[i];
       if (su) su.text = t; else if (t) c.setups[i] = { id: uid(), text: t, grade: null };
       for (var j = 0; j < c.setups.length; j++) if (!c.setups[j]) c.setups[j] = { id: uid(), text: '', grade: null };
+      logReady();
       save(); refreshPlanRow();
     },
     'card-practising': function (el) { editCard().practising = el.value.trim(); save(); refreshPlanRow(); },
@@ -3662,6 +3938,10 @@ var App = (function () {
       var f = e.target.files && e.target.files[0];
       if (f) handleImportFile(f);
     });
+    $('#import-filled').addEventListener('change', function (e) {
+      var f = e.target.files && e.target.files[0];
+      if (f) handleFilledFile(f);
+    });
     document.addEventListener('pointerdown', unlockAudio, { passive: true });
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'hidden') { flushSave(); return; }
@@ -3783,6 +4063,15 @@ var App = (function () {
     rowOfCat: rowOfCat,
     itemsOfRow: itemsOfRow,
     pasteSplit: pasteSplit,
+    // v2 Part D
+    exportTodayFor: exportTodayFor,
+    validFilled: validFilled,
+    mergeFilled: mergeFilled,
+    pointsFor: pointsFor,
+    seriesStatsFor: seriesStatsFor,
+    dayBadgesFor: dayBadgesFor,
+    levelFor: levelFor,
+    isoLocal: isoLocal,
     WORD_LOOP: WORD_LOOP,
     HOME_STATES: HOME_STATES,
     homeNow: function () { return homeNow(); },
