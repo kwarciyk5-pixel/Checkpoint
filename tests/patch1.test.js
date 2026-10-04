@@ -26,13 +26,14 @@ const at = (h, m) => new Date(2026, 9, 1, h, m, 0); // Thursday 1 Oct 2026
   const st = (fn) => page.evaluate(fn);
   const shot = (name) => page.screenshot({ path: path.join(OUT, name + '.png') });
   const day = () => st(() => { const k = Object.keys(App.state.days).sort().pop(); return k ? App.state.days[k] : null; });
-  const tab = (t) => page.locator('.tab[data-tab="' + t + '"]').click();
+  // v2 (Part B): only TODAY and TRADE are in the nav; Settings opens from the home screen.
+  const tab = (t) => (t === 'home' || t === 'trade') ? page.locator('.tab[data-tab="' + t + '"]').click() : page.evaluate((x) => App.go(x), t);
   const typed = async (word) => { await page.fill('#typed', word); await page.locator('#typed-ok').click(); };
 
   // ---- 1. Undo SL: trade removed, cooldown cancelled, back on Trade, recorded
   await tab('trade');
   await page.locator('[data-act="log"][data-o="SL"]').click();
-  assert.strictEqual(await st(() => App.ui.tab), 'cooldown');
+  assert.strictEqual(await st(() => App.ui.tab), 'home', 'v2: the cooldown shows on the home screen');
   assert.strictEqual(await st(() => App.state.activeCooldown && App.state.activeCooldown.trigger), 'sl');
   const undoBtn = page.locator('.toast button', { hasText: 'UNDO' });
   assert.ok(await undoBtn.isVisible(), 'undo toast visible');
@@ -48,12 +49,12 @@ const at = (h, m) => new Date(2026, 9, 1, h, m, 0); // Thursday 1 Oct 2026
   assert.strictEqual(d.undone[0].cooldownCancelled, true);
   assert.strictEqual(await page.locator('.tag', { hasText: 'AFTER A STOP' }).count(), 0, 'after-stop item hidden again');
 
-  // ---- 2. Undo TP: day-done screen goes away
+  // ---- 2. Undo TP (v2: one TP no longer ends the day; done is at 2 TP)
   await page.locator('[data-act="log"][data-o="TP"]').click();
-  assert.ok(await page.locator('h1', { hasText: 'Day done' }).isVisible());
+  assert.strictEqual((await day()).trades.length, 1);
+  assert.strictEqual(await page.locator('h1', { hasText: 'Day done' }).count(), 0, 'no v1 day-done screen after one TP');
   await page.locator('.toast button', { hasText: 'UNDO' }).click();
   assert.strictEqual((await day()).trades.length, 0);
-  assert.strictEqual(await page.locator('h1', { hasText: 'Day done' }).count(), 0);
 
   // ---- 3. After 10s the undo is gone and the trade stays
   await page.locator('[data-act="log"][data-o="SCRATCH"]').click();
@@ -113,7 +114,7 @@ const at = (h, m) => new Date(2026, 9, 1, h, m, 0); // Thursday 1 Oct 2026
   assert.strictEqual(await st(() => App.state.settings.rules.tradeCap), 2, 'defaults back');
   assert.strictEqual(await st(() => App.state.settings.resetHour), '06:00');
   assert.strictEqual(await st(() => JSON.parse(localStorage.getItem('checkpoint.v1')).settings.rules.tradeCap), 2, 'fresh data saved');
-  assert.strictEqual(await st(() => App.ui.tab), 'premarket');
+  assert.strictEqual(await st(() => App.ui.tab), 'home');
 
   await ctx.close();
   await browser.close();

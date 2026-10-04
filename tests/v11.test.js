@@ -31,7 +31,8 @@ const at = (d, h, m, s) => new Date(2026, 9, d, h, m, s || 0); // Oct 2026 (1 = 
   await page.waitForSelector('#view .wrap');
   const st = (fn, arg) => page.evaluate(fn, arg);
   const day = (k) => st((k) => App.state.days[k], k);
-  const tab = (t) => page.locator('.tab[data-tab="' + t + '"]').click();
+  // v2 (Part B): only TODAY and TRADE are in the nav; Settings opens from the home screen.
+  const tab = (t) => (t === 'home' || t === 'trade') ? page.locator('.tab[data-tab="' + t + '"]').click() : st((x) => App.go(x), t);
 
   // ---- device + defaults
   const dev = await st(() => App.device);
@@ -65,8 +66,8 @@ const at = (d, h, m, s) => new Date(2026, 9, d, h, m, s || 0); // Oct 2026 (1 = 
   assert.strictEqual(await page.locator('.ci-card').count(), 1, 'Trade tab shows the check-in card');
   await pw.screenshot({ path: path.join(OUT, 'v11-pip-checkin.png') });
   await page.screenshot({ path: path.join(OUT, 'v11-main-checkin.png') });
-  // other tabs show a banner
-  await tab('premarket');
+  // other tabs (v2: the home screen) show a banner
+  await tab('home');
   assert.strictEqual(await page.locator('.ci-banner').count(), 1, 'banner on other tabs');
   await tab('trade');
 
@@ -136,7 +137,10 @@ const at = (d, h, m, s) => new Date(2026, 9, d, h, m, s || 0); // Oct 2026 (1 = 
   assert.ok(t.includes('RED DAY · DONE') && t.includes('Session over.'), 'session-over checklist after Red Day: ' + t);
   await pw.locator('[data-act="so-toggle"]').first().click();
   assert.strictEqual(await st(() => App.state.days['2026-10-01'].dayClosed), 'red');
-  assert.strictEqual(await st(() => App.ui.tab), 'trade');
+  // v2: the main window shows the home Done screen; the Trade tab still shows session over
+  assert.strictEqual(await st(() => App.ui.tab), 'home');
+  assert.ok(await page.locator('.home[data-hs="done"]', { hasText: 'Day closed.' }).isVisible(), 'home Done screen');
+  await tab('trade');
   assert.ok(await page.locator('h1', { hasText: 'Session over.' }).isVisible(), 'main Trade tab shows session over');
   assert.ok(await page.locator('.mono.amber', { hasText: 'RED DAY · DONE' }).isVisible());
   // day closed: the 21:30 check-in does not fire

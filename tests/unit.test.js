@@ -43,8 +43,8 @@ test('trade: 5 items, 1 afterStopOnly', () => {
   assert.strictEqual(items.filter(i => i.afterStopOnly).length, 1);
 });
 
-test('session over: 4 items', () => {
-  assert.strictEqual(d.checklists.sessionOver.categories.flatMap(c => c.items).length, 4);
+test('session over: 3 items (v2 close-out: accounts locked · charts closed · away from the desk)', () => {
+  assert.strictEqual(d.checklists.sessionOver.categories.flatMap(c => c.items).length, 3);
 });
 
 test('5 presets and every presetLinks id exists', () => {

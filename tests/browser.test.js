@@ -34,6 +34,8 @@ async function hold(page, selector, ms) {
   await page.mouse.up();
   await page.clock.runFor(50);
 }
+// v2 (Part B): only TODAY and TRADE are in the bottom nav; other pages are opened like the app does.
+const go = (page, tab) => page.evaluate(t => App.go(t), tab);
 async function shot(page, name, full) {
   await page.screenshot({ path: path.join(OUT, name + '.png'), fullPage: !!full });
 }
@@ -83,23 +85,25 @@ async function shot(page, name, full) {
   await hold(page, '[data-hold="enter"]', 900); // let go early
   assert.strictEqual(await page.locator('.enter.live[role="status"]').count(), 0);
   await hold(page, '[data-hold="enter"]', 2200);
-  assert.strictEqual(await page.locator('.enter.live[role="status"]').textContent(), 'IN TRADE');
+  // v2: entering moves to the home In-trade screen; the nav hides
+  assert.ok(await page.locator('.home[data-hs="intrade"]').isVisible(), 'in trade on home');
+  assert.strictEqual(await page.evaluate(() => document.body.getAttribute('data-nav')), 'hidden');
   await page.locator('[data-act="log"][data-o="SL"]').click();
-  // SL -> After SL cooldown on the Cooldown tab
-  assert.strictEqual(await page.locator('.tab[aria-selected="true"]').textContent(), 'COOLDOWN');
-  assert.ok((await page.locator('.card', { hasText: 'One more SL closes the day' }).count()) === 1);
+  // SL -> After SL cooldown on the home screen
+  assert.strictEqual(await page.evaluate(() => App.ui.tab), 'home');
+  assert.ok(await page.locator('.home[data-hs="cooldown"]').isVisible());
+  assert.ok((await page.locator('.home', { hasText: 'A clean loss.' }).count()) === 1);
   await page.clock.runFor(18000);
   assert.match(await page.locator('.ring-wrap .big').textContent(), /^4:4[23]$/);
   await page.locator('[data-act="cd-step"]').first().click();
   await shot(page, 'phone-cooldown-running');
-  // trade tab locked while cooldown runs
-  await page.locator('.tab[data-tab="trade"]').click();
-  assert.ok(await page.locator('.lock-card', { hasText: 'Checklist locked' }).isVisible());
-  await shot(page, 'phone-trade-locked');
+  // v2: nothing else is reachable while the cooldown runs (nav hidden; other pages fall back to home)
+  assert.strictEqual(await page.evaluate(() => document.body.getAttribute('data-nav')), 'hidden');
+  await go(page, 'trade');
+  assert.ok(await page.locator('.home[data-hs="cooldown"]').isVisible(), 'trade page not reachable in cooldown');
   // end early with the 5s hold
-  await page.locator('.tab[data-tab="cooldown"]').click();
   await hold(page, '[data-hold="endEarly"]', 5200);
-  assert.ok(await page.locator('[data-act="cd-start"]').isVisible());
+  assert.strictEqual(await page.evaluate(() => App.homeNow().state), 'premarket', 'cooldown ended early');
   // trade tab now shows the after-stop item
   await page.locator('.tab[data-tab="trade"]').click();
   assert.strictEqual(await page.locator('[data-act="tr-toggle"]').count(), 5);
@@ -108,8 +112,8 @@ async function shot(page, name, full) {
   await page.locator('[data-act="log"][data-o="SCRATCH"]').click();
   assert.ok(await page.locator('.lock-card', { hasText: 'Cap reached' }).isVisible());
 
-  // ---- Cooldown: Urge preset runs to the end
-  await page.locator('.tab[data-tab="cooldown"]').click();
+  // ---- Cooldown: Urge preset runs to the end (day is done, so it shows on the Cooldown page)
+  await go(page, 'cooldown');
   await page.locator('.chip', { hasText: 'Urge' }).click();
   await shot(page, 'phone-cooldown-idle');
   await page.locator('[data-act="cd-start"]').click();
@@ -122,7 +126,7 @@ async function shot(page, name, full) {
   assert.strictEqual(cds[1].endedEarly, false);
 
   // ---- Settings + editor
-  await page.locator('.tab[data-tab="settings"]').click();
+  await go(page, 'settings');
   await shot(page, 'phone-settings');
   await shot(page, 'phone-settings-full', true);
   await page.locator('[data-act="open-list"][data-list="premarket"]').click();
@@ -153,7 +157,7 @@ async function shot(page, name, full) {
 
   // ---- Session rule: during the session, raising the cap is pending
   await page.clock.setSystemTime(at(20, 45));
-  await page.locator('.tab[data-tab="settings"]').click();
+  await go(page, 'settings');
   assert.ok(await page.locator('.banner', { hasText: 'Session is live (20:30–21:40)' }).isVisible());
   await page.locator('[data-act="cap"][data-d="1"]').click();
   assert.strictEqual(await page.locator('.stepper output').textContent(), '2');
@@ -180,8 +184,8 @@ async function shot(page, name, full) {
 
   // ---- Desktop
   ({ ctx, page } = await newPage(browser, { width: 1280, height: 800 }, at(19, 41), errors));
-  for (const tab of ['premarket', 'trade', 'cooldown', 'settings']) {
-    await page.locator('.tab[data-tab="' + tab + '"]').click();
+  for (const tab of ['home', 'trade', 'cooldown', 'settings']) {
+    await go(page, tab);
     await shot(page, 'desktop-' + tab);
   }
   await page.locator('[data-act="open-list"][data-list="trade"]').click();

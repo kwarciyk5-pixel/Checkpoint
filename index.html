@@ -290,10 +290,67 @@ body.pipwin{min-height:100vh;background:var(--bg)}
 
 /* ==== STYLE: home ==== */
 /* The one working screen (Part B fills it). Fixed-height column: header · centre · actions. */
-.home{min-height:calc(100dvh - var(--bandh) - env(safe-area-inset-top) - 48px);max-width:430px;margin:0 auto;display:flex;flex-direction:column}
+.home{min-height:calc(100dvh - var(--bandh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--tabh) - 48px);max-width:430px;margin:0 auto;display:flex;flex-direction:column}
+body[data-nav="hidden"] .home{min-height:calc(100dvh - var(--bandh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 48px)}
 .home-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-top:14px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .home-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;padding:24px 0}
 .home-foot{display:flex;flex-direction:column;gap:10px;padding-bottom:8px}
+/* Part B: the home states. */
+.home-head .big-n{font-family:var(--font-serif);font-size:44px;line-height:1;letter-spacing:0;text-transform:none;color:var(--ink)}
+.home-head .big-n small{font-family:var(--font-sans);font-size:13px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-left:6px}
+.home-head .textbtn{min-height:32px;padding:0;font-size:12px;letter-spacing:.08em}
+.home-mid.top{justify-content:flex-start;align-items:stretch;gap:14px;padding-top:16px}
+.home-line{font-family:var(--font-serif);font-size:30px;line-height:1.25;text-align:center;margin:0}
+.home-sub{font-size:14px;color:var(--muted);text-align:center;margin:0}
+.home-text{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%}
+.home-count{font-size:13px;color:var(--muted);letter-spacing:.04em;text-align:center}
+.home-foot .btn{min-height:64px;font-size:16px}
+.home-foot .textbtn{align-self:center}
+.home-amber{font-size:13px;color:var(--cool-ink);border:1px dashed var(--cool);border-radius:4px;padding:10px 12px}
+.home-note{font-size:12px;color:var(--muted);text-align:center}
+.home-note button{min-height:36px;padding:0 6px;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.rings{position:relative;width:240px;height:240px;flex:none}
+.rings i{position:absolute;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%)}
+.rings i:nth-child(1){width:240px;height:240px}
+.rings i:nth-child(2){width:170px;height:170px}
+.rings i:nth-child(3){width:100px;height:100px}
+.rings.outline i{border:1px solid var(--line)}
+.rings.filled i:nth-child(1){background:var(--ring)}
+.rings.filled i:nth-child(2){background:var(--line)}
+.rings.filled i:nth-child(3){background:var(--bg)}
+.rings.breathe{animation:cp-breathe 10s ease-in-out infinite}
+@keyframes cp-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.wl{display:grid;width:100%;min-height:76px;align-items:center}
+.wl span{grid-area:1/1;font-family:var(--font-serif);font-size:30px;line-height:1.25;text-align:center;opacity:0;transition:opacity 1s ease}
+.wl span.on{opacity:1}
+.outcome2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.outcome2 .btn{min-height:64px;font-size:16px}
+.pick{width:100%;min-height:48px;display:flex;align-items:center;gap:12px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:4px}
+.pick .dot{width:18px;height:18px;flex:none;border-radius:50%;border:1.5px solid var(--dim)}
+.pick[aria-checked="true"]{border-color:var(--ink)}
+.pick[aria-checked="true"] .dot{border:5px solid var(--ink)}
+.pick:disabled{opacity:.45}
+.pick .txt{flex:1;min-width:0}
+.pick .txt small{display:block;font-size:12px;color:var(--muted)}
+.home{width:100%}
+.home .steps{gap:4px}
+.home .steps .item{min-height:40px;padding:4px 10px;font-size:14px}
+.home .ring-wrap{width:180px}
+.home[data-hs="cooldown"] .home-mid{gap:16px;padding:12px 0}
+.home-row{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 16px}
+.done-circle{width:180px;height:180px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:52px;line-height:1}
+.done-circle small{font-size:26px;color:var(--muted)}
+.done-msg{font-family:var(--font-serif);font-size:16px;line-height:1.45;color:var(--muted);text-align:center;margin:0}
+.home .so-row{width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px;border-bottom:1px solid var(--line);text-align:left}
+.home .so-row:last-child{border-bottom:0}
+/* Done is always the dark, inverted screen (both themes). */
+:root[data-home="done"]{
+  --bg:#1C1A17; --ink:#F4EFE6; --ink-2:#DAD1C0; --muted:#B8AE9C; --dim:#8A8276; --line:#3E3A35; --ring:#2E2B27; --paper-2:#2A2724;
+  --live-ink:#9ED0B4; --accent-a:rgba(158,208,180,.12); --info-a:rgba(244,239,230,.05);
+  color-scheme:dark;
+}
+:root[data-home="done"] .band{background:var(--live)}
+:root[data-home="done"] .done-circle small{color:#7A736A}
 
 /* ==== STYLE: modal + toast ==== */
 .modal-back{position:fixed;inset:0;z-index:80;background:rgba(28,26,23,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
@@ -317,10 +374,8 @@ body[data-nav="hidden"] .toasts{bottom:calc(env(safe-area-inset-bottom) + 16px)}
 <div id="app">
   <nav class="tabs" role="tablist" aria-label="Sections">
     <div class="brand"><img src="icons/icon-192.png" alt="">CHECKPOINT</div>
-    <button class="tab" role="tab" data-tab="premarket" aria-selected="true">PREMARKET</button>
+    <button class="tab" role="tab" data-tab="home" aria-selected="true">TODAY</button>
     <button class="tab" role="tab" data-tab="trade" aria-selected="false">TRADE</button>
-    <button class="tab" role="tab" data-tab="cooldown" aria-selected="false">COOLDOWN</button>
-    <button class="tab" role="tab" data-tab="settings" aria-selected="false">SETTINGS</button>
   </nav>
   <main id="view"></main>
 </div>
@@ -384,6 +439,9 @@ var App = (function () {
   function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   /* ==== DEFAULTS: prefilled content ==== */
+  // v2 (spec §2.3, §2.5, §2.6) prefilled texts. migrateV2 swaps the v1 texts for these only where she never edited them.
+  var AFTER_SL_STEPS = ['Two physiological sighs', 'Stand up, leave the desk', 'One minute: in 4, out 8, looking far away', 'Cold water on the face (optional — try it once on a calm day first)'];
+  var SESSION_OVER_ITEMS = ['Accounts locked', 'Charts closed (Pyae\'s too)', 'Away from the desk'];
   function makeDefaults() {
     function cat(name, items) { return { id: uid(), name: name, items: items }; }
     function pm(text, note, time, flags) {
@@ -399,7 +457,7 @@ var App = (function () {
       };
     }
     var presets = [
-      preset('After SL', 300, ['Stand up', '3 physiological sighs', 'Leave the desk', 'Water'],
+      preset('After SL', 300, AFTER_SL_STEPS,
         'One more SL closes the day. Nothing to win back.',
         'Cooldown done. New trigger at a new level, or nothing.'),
       preset('Break', 300, ['Stand up', 'Water', 'Toilet', 'Check higher time frame'],
@@ -421,10 +479,14 @@ var App = (function () {
         theme: 'auto',
         resetHour: '06:00',
         activeDays: [1, 2, 3, 4, 5],
-        session: { start: '20:30', end: '21:40' },
-        rules: { tradeCap: 2, maxDailyLoss: 600, maxRiskPerTrade: 300, notATradeMsg: 'Not a trade. Arm every check first.' },
+        session: { start: '09:30', end: '10:40', tz: 'America/New_York', observeMin: 15 },
+        series: { start: '2026-10-06', days: 20 },
+        rules: {
+          tradeCap: 2, maxDailyLoss: 600, maxRiskPerTrade: 300, notATradeMsg: 'Not a trade. Arm every check first.',
+          rrFloor: 1.5, rrPreferred: 2, doneTp: 2, doneSl: 2, greenCap: null
+        },
         behaviour: {
-          slStartsCooldown: true, dayDoneAfterTP: true, lockAtCap: true, lockDuringCooldown: true,
+          slStartsCooldown: true, dayDoneAfterTP: false, lockAtCap: true, lockDuringCooldown: true,
           holdToEnterSec: 2, endEarlyHoldSec: 5, urgeHoldSec: 3
         },
         presetLinks: { sl: presets[0].id, urge: presets[2].id, redDay: presets[3].id, greenDay: presets[4].id, notGood: presets[1].id },
@@ -485,14 +547,14 @@ var App = (function () {
               tr('Level is on today\'s plan', 'Not in do-nothing zone · no event window'),
               tr('Trigger confirmed on footprint/TAS', 'Confirmed, not anticipated'),
               tr('Size = plan · stop covers the level', 'Risk within today\'s limit'),
-              tr('Reward to risk ≥ 1:3', 'To a planned target'),
-              tr('New trigger at a different level · cooldown done · why and how said to Pyae', '', true)
+              tr('Reward to risk ≥ 1:1.5', '1:2 preferred, to a planned target'),
+              tr('New trigger at a different level · cooldown done · said out loud', '', true)
             ])
           ]
         },
         sessionOver: {
           categories: [
-            cat('CLOSE OUT', [so('Platform closed'), so('No other accounts'), so('Left the room'), so('Eyes off all charts')])
+            cat('CLOSE OUT', SESSION_OVER_ITEMS.map(so))
           ]
         }
       },
@@ -516,7 +578,10 @@ var App = (function () {
       checkins: [],
       dayClosed: null,
       sessionOver: { checked: {} },
-      dayDoneShown: false
+      dayDoneShown: false,
+      // v2 home (Part B)
+      looking: null, lookingLeftAt: null, enteredAt: null, enteredSetup: null,
+      dllHit: null, greenCapHit: null, sitouts: [], leftDesk: []
     };
   }
 
@@ -537,15 +602,68 @@ var App = (function () {
   function todayKey(now) { return tradingDayKey(now || new Date(), state.settings.resetHour); }
   function isActiveDayFor(key, settings) { return settings.activeDays.indexOf(keyToDate(key).getDay()) >= 0; }
   function isActiveDay(key) { return isActiveDayFor(key, state.settings); }
+  // v2: the session is stored in its own time zone (settings.session.tz, New York by default) and shown in
+  // local (Bangkok) time, so US daylight saving moves it by itself. No tz (or 'local') = local times, as in v1.
+  var tzFmt = {};
+  function tzOffsetMin(tz, date) {
+    try {
+      if (!tzFmt[tz]) tzFmt[tz] = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' });
+      var p = {};
+      tzFmt[tz].formatToParts(date).forEach(function (x) { p[x.type] = x.value; });
+      var asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, (+p.hour) % 24, +p.minute, +p.second);
+      return Math.round((asUTC - Math.floor(date.getTime() / 1000) * 1000) / 60000);
+    } catch (e) { return null; }
+  }
+  // The instant of wall-clock time hm on date key (YYYY-MM-DD) in zone tz.
+  function wallToInstant(tz, key, hm) {
+    var p = key.split('-');
+    var guess = Date.UTC(+p[0], +p[1] - 1, +p[2], Math.floor(hmToMin(hm) / 60), hmToMin(hm) % 60);
+    var off = tzOffsetMin(tz, new Date(guess));
+    if (off === null) return null;
+    var t = guess - off * 60000;
+    var off2 = tzOffsetMin(tz, new Date(t));
+    return off2 !== null && off2 !== off ? guess - off2 * 60000 : t;
+  }
+  var winCache = { sig: '', val: null };
+  // Session start/end (ms) for trading day `key`. Always inside that trading day (reset hour to reset hour).
+  function sessionWindow(key, settings) {
+    var se = settings.session || {};
+    var sig = key + '|' + settings.resetHour + '|' + se.start + '|' + se.end + '|' + (se.tz || '');
+    if (winCache.sig === sig) return winCache.val;
+    var reset = hmToMin(settings.resetHour);
+    var day0 = keyToDate(key);
+    day0.setHours(0, 0, 0, 0);
+    var dayStart = day0.getTime() + reset * 60000;
+    var start = null, end = null;
+    if (se.tz && se.tz !== 'local') {
+      start = wallToInstant(se.tz, key, se.start);
+      end = wallToInstant(se.tz, key, se.end);
+    }
+    if (start === null || end === null) {
+      start = dayStart + relMin(hmToMin(se.start), reset) * 60000;
+      end = dayStart + relMin(hmToMin(se.end), reset) * 60000;
+    } else {
+      while (start < dayStart) { start += 86400000; end += 86400000; }
+      while (start >= dayStart + 86400000) { start -= 86400000; end -= 86400000; }
+      while (end <= start) end += 86400000;
+      if (end > dayStart + 86400000) end = dayStart + 86400000;
+    }
+    winCache = { sig: sig, val: { start: start, end: end } };
+    return winCache.val;
+  }
+  // Session times as local HH:MM for display (e.g. 20:30–21:40 in Bangkok in October).
+  function sessionTimesFor(key, settings) {
+    var w = sessionWindow(key, settings);
+    return { start: fmtClock(new Date(w.start)), end: fmtClock(new Date(w.end)) };
+  }
+  function sessionTimes(key) { return sessionTimesFor(key || todayKey(), state.settings); }
   // Phase of the session relative to the trading day: before | live | after
   function sessionPhase(date, settings) {
-    var reset = hmToMin(settings.resetHour);
-    var n = relMin(minOfDay(date), reset);
-    var s = relMin(hmToMin(settings.session.start), reset);
-    var e = relMin(hmToMin(settings.session.end), reset);
-    if (e <= s) return n < s ? 'before' : 'after';
-    if (n < s) return 'before';
-    if (n < e) return 'live';
+    var w = sessionWindow(tradingDayKey(date, settings.resetHour), settings);
+    var n = date.getTime();
+    if (w.end <= w.start) return n < w.start ? 'before' : 'after';
+    if (n < w.start) return 'before';
+    if (n < w.end) return 'live';
     return 'after';
   }
   function sessionInfo(now) {
@@ -554,10 +672,9 @@ var App = (function () {
     var key = todayKey(now);
     if (!isActiveDay(key)) return { phase: 'off', right: 'NO SESSION TODAY' };
     var phase = sessionPhase(now, s);
-    var reset = hmToMin(s.resetHour);
-    var n = relMin(minOfDay(now), reset);
-    if (phase === 'before') return { phase: phase, right: 'STARTS IN ' + fmtDur(relMin(hmToMin(s.session.start), reset) - n) };
-    if (phase === 'live') return { phase: phase, right: (relMin(hmToMin(s.session.end), reset) - n) + ' MIN LEFT' };
+    var w = sessionWindow(key, s);
+    if (phase === 'before') return { phase: phase, right: 'STARTS IN ' + fmtDur(Math.ceil((w.start - now.getTime()) / 60000)) };
+    if (phase === 'live') return { phase: phase, right: Math.ceil((w.end - now.getTime()) / 60000) + ' MIN LEFT' };
     return { phase: phase, right: 'SESSION OVER' };
   }
   function sessionLive(now) {
@@ -580,7 +697,15 @@ var App = (function () {
   }
   function normalise(s) {
     var defs = makeDefaults();
+    // v2: a v1 session (Bangkok times, no tz) must be fixed before fillMissing adds the New York tz to it.
+    if (isObj(s.settings) && isObj(s.settings.session) && !s.settings.session.tz) {
+      var ss = s.settings.session;
+      if (ss.start === '20:30' && ss.end === '21:40') { ss.start = '09:30'; ss.end = '10:40'; ss.tz = 'America/New_York'; }
+      else ss.tz = 'local';
+    }
+    var firstV2 = !(isObj(s.meta) && s.meta.v2b);
     fillMissing(s, defs);
+    if (firstV2) migrateV2(s);
     if (!Array.isArray(s.presets) || !s.presets.length) s.presets = defs.presets;
     Object.keys(s.settings.presetLinks).forEach(function (k) {
       if (!findPresetIn(s, s.settings.presetLinks[k])) s.settings.presetLinks[k] = s.presets[0].id;
@@ -596,6 +721,31 @@ var App = (function () {
     if (['auto', 'light', 'dim'].indexOf(s.settings.theme) < 0) s.settings.theme = 'auto';
     Object.keys(s.days).forEach(function (k) { if (isObj(s.days[k])) migrateDayRecords(s.days[k]); });
     return s;
+  }
+  // v2, once per data set: the 3-Oct plan's defaults. Prefilled texts change only where they are still the v1 text.
+  function migrateV2(s) {
+    s.meta.v2b = true;
+    s.settings.behaviour.dayDoneAfterTP = false; // done = 2 TP / 2 SL / cap / DLL / time (spec §2)
+    var TR = {
+      'Reward to risk ≥ 1:3': ['Reward to risk ≥ 1:1.5', 'To a planned target', '1:2 preferred, to a planned target'],
+      'New trigger at a different level · cooldown done · why and how said to Pyae': ['New trigger at a different level · cooldown done · said out loud']
+    };
+    s.checklists.trade.categories.forEach(function (c) {
+      c.items.forEach(function (it) {
+        var m = TR[it.text];
+        if (!m) return;
+        it.text = m[0];
+        if (m[1] !== undefined && it.note === m[1]) it.note = m[2];
+      });
+    });
+    var sl = findPresetIn(s, s.settings.presetLinks.sl);
+    if (sl && sameVal(sl.steps.map(function (x) { return x.text; }), ['Stand up', '3 physiological sighs', 'Leave the desk', 'Water'])) {
+      sl.steps = AFTER_SL_STEPS.map(function (t) { return { id: uid(), text: t }; });
+    }
+    var so = s.checklists.sessionOver.categories;
+    if (so.length === 1 && sameVal(so[0].items.map(function (x) { return x.text; }), ['Platform closed', 'No other accounts', 'Left the room', 'Eyes off all charts'])) {
+      so[0].items = SESSION_OVER_ITEMS.map(function (t) { return { id: uid(), text: t, note: '' }; });
+    }
   }
   function load() {
     var raw = null;
@@ -706,7 +856,9 @@ var App = (function () {
     'trade.itemAdd': 'never', 'trade.itemDelete': 'always', 'trade.itemEdit': 'always',
     'trade.afterStopOnly': 'on', 'trade.categoryDelete': 'always',
     'session': 'change', 'activeDays': 'change', 'presetLinks': 'change',
-    'resetHour': 'change'
+    'resetHour': 'change',
+    'rules.doneTp': 'up', 'rules.doneSl': 'up', 'rules.rrFloor': 'down', 'rules.rrPreferred': 'down',
+    'rules.greenCap': 'upOrNone'
   };
   function isLoosening(ch) {
     switch (LOOSEN[ch.key]) {
@@ -716,6 +868,7 @@ var App = (function () {
       case 'on': return !ch.from && !!ch.to;
       case 'always': return true;
       case 'change': return !sameVal(ch.from, ch.to);
+      case 'upOrNone': return ch.from != null && (ch.to == null || Number(ch.to) > Number(ch.from)); // no cap = loosest
       default: return false;
     }
   }
@@ -829,13 +982,13 @@ var App = (function () {
 
   /* ==== UI: shell, modal, toast ==== */
   var ui = {
-    tab: 'premarket', editor: null, expanded: {}, dayDone: false, showAnyway: null,
+    tab: 'home', editor: null, expanded: {}, dayDone: false, showAnyway: null,
     cdSelected: null, holding: false, focusAfter: null,
-    manualCheckin: null, pipFlash: null, pipUndo: null, ciSig: '', ciRung: {}
+    manualCheckin: null, pipFlash: null, pipUndo: null, ciSig: '', ciRung: {}, homeSig: ''
   };
   try {
     var savedTab = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('checkpoint.tab');
-    if (savedTab && /^(premarket|trade|cooldown|settings)$/.test(savedTab)) ui.tab = savedTab;
+    if (savedTab && /^(home|trade|cooldown|settings)$/.test(savedTab)) ui.tab = savedTab;
   } catch (e) { /* ignore */ }
 
   // Paper theme. auto = dim from 19:00 TH until the daily reset, or whenever the OS is in dark mode.
@@ -858,14 +1011,13 @@ var App = (function () {
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', t === 'dim' ? '#2A2724' : '#F4EFE6');
   }
-  // Shell: the state band colour and whether the bottom nav shows. Part B derives these from homeState().
+  // Shell: the state band colour and whether the bottom nav shows, both from homeState().
+  // In trade and in cooldown the nav is hidden and the home screen is the only screen.
+  var HOME_BAND = { intrade: 'live', cooldown: 'cool', done: 'done' };
+  function homeLocked(st) { return st === 'intrade' || st === 'cooldown'; }
   function chromeState() {
-    var day = state.days[todayKey()] || null; // read only: never creates a day record
-    var ac = state.activeCooldown;
-    if (day && day.dayClosed) return { band: 'done', nav: true };
-    if (ac && !ac.finished && ac.endsAt > Date.now()) return { band: 'cool', nav: true };
-    if (day && day.entered) return { band: 'live', nav: true };
-    return { band: 'wait', nav: true };
+    var st = homeNow().state;
+    return { band: HOME_BAND[st] || 'wait', nav: !homeLocked(st), home: ui.tab === 'home' ? st : '' };
   }
   function applyChrome() {
     var ch = chromeState();
@@ -873,6 +1025,7 @@ var App = (function () {
     if (band && band.getAttribute('data-s') !== ch.band) band.setAttribute('data-s', ch.band);
     var nav = ch.nav ? 'show' : 'hidden';
     if (document.body.getAttribute('data-nav') !== nav) document.body.setAttribute('data-nav', nav);
+    if (document.documentElement.getAttribute('data-home') !== ch.home) document.documentElement.setAttribute('data-home', ch.home);
   }
   function setTab(tab) {
     if (ui.tab === tab && tab === 'settings') ui.editor = null;
@@ -886,13 +1039,22 @@ var App = (function () {
     if (!view) return;
     var active = document.activeElement;
     var fk = active && active.getAttribute && active.getAttribute('data-fk');
+    var hs = homeNow();
+    ui.homeSig = homeSig(hs);
+    if (homeLocked(hs.state) && ui.tab !== 'home') { ui.tab = 'home'; ui.editor = null; }
     $$('.tab').forEach(function (t) { t.setAttribute('aria-selected', String(t.getAttribute('data-tab') === ui.tab)); });
     var html;
-    if (ui.tab === 'premarket') html = viewPremarket();
+    if (ui.tab === 'home') html = viewHome(hs);
+    else if (ui.tab === 'premarket') html = viewPremarket();
     else if (ui.tab === 'trade') html = viewTrade();
     else if (ui.tab === 'cooldown') html = viewCooldown();
     else html = viewSettings();
-    view.innerHTML = '<div class="wrap">' + checkinBanner() + html + '</div>';
+    var banner = ui.tab === 'home' && (homeLocked(hs.state) || hs.state === 'done') ? '' : checkinBanner();
+    view.innerHTML = '<div class="wrap">' + banner + html + '</div>';
+    // A new home state starts at the top of the screen.
+    var shown = ui.tab === 'home' ? hs.state : '';
+    if (shown && shown !== ui.homeShown) window.scrollTo(0, 0);
+    ui.homeShown = shown;
     applyChrome();
     bindHolds(view);
     var want = ui.focusAfter || fk;
@@ -972,6 +1134,367 @@ var App = (function () {
         if (o.onOpen) o.onOpen(m, close);
       }
     });
+  }
+
+  /* ==== HOME: state machine ==== */
+  // The one working screen moves through the day (spec §2). homeStateFor() is pure: app state + the day
+  // record + a time in, one of HOME_STATES out. It never creates a day record.
+  var HOME_STATES = ['premarket', 'waiting', 'looking', 'intrade', 'cooldown', 'done', 'observe', 'offday'];
+  function dayCounts(day) {
+    var t = day && Array.isArray(day.trades) ? day.trades : [];
+    return {
+      trades: t.length,
+      tp: t.filter(function (x) { return x.outcome === 'TP'; }).length,
+      sl: t.filter(function (x) { return x.outcome === 'SL'; }).length
+    };
+  }
+  // Minutes since the session opened (09:30 ET); negative before it.
+  function sessionMinFor(s, now) {
+    return (now.getTime() - sessionWindow(tradingDayKey(now, s.settings.resetHour), s.settings).start) / 60000;
+  }
+  function observeMinOf(settings) {
+    var m = Number(settings.session && settings.session.observeMin);
+    return isFinite(m) && m >= 0 ? m : 15;
+  }
+  // The early (observe) window: the first observeMin minutes after the open. +14 is early, +16 is not.
+  function isEarlyFor(s, now) {
+    var m = sessionMinFor(s, now);
+    return m >= 0 && m < observeMinOf(s.settings);
+  }
+  function gateNoFor(s, day) {
+    var no = day && day.premarket && day.premarket.gateNo;
+    if (!no) return false;
+    return s.checklists.premarket.categories.some(function (c) {
+      return c.items.some(function (it) { return it.gate && no[it.id]; });
+    });
+  }
+  // Why the day is done, or null. The order decides which heading shows when several apply.
+  function doneReasonFor(s, day, now) {
+    day = day || {};
+    var r = s.settings.rules, c = dayCounts(day);
+    if (day.dayClosed) return 'closed';
+    if (day.dllHit) return 'dll';
+    if (day.greenCapHit) return 'green';
+    if (c.tp >= (r.doneTp || 2)) return 'tp';
+    if (c.sl >= (r.doneSl || 2)) return 'sl';
+    if (c.trades >= r.tradeCap) return 'cap';
+    if (sessionPhase(now, s.settings) === 'after') return 'time';
+    return null;
+  }
+  // A running cooldown, or one that ended today and still shows its DONE. Yesterday's finished one doesn't count.
+  function cooldownToday(s, key) {
+    var ac = s.activeCooldown;
+    if (!ac) return false;
+    return !ac.finished || tradingDayKey(new Date(ac.startedAt), s.settings.resetHour) === key;
+  }
+  // Spec §2 order, with one change: an open trade keeps the In-trade screen (so Stopped/Target stay
+  // reachable) even if the window closes while it runs.
+  function homeStateFor(s, day, now, opts) {
+    var key = tradingDayKey(now, s.settings.resetHour);
+    var active = isActiveDayFor(key, s.settings) || !!(opts && opts.showAnyway === key);
+    if (!active) return 'offday';
+    var open = !!(day && day.entered);
+    if (!open && doneReasonFor(s, day, now)) return 'done';
+    if (cooldownToday(s, key)) return 'cooldown';
+    if (open) return 'intrade';
+    if (day && day.looking) return 'looking';
+    var phase = sessionPhase(now, s.settings);
+    if (phase !== 'before' && gateNoFor(s, day)) return 'observe';
+    if (phase === 'live') return 'waiting';
+    return 'premarket';
+  }
+  function homeNow(now) {
+    now = now || new Date();
+    var key = todayKey(now);
+    var day = state.days[key] || null; // read only
+    return { state: homeStateFor(state, day, now, { showAnyway: ui.showAnyway }), key: key, day: day, now: now };
+  }
+  function homeSig(hs) { return hs.key + '|' + hs.state + '|' + (isEarlyFor(state, hs.now) ? 1 : 0); }
+  // Today card (filled in Part C): { setups: [{id, text, grade}], contracts, practising, band }.
+  function todayCard(day) { return day && isObj(day.today) ? day.today : {}; }
+  function findSetup(day, id) {
+    var su = todayCard(day).setups;
+    return id && Array.isArray(su) ? su.filter(function (x) { return x && x.id === id; })[0] || null : null;
+  }
+  function setupLabel(su) {
+    var t = String(su && su.text || '').split('·')[0].trim();
+    return t.length > 28 ? t.slice(0, 27) + '…' : t;
+  }
+  // Setup rows for Looking. After a stop inside the early window the next entry is an A setup only:
+  // B rows are off, and ungraded rows are off if they are the setup that stopped (spec §2.3).
+  function setupRowsFor(day) {
+    var list = todayCard(day).setups;
+    list = (Array.isArray(list) ? list : []).filter(function (x) { return x && String(x.text || '').trim(); });
+    var es = (day && Array.isArray(day.trades) ? day.trades : []).filter(function (t) { return t.outcome === 'SL' && t.earlyWindow; });
+    var stopped = es.map(function (t) { return t.setupId; });
+    return list.map(function (su) {
+      var off = es.length && (su.grade === 'B' || (!su.grade && stopped.indexOf(su.id) >= 0));
+      return { setup: su, off: off ? 'not after an early stop' : '' };
+    });
+  }
+  // Can Enter be held on the Looking screen? c = tradeCtx().
+  function homeEntry(c, day) {
+    var rows = setupRowsFor(day);
+    var open = rows.filter(function (r) { return !r.off; });
+    var pick = day && day.looking && day.looking.setupId;
+    var picked = open.filter(function (r) { return r.setup.id === pick; })[0] || null;
+    var why = '';
+    if (!c.allArmed) why = c.s.rules.notATradeMsg;
+    else if (rows.length && !open.length) why = 'No A setup left after an early stop.';
+    else if (rows.length && !picked) why = 'Pick the setup first.';
+    return { rows: rows, picked: picked, ok: !why, why: why };
+  }
+  // Series day N of 20 (active days from settings.series.start to key). 0 = before the series.
+  function seriesDayFor(key, settings) {
+    var se = settings.series;
+    if (!isObj(se) || !/^\d{4}-\d{2}-\d{2}$/.test(se.start || '')) return null;
+    if (key < se.start) return { n: 0, of: se.days };
+    var n = 0, d = keyToDate(se.start), end = keyToDate(key);
+    for (var i = 0; i < 1000 && d <= end; i++) {
+      if (settings.activeDays.indexOf(d.getDay()) >= 0) n++;
+      d.setDate(d.getDate() + 1);
+    }
+    return { n: n, of: se.days };
+  }
+  // In trade: one line at a time, 20 s each, in this order, then round again from line 3 (spec §2.4).
+  var WORD_LOOP = [
+    'The bracket is on. Nothing to decide.',
+    'Both exits were named before the open. The trade is already managed.',
+    'An add is a second trade. It needs its own trigger, and it isn\'t on the card.',
+    'Moving the stop is deciding under pressure. The stop was decided when you were calm.',
+    'Price going against you is not information. The stop is where the idea is wrong.',
+    'Price going for you is not a reason to take it early. The target is where the idea is right.',
+    'Hands off the mouse. The only button here is Stopped or Target.',
+    'One clean trade is worth more than a green one.',
+    'You\'re allowed to lose this one. Losing it clean is still a win.'
+  ];
+  function wordIndex(sec) {
+    var k = Math.floor(Math.max(0, sec) / 20);
+    return k < WORD_LOOP.length ? k : 2 + (k - WORD_LOOP.length) % (WORD_LOOP.length - 2);
+  }
+  var DONE_TEXT = {
+    tp: 'Two and done.\nLock. Close. Go.',
+    sl: 'Two clean stops.\nThe day protected you.',
+    cap: 'Two trades.\nThat\'s the day.',
+    dll: 'The lock fired.\nThat\'s what it\'s for.',
+    green: 'Green cap reached.\nLock. Close. Go.',
+    time: 'Window closed.',
+    closed: 'Day closed.\nLock. Close. Go.'
+  };
+  // Which day message (Green Day / Red Day preset) the Done screen shows.
+  function dayColourFor(reason, day, c) {
+    if (reason === 'closed') return day.dayClosed;
+    if (reason === 'tp' || reason === 'green') return 'green';
+    if (reason === 'sl' || reason === 'dll') return 'red';
+    return c.tp > c.sl ? 'green' : (c.sl > c.tp ? 'red' : null);
+  }
+
+  /* ==== VIEW: home ==== */
+  function viewHome(hs) {
+    var fn = {
+      premarket: homePremarket, waiting: homeWaiting, observe: homeWaiting, looking: homeLooking,
+      intrade: homeInTrade, cooldown: homeCooldown, done: homeDone, offday: homeOffday
+    }[hs.state];
+    return '<div class="home" data-hs="' + hs.state + '">' + fn(hs) + '</div>';
+  }
+  function homeHead(left, right) { return '<header class="home-head"><span>' + left + '</span><span>' + right + '</span></header>'; }
+  var SETTINGS_LINK = '<button type="button" class="textbtn" data-act="go-tab" data-tab="settings">Settings</button>';
+  function minText(m) { return '+' + Math.max(0, Math.floor(m)); }
+  function urgeText(day) {
+    var n = (day && day.urges || []).length;
+    return n + (n === 1 ? ' urge' : ' urges') + ' resisted';
+  }
+  function urgeNoteBtn() {
+    var sec = state.settings.behaviour.urgeHoldSec;
+    return '<button type="button" class="textbtn hold" data-hold="urgeNote" data-sec="' + sec + '" aria-label="Hold ' + sec + ' seconds: felt the urge, didn\'t act">' +
+      '<span class="hold-label">felt the urge, didn\'t act</span></button>';
+  }
+  function limitLinks() {
+    var g = state.settings.rules.greenCap != null;
+    return '<div class="home-note">Platform flattened you? <button type="button" data-act="limit-hit" data-k="dll">Daily loss hit</button>' +
+      (g ? ' · <button type="button" data-act="limit-hit" data-k="green">Green cap hit</button>' : '') + '</div>';
+  }
+  function ringsHtml(cls) { return '<div class="rings ' + cls + '" aria-hidden="true"><i></i><i></i><i></i></div>'; }
+  function startsText(hs) {
+    var mins = Math.ceil((sessionWindow(hs.key, state.settings).start - hs.now.getTime()) / 60000);
+    return mins > 0 ? 'Starts in ' + fmtDur(mins).toLowerCase() : 'Starting';
+  }
+  function homePremarket(hs) {
+    var s = state.settings;
+    var sd = seriesDayFor(hs.key, s);
+    var left = esc(fmtDayKey(hs.key)) + (sd && sd.n >= 1 && sd.n <= sd.of ? ' · DAY ' + sd.n + ' OF ' + esc(sd.of) : '');
+    var t = sessionTimes(hs.key);
+    var ny = s.session.tz && s.session.tz !== 'local' ? ' · ' + esc(s.session.start) + ' ET' : '';
+    return homeHead(left, SETTINGS_LINK) +
+      '<div class="home-mid top"><div class="home-text" style="align-items:flex-start;gap:4px">' +
+      '<p class="home-line" style="text-align:left" data-home-start>' + esc(startsText(hs)) + '</p>' +
+      '<p class="home-sub" style="text-align:left">Session ' + esc(t.start) + '–' + esc(t.end) + ny + '</p></div>' +
+      viewPremarket() + '</div>';
+  }
+  function homeWaiting(hs) {
+    var s = state.settings, day = hs.day || {}, c = dayCounts(day);
+    var m = sessionMinFor(state, hs.now), early = isEarlyFor(state, hs.now), obs = hs.state === 'observe';
+    var left = early ? '<span class="big-n"><span data-home-min>' + minText(m) + '</span><small>min</small></span>'
+      : (obs ? 'Observation' : 'Waiting') + ' · <span data-home-min>' + minText(m) + '</span> min';
+    var row = setupRowsFor(day)[0];
+    var line = obs ? 'Observation day.<br>Watch, log, don\'t trade.' : (early ? 'Early window.<br>Orders only, no chasing.' : 'A zone is not a trigger.');
+    return homeHead(left, 'until ' + esc(sessionTimes(hs.key).end)) +
+      '<div class="home-mid">' + ringsHtml('outline') +
+      '<div class="home-text"><p class="home-line">' + line + '</p>' + (row && !obs ? '<p class="home-sub">' + esc(row.setup.text) + '</p>' : '') + '</div>' +
+      '<div class="home-count">trade ' + c.trades + ' of ' + esc(s.rules.tradeCap) + ' · ' + urgeText(day) + '</div></div>' +
+      '<div class="home-foot">' + (obs ? '' : '<button type="button" class="btn primary block" data-act="home-look">Start looking for a setup</button>') +
+      urgeNoteBtn() + limitLinks() + '</div>';
+  }
+  function tradeItemsHtml(c) {
+    var out = '';
+    state.checklists.trade.categories.forEach(function (cat) {
+      cat.items.filter(function (it) { return !it.afterStopOnly || c.slToday; }).forEach(function (it) {
+        var on = !!c.day.tradeChecks[it.id];
+        out += '<button type="button" class="item" data-act="tr-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '">' + cbx(on) +
+          '<span class="txt"><b>' + esc(it.text) + (it.afterStopOnly ? ' <span class="tag amber">AFTER A STOP</span>' : '') + '</b>' +
+          (it.note ? '<small>' + esc(it.note) + '</small>' : '') + '</span></button>';
+      });
+    });
+    return out;
+  }
+  function homeLooking(hs) {
+    var c = tradeCtx(hs.now), day = c.day, b = c.s.behaviour;
+    var en = homeEntry(c, day);
+    var out = homeHead('Looking · <span data-home-min>' + minText(sessionMinFor(state, hs.now)) + '</span> min',
+      'trade ' + (day.trades.length + 1) + ' of ' + esc(c.s.rules.tradeCap)) + '<div class="home-mid top">';
+    if (isEarlyFor(state, hs.now)) out += '<div class="home-amber" role="status">Early. If this stops out, the next entry is an A setup only.</div>';
+    out += '<span class="eyebrow">Setup</span><div class="stack" role="radiogroup" aria-label="Setup">';
+    if (!en.rows.length) out += '<div class="pick" style="color:var(--muted)"><span class="txt">no setups today</span></div>';
+    en.rows.forEach(function (r) {
+      var su = r.setup;
+      out += '<button type="button" class="pick" role="radio" data-act="setup-pick" data-id="' + esc(su.id) + '" aria-checked="' + !!(en.picked && en.picked.setup === su) + '"' + (r.off ? ' disabled' : '') + '>' +
+        '<span class="dot" aria-hidden="true"></span><span class="txt">' + esc(su.text) + (su.grade ? ' <span class="tag">' + esc(su.grade) + '</span>' : '') +
+        (r.off ? '<small>' + esc(r.off) + '</small>' : '') + '</span></button>';
+    });
+    out += '</div>';
+    if (!en.rows.length) out += '<button type="button" class="btn block" data-act="sitout">Sitting out today</button>';
+    out += '<span class="eyebrow" style="margin-top:6px">Before entry</span><div class="stack">' + tradeItemsHtml(c) + '</div></div><div class="home-foot">';
+    out += en.ok ? holdBtn('enter', b.holdToEnterSec, 'enter live', 'Hold ' + b.holdToEnterSec + 's · Enter trade', ' aria-label="Hold ' + b.holdToEnterSec + ' seconds to enter the trade"')
+      : '<button type="button" class="enter off" disabled>' + esc(en.why) + '</button>';
+    return out + '<button type="button" class="textbtn" data-act="home-back">Back to waiting</button></div>';
+  }
+  function homeInTrade(hs) {
+    var s = state.settings, day = hs.day, c = dayCounts(day);
+    var su = findSetup(day, day.enteredSetup), ct = todayCard(day).contracts;
+    var label = 'In trade' + (su ? ' · ' + esc(setupLabel(su)) : '') + (ct ? ' · ' + esc(ct) + ' contracts' : '');
+    var el = day.enteredAt ? Math.max(0, (hs.now.getTime() - Date.parse(day.enteredAt)) / 1000) : 0;
+    var i = wordIndex(el);
+    return homeHead(label, '<span data-home-el>' + (day.enteredAt ? fmtMS(Math.floor(el)) : '') + '</span>') +
+      '<div class="home-mid">' + ringsHtml('filled breathe') +
+      '<div class="wl" data-wl="' + i + '"><span class="on">' + esc(WORD_LOOP[i]) + '</span><span aria-hidden="true"></span></div>' +
+      '<div class="home-count">trade ' + (c.trades + 1) + ' of ' + esc(s.rules.tradeCap) + ' · ' + urgeText(day) + '</div></div>' +
+      '<div class="home-foot"><div class="outcome2"><button type="button" class="btn" data-act="log" data-o="SL">Stopped</button>' +
+      '<button type="button" class="btn primary" data-act="log" data-o="TP">Target</button></div>' + urgeNoteBtn() + '</div>';
+  }
+  function homeCooldown(hs) {
+    var ac = state.activeCooldown, s = state.settings, day = hs.day || {}, c = dayCounts(day);
+    var left = Math.max(0, (ac.endsAt - Date.now()) / 1000);
+    var fin = ac.finished || left <= 0;
+    var sl = ac.trigger === 'sl';
+    var off = RING_C * (1 - (ac.seconds ? left / ac.seconds : 0));
+    var out = homeHead('Cooldown', sl ? 'stopped · trade ' + c.trades + ' of ' + esc(s.rules.tradeCap) : esc(ac.name)) +
+      '<div class="home-mid" style="gap:22px"><div class="ring-wrap" role="timer" aria-label="Time left" style="margin:0"><svg viewBox="0 0 200 200" aria-hidden="true">' +
+      '<circle cx="100" cy="100" r="88" fill="none" stroke="var(--ring)" stroke-width="10"/>' +
+      '<circle data-cd-ring cx="100" cy="100" r="88" fill="none" stroke="var(--cool)" stroke-width="10" stroke-dasharray="' + RING_C.toFixed(2) + '" stroke-dashoffset="' + (fin ? RING_C : off).toFixed(2) + '"/></svg>' +
+      '<div class="center"><span class="big" data-cd-left>' + (fin ? '0:00' : fmtMS(left)) + '</span></div></div><div class="home-text">';
+    if (fin) out += '<p class="home-line" style="font-size:' + (String(ac.endMsg || '').length > 70 ? 20 : 26) + 'px">' + esc(ac.endMsg || 'Cooldown done.') + '</p>';
+    else {
+      if (sl) out += '<p class="home-line">A clean loss.<br>Stand up. Leave the desk.</p><p class="home-sub">one of the expected ones</p>';
+      else out += '<p class="home-line">' + esc(ac.name) + '</p>' + (ac.startMsg ? '<p class="home-sub">' + esc(ac.startMsg) + '</p>' : '');
+    }
+    out += '</div>';
+    if (ac.steps.length && !fin) {
+      out += '<div class="steps" style="width:100%">' + ac.steps.map(function (st) {
+        var on = !!ac.stepsDone[st.id];
+        return '<button type="button" class="item step" data-act="cd-step" data-id="' + esc(st.id) + '" aria-pressed="' + on + '">' + cbx(on) + '<span class="txt"><b>' + esc(st.text) + '</b></span></button>';
+      }).join('') + '</div>';
+    }
+    out += '</div><div class="home-foot">';
+    if (fin) return out + '<button type="button" class="btn primary block" data-act="cd-done">Back to waiting</button></div>';
+    out += '<button type="button" class="btn block" disabled>Entry locked · <span data-cd-left>' + fmtMS(left) + '</span></button><div class="home-row">';
+    if (sl) {
+      var left2 = (day.leftDesk || []).some(function (r) { return Date.parse(r.at) >= ac.startedAt; });
+      out += left2 ? '<span class="home-note" style="align-self:center">Left the desk · logged</span>' : '<button type="button" class="textbtn" data-act="left-desk">I left the desk</button>';
+    }
+    var hsec = s.behaviour.endEarlyHoldSec;
+    return out + '<button type="button" class="textbtn hold" data-hold="endEarly" data-sec="' + hsec + '" aria-label="Hold ' + hsec + ' seconds to end early">' +
+      '<span class="hold-label">hold ' + hsec + 's to end early</span></button></div>' + limitLinks() + '</div>';
+  }
+  function homeDone(hs) {
+    var s = state.settings, day = hs.day || {}, c = dayCounts(day);
+    var reason = doneReasonFor(state, day, hs.now) || 'time';
+    var circle = {
+      tp: c.tp + '<small>/' + esc(s.rules.doneTp) + '</small>', sl: c.sl + '&nbsp;<small>SL</small>', cap: 'cap', dll: 'DLL',
+      green: 'cap', time: esc(sessionTimes(hs.key).end), closed: 'closed'
+    }[reason];
+    var names = { TP: 'target', SL: 'stop', SCRATCH: 'scratch', MANUAL: 'manual' };
+    var sub = (day.trades || []).map(function (t) { return names[t.outcome] || String(t.outcome).toLowerCase(); }).concat([urgeText(day)]).join(' · ');
+    var colour = dayColourFor(reason, day, c);
+    var p = colour ? findPreset(s.presetLinks[colour === 'red' ? 'redDay' : 'greenDay']) : null;
+    var sod = (day.sessionOver && day.sessionOver.checked) || {};
+    var out = homeHead('Done', SETTINGS_LINK) +
+      '<div class="home-mid" style="gap:24px"><div class="done-circle" aria-hidden="true">' + circle + '</div><div class="home-text">' +
+      '<p class="home-line">' + esc(DONE_TEXT[reason]).replace(/\n/g, '<br>') + '</p><p class="home-sub">' + esc(sub) + '</p>' +
+      (p && p.startMsg ? '<p class="done-msg">' + esc(p.startMsg) + '</p>' : '') + '</div></div><div class="home-foot"><div>';
+    state.checklists.sessionOver.categories.forEach(function (cat) {
+      cat.items.forEach(function (it) {
+        var on = !!sod[it.id];
+        out += '<button type="button" class="so-row" data-act="so-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '"><span>' + esc(it.text) + '</span>' + cbx(on) + '</button>';
+      });
+    });
+    out += '</div>';
+    var ac = state.activeCooldown;
+    if (ac && !ac.finished) out += '<button type="button" class="textbtn" data-act="go-tab" data-tab="cooldown">' + esc(ac.name) + ' cooldown · <span data-cd-left>' + fmtMS((ac.endsAt - Date.now()) / 1000) + '</span> left</button>';
+    return out + '</div>';
+  }
+  function homeOffday(hs) {
+    return homeHead(esc(fmtDayKey(hs.key)), SETTINGS_LINK) +
+      '<div class="home-mid">' + ringsHtml('outline') + '<div class="home-text"><p class="home-line">No session today.</p>' +
+      '<p class="home-sub">Days off stay quiet.</p></div></div>' +
+      '<div class="home-foot"><button type="button" class="btn block" data-act="home-show-anyway">Show the day anyway</button></div>';
+  }
+  // Per tick: minutes since the open, the countdown, elapsed time in trade and the word loop. No re-render.
+  function tickHomeDom() {
+    if (ui.tab !== 'home' || !state) return;
+    var now = new Date();
+    var mEls = $$('[data-home-min]');
+    if (mEls.length) {
+      var m = minText(sessionMinFor(state, now));
+      mEls.forEach(function (e) { if (e.textContent !== m) e.textContent = m; });
+    }
+    var st = $('[data-home-start]');
+    if (st) {
+      var txt = startsText({ key: todayKey(now), now: now });
+      if (st.textContent !== txt) st.textContent = txt;
+    }
+    var el = $('[data-home-el]');
+    var day = state.days[todayKey(now)];
+    if (el && day && day.enteredAt) {
+      var sec = Math.max(0, (now.getTime() - Date.parse(day.enteredAt)) / 1000);
+      var t = fmtMS(Math.floor(sec));
+      if (el.textContent !== t) el.textContent = t;
+      wordLoopTick(sec);
+    }
+  }
+  function wordLoopTick(sec) {
+    var wl = $('.wl[data-wl]');
+    if (!wl) return;
+    var i = wordIndex(sec);
+    if (+wl.getAttribute('data-wl') === i) return;
+    wl.setAttribute('data-wl', String(i));
+    var sp = wl.querySelectorAll('span');
+    var on = sp[0].classList.contains('on') ? sp[0] : sp[1];
+    var next = on === sp[0] ? sp[1] : sp[0];
+    next.textContent = WORD_LOOP[i];
+    next.removeAttribute('aria-hidden');
+    on.setAttribute('aria-hidden', 'true');
+    on.classList.remove('on');
+    next.classList.add('on');
   }
 
   /* ==== VIEW: premarket ==== */
@@ -1163,7 +1686,7 @@ var App = (function () {
       '<div class="cell"><span class="eyebrow">MAX LOSS</span><b>$' + esc(r.maxDailyLoss) + '</b></div>' +
       '<div class="cell"><span class="eyebrow">RISK/TRADE</span><b>≤ $' + esc(r.maxRiskPerTrade) + '</b></div>' +
       '<div class="cell"><span class="eyebrow">CAP</span><b>' + esc(r.tradeCap) + ' / DAY</b></div></div>' +
-      '<div class="session-bar"><span>SESSION ' + esc(c.s.session.start) + '–' + esc(c.s.session.end) + '</span><span>' + esc(si.right) + '</span></div>';
+      '<div class="session-bar"><span>SESSION ' + esc(sessionTimes(c.key).start) + '–' + esc(sessionTimes(c.key).end) + '</span><span>' + esc(si.right) + '</span></div>';
   }
   function urgeBlock(c) {
     var b = c.s.behaviour;
@@ -1199,7 +1722,7 @@ var App = (function () {
             '<span class="txt"><b>' + esc(it.text) + '</b>' + (it.note ? '<small>' + esc(it.note) + '</small>' : '') + '</span></button>';
         });
       });
-      var soLabel = c.dayClosed && !(c.active && c.phase === 'after') ? (c.dayClosed === 'red' ? 'RED DAY · DONE' : 'GREEN DAY · DONE') : s.session.end;
+      var soLabel = c.dayClosed && !(c.active && c.phase === 'after') ? (c.dayClosed === 'red' ? 'RED DAY · DONE' : 'GREEN DAY · DONE') : sessionTimes(c.key).end;
       return top + '<section class="card lock-card"><span class="mono amber">' + esc(soLabel) + '</span>' +
         '<h1 style="font-size:32px;margin:6px 0 8px">Session over.</h1><p class="msg" style="margin:0">' + esc(s.sessionOverMsg) + '</p></section>' +
         '<div class="stack">' + items + '</div>' +
@@ -1247,16 +1770,29 @@ var App = (function () {
   function logTrade(outcome) {
     var c = tradeCtx();
     var day = c.day, b = c.s.behaviour;
-    var before = { tradeChecks: clone(day.tradeChecks), entered: !!day.entered, dayDoneShown: !!day.dayDoneShown };
+    var before = { tradeChecks: clone(day.tradeChecks), entered: !!day.entered, dayDoneShown: !!day.dayDoneShown, enteredAt: day.enteredAt || null, enteredSetup: day.enteredSetup || null };
     var rec = {
       n: day.trades.length + 1, outcome: outcome,
       checklistComplete: !!day.entered || (c.allArmed && c.visible.length > 0),
       enteredViaHold: !!day.entered, at: new Date().toISOString(),
       id: uid(), device: devId()
     };
+    // v2 (spec §4): which setup, when it opened, and whether it opened inside the early window.
+    var openAt = day.entered && day.enteredAt ? Date.parse(day.enteredAt) : NaN;
+    var openMin = isFinite(openAt) ? (openAt - sessionWindow(c.key, c.s).start) / 60000 : null;
+    var su = day.entered ? findSetup(day, day.enteredSetup) : null;
+    rec.setupId = su ? su.id : null;
+    rec.grade = su ? su.grade || null : null;
+    rec.enteredAt = isFinite(openAt) ? day.enteredAt : null;
+    rec.closedAt = rec.at;
+    rec.openOffsetMin = openMin === null ? null : Math.floor(openMin);
+    rec.earlyWindow = openMin !== null && openMin >= 0 && openMin < observeMinOf(c.s);
     day.trades.push(rec);
     day.tradeChecks = {};
     day.entered = false;
+    day.enteredAt = null;
+    day.enteredSetup = null;
+    day.looking = null;
     save();
     var key = c.key;
     toast(outcome + ' logged · trade ' + pad2(day.trades.length), { label: 'UNDO', fn: function () { undoTrade(key, rec, before); } }, UNDO_MS);
@@ -1282,6 +1818,8 @@ var App = (function () {
     if (rec.outcome === 'TP') { day.dayDoneShown = before.dayDoneShown; ui.dayDone = false; }
     day.tradeChecks = before.tradeChecks;
     day.entered = before.entered;
+    day.enteredAt = before.enteredAt;
+    day.enteredSetup = before.enteredSetup;
     day.undone.push({ outcome: rec.outcome, n: rec.n, loggedAt: rec.at, undoneAt: new Date().toISOString(), cooldownCancelled: cancelled, id: uid(), kind: 'trade', device: devId() });
     saveNow();
     ui.tab = 'trade';
@@ -1308,8 +1846,9 @@ var App = (function () {
       saveNow();
       unlockAudio();
       requestWakeLock();
-      ui.tab = 'cooldown';
-      try { sessionStorage.setItem('checkpoint.tab', 'cooldown'); } catch (e) { /* ignore */ }
+      // v2: the cooldown shows on the home screen; when the day is already done, on the Cooldown page.
+      ui.tab = homeNow().state === 'cooldown' ? 'home' : 'cooldown';
+      try { sessionStorage.setItem('checkpoint.tab', ui.tab); } catch (e) { /* ignore */ }
       render();
       window.scrollTo(0, 0);
     }
@@ -1419,7 +1958,7 @@ var App = (function () {
     var s = state.settings, r = s.rules, b = s.behaviour;
     var out = '<header class="editor-head"><h1>Settings</h1><span class="saved">SAVED</span></header>';
     if (sessionLive()) {
-      out += '<div class="banner" role="status"><span class="mono">SESSION LIVE</span>Session is live (' + esc(s.session.start) + '–' + esc(s.session.end) + '). Rule changes that loosen your limits apply tomorrow at ' + esc(s.resetHour) + '.</div>';
+      out += '<div class="banner" role="status"><span class="mono">SESSION LIVE</span>Session is live (' + esc(sessionTimes().start) + '–' + esc(sessionTimes().end) + '). Rule changes that loosen your limits apply tomorrow at ' + esc(s.resetHour) + '.</div>';
     }
     // 1. Checklists
     out += '<div class="sec-title">Checklists</div><div class="card list-card">' +
@@ -1438,7 +1977,14 @@ var App = (function () {
       '<button type="button" data-act="cap" data-d="1" aria-label="Raise trade cap">+</button></div></div>' + pendingRow('rules.tradeCap') + '</div>' +
       '<div class="field"><label for="f-loss">Max daily loss ($)</label><input id="f-loss" data-fk="f-loss" type="number" inputmode="numeric" min="0" step="1" value="' + esc(r.maxDailyLoss) + '" data-change="rule-num" data-key="maxDailyLoss">' + pendingRow('rules.maxDailyLoss') + '</div>' +
       '<div class="field"><label for="f-risk">Max risk per trade ($)</label><input id="f-risk" data-fk="f-risk" type="number" inputmode="numeric" min="0" step="1" value="' + esc(r.maxRiskPerTrade) + '" data-change="rule-num" data-key="maxRiskPerTrade">' + pendingRow('rules.maxRiskPerTrade') + '</div>' +
-      '<div class="field"><label for="f-nat">"Not a trade" message</label><input id="f-nat" type="text" value="' + esc(r.notATradeMsg) + '" data-change="text-setting" data-path="settings.rules.notATradeMsg"></div></div>';
+      '<div class="field"><label for="f-nat">"Not a trade" message</label><input id="f-nat" type="text" value="' + esc(r.notATradeMsg) + '" data-change="text-setting" data-path="settings.rules.notATradeMsg"></div>' +
+      // v2 rules (spec §8)
+      '<div class="field"><div class="inline"><label for="f-dtp">Day done after TP</label><input id="f-dtp" class="num-sm" type="number" inputmode="numeric" min="1" max="20" step="1" value="' + esc(r.doneTp) + '" data-change="rule-int" data-key="doneTp"></div>' + pendingRow('rules.doneTp') + '</div>' +
+      '<div class="field"><div class="inline"><label for="f-dsl">Day done after SL</label><input id="f-dsl" class="num-sm" type="number" inputmode="numeric" min="1" max="20" step="1" value="' + esc(r.doneSl) + '" data-change="rule-int" data-key="doneSl"></div>' + pendingRow('rules.doneSl') + '</div>' +
+      '<div class="field"><div class="inline"><label for="f-rrf">Reward to risk floor (1 : x)</label><input id="f-rrf" class="num-sm" type="number" inputmode="decimal" min="0.5" max="10" step="0.1" value="' + esc(r.rrFloor) + '" data-change="rule-dec" data-key="rrFloor"></div>' + pendingRow('rules.rrFloor') + '</div>' +
+      '<div class="field"><div class="inline"><label for="f-rrp">Reward to risk preferred (1 : x)</label><input id="f-rrp" class="num-sm" type="number" inputmode="decimal" min="0.5" max="10" step="0.1" value="' + esc(r.rrPreferred) + '" data-change="rule-dec" data-key="rrPreferred"></div>' + pendingRow('rules.rrPreferred') + '</div>' +
+      '<div class="field"><label for="f-gc">Green cap ($)</label><input id="f-gc" type="number" inputmode="numeric" min="0" step="1" placeholder="none" value="' + esc(r.greenCap == null ? '' : r.greenCap) + '" data-change="rule-cap" data-key="greenCap">' +
+      '<span class="hint">Leave empty for none. Set it when a Flex account is in the copy group (Tradeify 1100).</span>' + pendingRow('rules.greenCap') + '</div></div>';
     // 4. Preset links
     out += '<div class="sec-title">Preset links</div><div class="card">' + LINK_LABELS.map(function (l) {
       return '<div class="field"><label for="lk-' + l[0] + '">' + l[1] + ' starts</label><select id="lk-' + l[0] + '" data-change="link" data-link="' + l[0] + '">' +
@@ -1455,8 +2001,11 @@ var App = (function () {
     // 6. General
     var dayOrder = [[1, 'M'], [2, 'T'], [3, 'W'], [4, 'T'], [5, 'F'], [6, 'S'], [0, 'S']];
     out += '<div class="sec-title">General</div><div class="card">' +
-      '<div class="field"><span class="lbl">Session window</span><div class="row"><input type="time" aria-label="Session start" value="' + esc(s.session.start) + '" data-change="session" data-field="start"><span class="muted">–</span><input type="time" aria-label="Session end" value="' + esc(s.session.end) + '" data-change="session" data-field="end"></div>' +
-      '<span class="hint">After 1 Nov (US DST ends): 21:30–22:40</span>' + pendingRow('session') + '</div>' +
+      '<div class="field"><span class="lbl">Session window' + (s.session.tz && s.session.tz !== 'local' ? ' (New York time)' : '') + '</span><div class="row"><input type="time" aria-label="Session start" value="' + esc(s.session.start) + '" data-change="session" data-field="start"><span class="muted">–</span><input type="time" aria-label="Session end" value="' + esc(s.session.end) + '" data-change="session" data-field="end"></div>' +
+      (s.session.tz && s.session.tz !== 'local' ? '<span class="hint">Here today: ' + esc(sessionTimes().start) + '–' + esc(sessionTimes().end) + '. Moves with US daylight saving by itself.</span>' : '') + pendingRow('session') + '</div>' +
+      '<div class="field"><div class="inline"><label for="f-obs">Early window after the open (minutes)</label><input id="f-obs" class="num-sm" type="number" inputmode="numeric" min="0" max="60" step="1" value="' + esc(observeMinOf(s)) + '" data-change="session-num" data-field="observeMin"></div></div>' +
+      '<div class="field"><span class="lbl">Series</span><div class="row"><input type="date" aria-label="Series start" value="' + esc(s.series.start) + '" data-change="series" data-field="start"><input class="num-sm" type="number" inputmode="numeric" min="1" max="200" step="1" aria-label="Series length in trading days" value="' + esc(s.series.days) + '" data-change="series" data-field="days"></div>' +
+      '<span class="hint">Start date and length in trading days (Premarket shows day N of 20).</span></div>' +
       '<div class="field"><span class="lbl">Active days</span><div class="day-chips">' + dayOrder.map(function (d) {
         var names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         return '<button type="button" data-act="day" data-dow="' + d[0] + '" aria-pressed="' + (s.activeDays.indexOf(d[0]) >= 0) + '" aria-label="' + names[d[0]] + '">' + d[1] + '</button>';
@@ -1905,11 +2454,9 @@ var App = (function () {
     return 'main';
   }
   function sessionFill(now) {
-    var s = state.settings;
-    var reset = hmToMin(s.resetHour);
-    var n = relMin(minOfDay(now), reset), a = relMin(hmToMin(s.session.start), reset), b = relMin(hmToMin(s.session.end), reset);
-    if (b <= a) return 0;
-    return Math.max(0, Math.min(1, (n - a) / (b - a)));
+    var w = sessionWindow(todayKey(now), state.settings);
+    if (w.end <= w.start) return 0;
+    return Math.max(0, Math.min(1, (now.getTime() - w.start) / (w.end - w.start)));
   }
   var PR = 2 * Math.PI * 48;
   function pipView(mode) {
@@ -1944,7 +2491,7 @@ var App = (function () {
     } else if (mode === 'checkin') {
       out += checkinInner(currentCheckin(now));
     } else if (mode === 'over') {
-      var lbl = c.dayClosed && !(c.active && c.phase === 'after') ? (c.dayClosed === 'red' ? 'RED DAY · DONE' : 'GREEN DAY · DONE') : 'SESSION OVER · ' + s.session.end;
+      var lbl = c.dayClosed && !(c.active && c.phase === 'after') ? (c.dayClosed === 'red' ? 'RED DAY · DONE' : 'GREEN DAY · DONE') : 'SESSION OVER · ' + sessionTimes(c.key).end;
       out += '<span class="ci-label" style="color:var(--lock)">' + esc(lbl) + '</span><span class="ci-q">Session over.</span><p class="ci-text">' + esc(s.sessionOverMsg) + '</p><div class="stack">';
       state.checklists.sessionOver.categories.forEach(function (cat) {
         cat.items.forEach(function (it) {
@@ -2081,7 +2628,11 @@ var App = (function () {
   function onHoldComplete(kind) {
     var key = todayKey();
     if (kind === 'enter') {
-      getDay(key).entered = true;
+      var dd = getDay(key);
+      dd.entered = true;
+      dd.enteredAt = new Date().toISOString();
+      dd.enteredSetup = (dd.looking && dd.looking.setupId) || null;
+      dd.looking = null;
       vibrate(60);
       save();
       render();
@@ -2090,6 +2641,14 @@ var App = (function () {
       vibrate(60);
       save();
       startCooldown(state.settings.presetLinks.urge, 'urge');
+    } else if (kind === 'urgeNote') {
+      // v2 home: "felt the urge, didn't act". Logged only; no cooldown (it would cover the In-trade screen).
+      var du = getDay(key);
+      du.urges.push({ id: uid(), at: new Date().toISOString(), device: devId(), resisted: true });
+      vibrate(60);
+      save();
+      render();
+      toast('Urge resisted · ' + du.urges.length + ' today');
     } else if (kind === 'endEarly') {
       var ac = state.activeCooldown;
       if (ac) {
@@ -2310,7 +2869,7 @@ var App = (function () {
         ui.dayDone = false;
         ui.showAnyway = null;
         ui.cdSelected = null;
-        setTab('premarket');
+        setTab('home');
         toast('All data erased · fresh start');
       }
     });
@@ -2411,9 +2970,59 @@ var App = (function () {
       releaseWakeLock();
       saveNow();
       // A check-in answered Done · Red/Green Day: after its cooldown, show the session-over checklist.
-      if ((ac.trigger === 'redDay' || ac.trigger === 'greenDay') && getDay(todayKey()).dayClosed) { setTab('trade'); return; }
+      if ((ac.trigger === 'redDay' || ac.trigger === 'greenDay') && getDay(todayKey()).dayClosed) { setTab('home'); return; }
       render();
     },
+    // v2 home (Part B)
+    'home-look': function () {
+      var day = getDay(todayKey());
+      if (day.lookingLeftAt && Date.now() - Date.parse(day.lookingLeftAt) > 10 * 60000) day.tradeChecks = {};
+      day.looking = { at: new Date().toISOString(), setupId: null };
+      day.lookingLeftAt = null;
+      save();
+      render();
+      window.scrollTo(0, 0);
+    },
+    'home-back': function () {
+      var day = getDay(todayKey());
+      day.looking = null;
+      day.lookingLeftAt = new Date().toISOString(); // ticks are kept for 10 minutes
+      save();
+      render();
+    },
+    'setup-pick': function (el) {
+      var day = getDay(todayKey());
+      if (!day.looking) return;
+      day.looking.setupId = el.getAttribute('data-id');
+      save();
+      render();
+    },
+    'sitout': function () {
+      var day = getDay(todayKey());
+      day.sitouts.push({ id: uid(), at: new Date().toISOString(), device: devId() });
+      day.looking = null;
+      save();
+      render();
+      toast('Sitting out · logged');
+    },
+    'left-desk': function () {
+      var day = getDay(todayKey());
+      day.leftDesk.push({ id: uid(), at: new Date().toISOString(), device: devId() });
+      save();
+      render();
+    },
+    'limit-hit': function (el) {
+      var k = el.getAttribute('data-k');
+      var dll = k === 'dll';
+      confirmModal(dll ? 'Daily loss hit?' : 'Green cap hit?',
+        (dll ? 'The platform flattened you at the daily loss limit.' : 'The account reached its green cap.') + ' The day ends here.',
+        'Yes, the day is done', function () {
+          getDay(todayKey())[dll ? 'dllHit' : 'greenCapHit'] = new Date().toISOString();
+          saveNow();
+          render();
+        });
+    },
+    'home-show-anyway': function () { ui.showAnyway = todayKey(); render(); },
     // settings
     'pending-cancel': function (el) { removePending(el.getAttribute('data-key')); save(); render(); flashSaved(); },
     'open-list': function (el) { ui.editor = { type: 'checklist', list: el.getAttribute('data-list') }; ui.expanded = {}; render(); window.scrollTo(0, 0); },
@@ -2593,6 +3202,45 @@ var App = (function () {
       render();
     },
     'text-setting': function (el) { setPath(state, el.getAttribute('data-path'), el.value); save(); flashSaved(); },
+    // v2 settings (spec §8)
+    'rule-int': function (el) {
+      var k = el.getAttribute('data-key');
+      var v = Math.round(Number(el.value));
+      if (el.value === '' || !isFinite(v) || v < 1) { render(); return; }
+      changeSetting('rules.' + k, 'settings.rules.' + k, Math.min(20, v));
+      render();
+    },
+    'rule-dec': function (el) {
+      var k = el.getAttribute('data-key');
+      var v = Math.round(Number(el.value) * 10) / 10;
+      if (el.value === '' || !isFinite(v) || v <= 0) { render(); return; }
+      changeSetting('rules.' + k, 'settings.rules.' + k, v, '1:' + state.settings.rules[k], '1:' + v);
+      render();
+    },
+    'rule-cap': function (el) {
+      var k = el.getAttribute('data-key');
+      var v = el.value === '' ? null : Math.round(Number(el.value));
+      if (v !== null && (!isFinite(v) || v <= 0)) { render(); return; }
+      var cur = state.settings.rules[k];
+      changeSetting('rules.' + k, 'settings.rules.' + k, v, cur == null ? 'none' : '$' + cur, v == null ? 'none' : '$' + v);
+      render();
+    },
+    'session-num': function (el) {
+      var v = Math.round(Number(el.value));
+      if (el.value === '' || !isFinite(v) || v < 0 || v > 60) { render(); return; }
+      var cur = state.settings.session;
+      var base = clone(targetValue('session', cur));
+      base[el.getAttribute('data-field')] = v;
+      changeSetting('session', 'settings.session', base, 'early ' + observeMinOf(state.settings) + ' min', 'early ' + v + ' min');
+      render();
+    },
+    'series': function (el) {
+      var f = el.getAttribute('data-field');
+      if (f === 'start') { if (!/^\d{4}-\d{2}-\d{2}$/.test(el.value)) { render(); return; } state.settings.series.start = el.value; }
+      else { var n = Math.round(Number(el.value)); if (!isFinite(n) || n < 1) { render(); return; } state.settings.series.days = Math.min(200, n); }
+      save();
+      flashSaved();
+    },
     'ci-time': function (el) {
       var t = state.settings.checkins.times.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
       if (!t || !/^\d{2}:\d{2}/.test(el.value)) { render(); return; }
@@ -2757,6 +3405,13 @@ var App = (function () {
     if (finishCooldownIfDue()) { if (!ui.holding) render(); return; }
     tickCooldownDom();
     checkinTick();
+    // v2 home: re-render when the day moves to another state (or the early window ends); else update in place.
+    var hs = homeNow();
+    if (homeSig(hs) !== ui.homeSig && !ui.holding && !drag) {
+      if (ui.tab === 'home' || homeLocked(hs.state)) render();
+      else { ui.homeSig = homeSig(hs); applyChrome(); }
+    }
+    tickHomeDom();
     pipRender();
     var t = Date.now();
     if (t - lastSlow >= 20000) {
@@ -2803,6 +3458,20 @@ var App = (function () {
     escapeHTML: escapeHTML,
     fillMissing: fillMissing,
     themeFor: themeFor,
+    // v2 Part B
+    normalise: normalise,
+    sessionWindow: sessionWindow,
+    sessionTimesFor: sessionTimesFor,
+    homeStateFor: homeStateFor,
+    doneReasonFor: doneReasonFor,
+    isEarlyFor: isEarlyFor,
+    setupRowsFor: setupRowsFor,
+    seriesDayFor: seriesDayFor,
+    wordIndex: wordIndex,
+    WORD_LOOP: WORD_LOOP,
+    HOME_STATES: HOME_STATES,
+    homeNow: function () { return homeNow(); },
+    go: function (tab) { setTab(tab); },
     get state() { return state; },
     ui: ui
   };

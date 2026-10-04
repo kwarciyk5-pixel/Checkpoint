@@ -49,6 +49,7 @@ async function routeFonts(ctx) {
   const theme = () => st(() => document.documentElement.getAttribute('data-theme'));
   const band = () => page.locator('#band').getAttribute('data-s');
   const bg = () => st(() => getComputedStyle(document.body).backgroundColor);
+  const go = t => page.evaluate(x => App.go(x), t); // v2 (Part B): Settings and Cooldown open from the home screen
 
   // ---- tokens + defaults
   assert.strictEqual(await st(() => App.state.settings.theme), 'auto');
@@ -78,7 +79,7 @@ async function routeFonts(ctx) {
   await shot('paper-trade-dim');
 
   // ---- settings: theme override
-  await page.locator('.tab[data-tab="settings"]').click();
+  await go('settings');
   await page.locator('[data-act="theme"][data-v="light"]').click();
   assert.strictEqual(await theme(), 'light');
   assert.strictEqual(await st(() => App.state.settings.theme), 'light');
@@ -89,12 +90,10 @@ async function routeFonts(ctx) {
   await page.locator('[data-act="theme"][data-v="light"]').click();
 
   // ---- band follows the day: cooldown = amber
-  await page.locator('.tab[data-tab="cooldown"]').click();
+  await go('cooldown');
   await page.locator('[data-act="cd-start"]').click();
   assert.strictEqual(await band(), 'cool', 'band amber during cooldown');
   await shot('paper-cooldown-light');
-  await page.locator('.tab[data-tab="trade"]').click();
-  await shot('paper-trade-light-locked');
 
   assert.deepStrictEqual(errors, [], 'no console errors');
   await browser.close();
