@@ -199,7 +199,7 @@ details.log-anyway summary::-webkit-details-marker{display:none}
 .field > label, .field > .lbl{font-size:11px;font-weight:500;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
 .field .hint{font-size:12px;color:var(--dim)}
 .inline{display:flex;align-items:center;justify-content:space-between;gap:12px}
-input[type=text],input[type=number],input[type=time],textarea,select{width:100%;min-height:44px;background:transparent;border:1px solid var(--line);border-radius:4px;padding:8px 10px;font-size:16px}
+input[type=text],input[type=number],input[type=time],input[type=email],textarea,select{width:100%;min-height:44px;background:transparent;border:1px solid var(--line);border-radius:4px;padding:8px 10px;font-size:16px}
 textarea{min-height:76px;resize:vertical;line-height:1.4}
 input:focus,textarea:focus,select:focus{border-color:var(--ink);outline:none}
 .num-sm{max-width:110px}
@@ -907,6 +907,7 @@ var App = (function () {
     stampChanges();
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('Could not save. Storage may be full.'); }
     saveDevice();
+    if (typeof scheduleSync === 'function') scheduleSync(); // v2 Part F: push the change when signed in
   }
   function save() {
     clearTimeout(saveTimer);
@@ -2777,6 +2778,7 @@ var App = (function () {
       '<p class="muted" style="margin:0;font-size:14px">Deletes every logged day: trades, cooldowns, urges and ticks. Checklists, presets and settings stay.</p>' +
       '<button type="button" class="btn danger-o" data-act="erase-all"' + (sessionLive() ? ' disabled' : '') + '>ERASE ALL DATA</button>' +
       '<p class="muted" style="margin:0;font-size:14px">Back to a fresh install. Only Checkpoint data is deleted; other apps on this site are not touched.</p></div>';
+    out += syncSettings(); // v2 Part F
     return out;
   }
   function pendingRowsForPreset(p) {
@@ -3663,6 +3665,315 @@ var App = (function () {
     });
   }
 
+  /* ==== SYNC: Supabase ==== */
+  // Part F (spec §7). Optional and local-first: the app works the same signed out. Signed in (magic link or
+  // the 6-digit code from the same email), each changed day and the settings go up, and newer rows come
+  // down. A day changed on two devices merges: the newer one is the base, and records with ids (trades,
+  // urges, cooldowns, check-ins, sit-outs, left-desk) and every event are kept from both, so nothing logged
+  // is lost. Tokens live in device-only storage (checkpoint.v1.device), never in an export. The page holds
+  // only the public publishable key; row-level security keeps each user to their own rows (cp_ tables).
+  var SB = { url: 'https://xljsiznknzrepvbwuiax.supabase.co', key: 'sb_publishable__bBgcqi4VfhIryjgI5w0VQ_hUHsambk' };
+  var SETTINGS_ROW = '_settings';
+  var SYNC_LISTS = ['trades', 'cooldowns', 'urges', 'undone', 'checkins', 'sitouts', 'leftDesk'];
+  var sync = { busy: false, timer: null, applying: false, last: 0 };
+  function syncInfo() {
+    if (!device) return {};
+    if (!isObj(device.sync)) device.sync = {};
+    return device.sync;
+  }
+  function signedIn() { var x = device && device.sync; return !!(x && x.refresh && x.userId); }
+  function hashStr(str) {
+    var h = 5381;
+    for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36) + ':' + str.length;
+  }
+  function dayHash(day) {
+    var c = {};
+    Object.keys(day).sort().forEach(function (k) { if (k !== '_m') c[k] = day[k]; });
+    return hashStr(JSON.stringify(c));
+  }
+  function settingsBlob(st) { return { settings: st.settings, checklists: st.checklists, presets: st.presets, pending: st.pending, meta: { updatedAt: st.meta.updatedAt } }; }
+  function blobStamp(b) {
+    var u = (b && b.meta && b.meta.updatedAt) || {}, m = 0;
+    Object.keys(u).forEach(function (k) { var t = Date.parse(u[k]); if (t > m) m = t; });
+    return m;
+  }
+  // When a day last changed: its _m stamp, else the latest time anything in it was logged.
+  function dayStampOf(day) {
+    if (!isObj(day)) return 0;
+    var m = Date.parse(day._m) || 0;
+    if (m) return m;
+    (Array.isArray(day.events) ? day.events : []).forEach(function (e) { var t = Date.parse(e.t); if (t > m) m = t; });
+    SYNC_LISTS.forEach(function (k) {
+      (Array.isArray(day[k]) ? day[k] : []).forEach(function (r) {
+        var t = Date.parse(r && (r.at || r.closedAt || r.startedAt || r.undoneAt));
+        if (t > m) m = t;
+      });
+    });
+    return m;
+  }
+  // Pure: merge two versions of one day. Newer = base; then everything logged on either side is kept.
+  function mergeDay(a, b) {
+    if (!isObj(a)) return clone(b);
+    if (!isObj(b)) return clone(a);
+    var bNewer = dayStampOf(b) > dayStampOf(a);
+    var base = clone(bNewer ? b : a), other = bNewer ? a : b;
+    SYNC_LISTS.forEach(function (k) {
+      var list = Array.isArray(base[k]) ? base[k] : (base[k] = []);
+      var have = {};
+      list.forEach(function (r) { if (r && r.id) have[r.id] = true; });
+      (Array.isArray(other[k]) ? other[k] : []).forEach(function (r) { if (r && r.id && !have[r.id]) { list.push(clone(r)); have[r.id] = true; } });
+    });
+    var undone = base.undone.filter(function (u) { return u && u.kind === 'trade'; }).map(function (u) { return u.loggedAt; });
+    base.trades = base.trades.filter(function (t) { return undone.indexOf(t.at) < 0; })
+      .sort(function (x, y) { return (Date.parse(x.at) || 0) - (Date.parse(y.at) || 0); });
+    var seen = {}, ev = [];
+    (Array.isArray(base.events) ? base.events : []).concat(Array.isArray(other.events) ? other.events : []).forEach(function (e) {
+      if (!e) return;
+      var k = e.t + '|' + e.type + '|' + (e.detail || '');
+      if (!seen[k]) { seen[k] = true; ev.push(clone(e)); }
+    });
+    base.events = ev.sort(function (x, y) { return (Date.parse(x.t) || 0) - (Date.parse(y.t) || 0); });
+    var bp = base.premarket, op = other.premarket;
+    if (isObj(bp) && isObj(op)) {
+      Object.keys(op.checked || {}).forEach(function (id) { if (!(bp.gateNo || {})[id]) bp.checked[id] = true; });
+      Object.keys(op.gateNo || {}).forEach(function (id) { if (!(bp.checked || {})[id]) { bp.gateNo = bp.gateNo || {}; bp.gateNo[id] = true; } });
+    }
+    var fa = isObj(base.filled) ? base.filled : null, fb = isObj(other.filled) ? other.filled : null;
+    if (fb && (!fa || (Date.parse(fb.importedAt) || 0) > (Date.parse(fa.importedAt) || 0))) base.filled = clone(fb);
+    base._m = new Date(Math.max(dayStampOf(a), dayStampOf(b)) || Date.now()).toISOString();
+    return base;
+  }
+  // Stamp days that changed since the last look (first look: their own activity time, not "now").
+  function markLocal() {
+    var x = syncInfo();
+    if (!isObj(x.seen)) x.seen = {};
+    Object.keys(state.days).forEach(function (k) {
+      var d = state.days[k];
+      if (!isObj(d)) return;
+      var h = dayHash(d);
+      if (x.seen[k] === h) return;
+      if (x.seen[k] !== undefined) d._m = new Date().toISOString();
+      else if (!d._m) { var a = dayStampOf(d); if (a) d._m = new Date(a).toISOString(); }
+      x.seen[k] = h;
+    });
+  }
+  function sbHeaders(token) {
+    var h = { apikey: SB.key, 'Content-Type': 'application/json' };
+    if (token) h.Authorization = 'Bearer ' + token;
+    return h;
+  }
+  function sbParse(r) {
+    return r.text().then(function (t) {
+      var j = null;
+      try { j = t ? JSON.parse(t) : null; } catch (e) { j = null; }
+      if (!r.ok) {
+        var err = new Error((j && (j.msg || j.error_description || j.message || j.error)) || ('HTTP ' + r.status));
+        err.status = r.status;
+        throw err;
+      }
+      return j;
+    });
+  }
+  function sbAuth(path, body) {
+    return fetch(SB.url + '/auth/v1/' + path, { method: 'POST', headers: sbHeaders(), body: JSON.stringify(body) }).then(sbParse);
+  }
+  function setSession(j) {
+    var x = syncInfo();
+    x.access = j.access_token;
+    if (j.refresh_token) x.refresh = j.refresh_token;
+    x.expiresAt = Date.now() + (Number(j.expires_in) || 3600) * 1000;
+    if (j.user && j.user.id) { x.userId = j.user.id; x.email = j.user.email || x.email; }
+    saveDevice();
+  }
+  function freshToken() {
+    var x = syncInfo();
+    if (x.access && x.expiresAt - 60000 > Date.now()) return Promise.resolve(x.access);
+    if (!x.refresh) return Promise.reject(new Error('Not signed in'));
+    return sbAuth('token?grant_type=refresh_token', { refresh_token: x.refresh }).then(function (j) { setSession(j); return j.access_token; }, function (err) {
+      if (err.status === 400 || err.status === 401) { device.sync = { email: x.email }; saveDevice(); err.message = 'Signed out: sign in again'; }
+      throw err;
+    });
+  }
+  function sbRest(method, path, body, prefer) {
+    return freshToken().then(function (tok) {
+      var h = sbHeaders(tok);
+      if (prefer) h.Prefer = prefer;
+      return fetch(SB.url + '/rest/v1/' + path, { method: method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) }).then(sbParse);
+    });
+  }
+  function redirectUrl() { return location.origin + location.pathname; }
+  function requestLink(email) {
+    var x = syncInfo();
+    x.email = email;
+    x.codeSentAt = new Date().toISOString();
+    saveDevice();
+    return sbAuth('otp?redirect_to=' + encodeURIComponent(redirectUrl()), { email: email, create_user: true });
+  }
+  function fetchUser() {
+    return freshToken().then(function (tok) { return fetch(SB.url + '/auth/v1/user', { headers: sbHeaders(tok) }).then(sbParse); })
+      .then(function (u) { var x = syncInfo(); x.userId = u.id; x.email = u.email || x.email; saveDevice(); });
+  }
+  function afterSignIn() {
+    var x = syncInfo();
+    delete x.codeSentAt;
+    saveDevice();
+    return (x.userId ? Promise.resolve() : fetchUser())
+      .then(function () { return sbRest('POST', 'cp_profiles?on_conflict=id', [{ id: x.userId, email: x.email }], 'resolution=merge-duplicates,return=minimal').catch(function () { /* profile is optional */ }); })
+      .then(function () { render(); toast('Signed in · ' + (x.email || '')); return syncNow(); });
+  }
+  function verifyCode(email, code) {
+    return sbAuth('verify', { type: 'email', email: email, token: code }).then(function (j) { setSession(j); return afterSignIn(); });
+  }
+  // The magic link lands here with #access_token=…; keep the session and clean the address bar.
+  function readAuthRedirect() {
+    var h = location.hash || '';
+    if (!/access_token=|error_description=/.test(h)) return false;
+    var p = new URLSearchParams(h.slice(1));
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
+    if (p.get('error_description')) { toast('Sign-in link: ' + p.get('error_description'), null, 0); return true; }
+    setSession({ access_token: p.get('access_token'), refresh_token: p.get('refresh_token'), expires_in: p.get('expires_in') });
+    afterSignIn().catch(syncFailed);
+    return true;
+  }
+  function signOut() {
+    var x = syncInfo(), tok = x.access;
+    if (tok) { try { fetch(SB.url + '/auth/v1/logout', { method: 'POST', headers: sbHeaders(tok) }).catch(function () { /* ignore */ }); } catch (e) { /* ignore */ } }
+    device.sync = {};
+    saveDevice();
+    render();
+    toast('Signed out · data stays on this device');
+  }
+  function syncFailed(err) {
+    var x = syncInfo();
+    x.error = err && err.status ? err.message : (err && /fetch|network/i.test(String(err.message)) ? 'offline' : ((err && err.message) || 'Sync failed'));
+    saveDevice();
+    if (ui.tab === 'settings' && !ui.editor) render();
+  }
+  function applyRemoteDay(row) {
+    var x = syncInfo();
+    if (!isObj(row.json)) return false;
+    if (row.date === SETTINGS_ROW) {
+      var loc = settingsBlob(state);
+      var mine = hashStr(JSON.stringify(loc));
+      // A device joining sync for the first time takes the cloud's settings and checklists: each install made
+      // its own item ids, so its ticks would not match otherwise (the old "Import → Replace" advice). After
+      // that, the newer side wins.
+      var joined = !!x.synced[SETTINGS_ROW];
+      x.synced[SETTINGS_ROW] = hashStr(JSON.stringify(row.json));
+      if (mine === x.synced[SETTINGS_ROW]) return false;
+      if (joined && blobStamp(row.json) <= blobStamp(loc)) return false;
+      ['settings', 'checklists', 'presets', 'pending'].forEach(function (k) { if (row.json[k] !== undefined) state[k] = clone(row.json[k]); });
+      if (isObj(row.json.meta) && isObj(row.json.meta.updatedAt)) state.meta.updatedAt = clone(row.json.meta.updatedAt);
+      normalise(state);
+      initStamps();
+      x.synced[SETTINGS_ROW] = hashStr(JSON.stringify(settingsBlob(state)));
+      applyTheme();
+      return true;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(row.date)) return false;
+    var local = state.days[row.date];
+    var merged = local ? mergeDay(local, row.json) : clone(row.json);
+    var changed = !local || dayHash(merged) !== dayHash(local);
+    state.days[row.date] = merged;
+    migrateDayRecords(merged);
+    x.synced[row.date] = dayHash(row.json);
+    x.seen[row.date] = dayHash(merged);
+    return changed;
+  }
+  function applyRemoteFilled(row) {
+    if (!isObj(row.json) || !/^\d{4}-\d{2}-\d{2}$/.test(row.date)) return false;
+    var day = state.days[row.date];
+    var mine = day && isObj(day.filled) ? day.filled : null;
+    if (mine && (Date.parse(mine.importedAt) || 0) >= (Date.parse(row.json.importedAt) || 0)) return false;
+    if (!day) { day = state.days[row.date] = newDay(); day.today = carryToday(state, row.date); }
+    day.filled = clone(row.json);
+    return true;
+  }
+  function chunks(list, n) { var out = []; for (var i = 0; i < list.length; i += n) out.push(list.slice(i, i + n)); return out; }
+  function syncPush() {
+    var x = syncInfo(), rows = [], evs = [], fills = [], hashes = {};
+    Object.keys(state.days).forEach(function (k) {
+      var d = state.days[k];
+      if (!isObj(d) || !/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
+      var h = dayHash(d);
+      if (h === x.synced[k]) return;
+      rows.push({ date: k, json: d, device: device.name || null });
+      (Array.isArray(d.events) ? d.events : []).forEach(function (e) { if (e && e.t && e.type) evs.push({ date: k, t: e.t, type: e.type, detail: e.detail || '' }); });
+      if (isObj(d.filled)) fills.push({ date: k, json: d.filled });
+      hashes[k] = h;
+    });
+    var sb = settingsBlob(state), sh = hashStr(JSON.stringify(sb));
+    if (sh !== x.synced[SETTINGS_ROW]) { rows.push({ date: SETTINGS_ROW, json: sb, device: device.name || null }); hashes[SETTINGS_ROW] = sh; }
+    var p = Promise.resolve();
+    chunks(rows, 50).forEach(function (c) { p = p.then(function () { return sbRest('POST', 'cp_days?on_conflict=user_id,date', c, 'resolution=merge-duplicates,return=minimal'); }); });
+    chunks(evs, 500).forEach(function (c) { p = p.then(function () { return sbRest('POST', 'cp_events?on_conflict=user_id,date,t,type,detail', c, 'resolution=ignore-duplicates,return=minimal'); }); });
+    chunks(fills, 50).forEach(function (c) { p = p.then(function () { return sbRest('POST', 'cp_filled?on_conflict=user_id,date', c, 'resolution=merge-duplicates,return=minimal'); }); });
+    return p.then(function () { Object.keys(hashes).forEach(function (k) { x.synced[k] = hashes[k]; }); return rows.length; });
+  }
+  // Pull what changed since the last pull, merge, then push what is new here. Never blocks the app.
+  function syncNow() {
+    if (!signedIn() || sync.busy) return Promise.resolve(false);
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return Promise.resolve(false);
+    sync.busy = true;
+    sync.last = Date.now();
+    var x = syncInfo();
+    if (!isObj(x.synced)) x.synced = {};
+    if (!isObj(x.seen)) x.seen = {};
+    markLocal();
+    var since = x.lastPull || '1970-01-01T00:00:00Z', top = x.lastPull || '', changed = false;
+    function q(table) { return table + '?select=date,json,updated_at&updated_at=gt.' + encodeURIComponent(since) + '&order=updated_at.asc&limit=1000'; }
+    return sbRest('GET', q('cp_days')).then(function (rows) {
+      (rows || []).forEach(function (r) { if (applyRemoteDay(r)) changed = true; if (r.updated_at > top) top = r.updated_at; });
+      return sbRest('GET', q('cp_filled'));
+    }).then(function (rows) {
+      (rows || []).forEach(function (r) { if (applyRemoteFilled(r)) changed = true; if (r.updated_at > top) top = r.updated_at; });
+      return syncPush();
+    }).then(function (pushed) {
+      x.lastPull = top || x.lastPull;
+      x.lastSyncAt = new Date().toISOString();
+      x.error = null;
+      saveDevice();
+      sync.applying = true;
+      saveNow();
+      sync.applying = false;
+      if (changed && !ui.holding && !drag) render();
+      else if (ui.tab === 'settings' && !ui.editor) render();
+      return { changed: changed, pushed: pushed };
+    }).catch(function (err) { syncFailed(err); return false; })
+      .then(function (r) { sync.busy = false; return r; });
+  }
+  function scheduleSync(ms) {
+    if (!signedIn() || sync.applying) return;
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(function () { syncNow(); }, ms == null ? 4000 : ms);
+  }
+
+  /* ==== VIEW: sync settings ==== */
+  // Part F. Settings → Sync: signed out = email + "Send sign-in link", then the 6-digit code; signed in = who,
+  // last sync, Sync now, Sign out.
+  function syncSettings() {
+    var x = syncInfo();
+    var out = '<div class="sec-title">Sync · optional</div><div class="card stack" data-sync>';
+    if (signedIn()) {
+      out += '<p style="margin:0">Signed in as <b>' + esc(x.email || '') + '</b></p>' +
+        '<span class="mono muted" data-sync-last>' + (x.lastSyncAt ? 'Last sync ' + esc(fmtStamp(new Date(x.lastSyncAt))) : 'Not synced yet') + '</span>' +
+        (x.error ? '<p class="muted" style="margin:0;font-size:14px" role="status">Last try: ' + esc(x.error) + '. It retries by itself.</p>' : '') +
+        '<div class="row"><button type="button" class="btn" style="flex:1" data-act="sync-now">SYNC NOW</button><button type="button" class="btn" style="flex:1" data-act="sync-out">SIGN OUT</button></div>' +
+        '<p class="muted" style="margin:0;font-size:14px">Each device keeps its own copy and syncs when online. Keep one device for trading during the session.</p>';
+    } else {
+      out += '<p class="muted" style="margin:0;font-size:14px">Off. Everything stays on this device. Sign in on each device to keep phone and PC in step.</p>' +
+        '<div class="field"><label for="sync-email">Email</label><input type="email" id="sync-email" data-fk="sync-email" autocomplete="email" inputmode="email" value="' + esc(x.email || '') + '"></div>' +
+        '<button type="button" class="btn" data-act="sync-link">SEND SIGN-IN EMAIL</button>';
+      if (x.codeSentAt) {
+        out += '<div class="field"><label for="sync-code">Code from the email</label><input type="text" id="sync-code" data-fk="sync-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></div>' +
+          '<button type="button" class="btn primary" data-act="sync-code">SIGN IN WITH THE CODE</button>' +
+          '<p class="muted" style="margin:0;font-size:14px">The link signs in the browser it opens in. On a phone with Checkpoint on the home screen, use the code instead.</p>';
+      }
+    }
+    return out + '</div>';
+  }
+
   /* ==== EVENTS: actions ==== */
   var ACTIONS = {
     'go-tab': function (el) { setTab(el.getAttribute('data-tab')); },
@@ -3923,6 +4234,21 @@ var App = (function () {
     },
     'theme': function (el) { state.settings.theme = el.getAttribute('data-v'); applyTheme(); save(); render(); flashSaved(); },
     'export': function () { exportData(false); },
+    // v2 Part F: sync
+    'sync-link': function (el) {
+      var inp = $('#sync-email'), email = inp ? inp.value.trim() : '';
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast('Enter your email first.'); return; }
+      el.disabled = true;
+      requestLink(email).then(function () { render(); toast('Sign-in email sent to ' + email); }, function (err) { el.disabled = false; toast('Could not send: ' + err.message); });
+    },
+    'sync-code': function (el) {
+      var x = syncInfo(), inp = $('#sync-code'), code = inp ? inp.value.replace(/\s/g, '') : '';
+      if (!/^\d{6,10}$/.test(code)) { toast('Enter the code from the email.'); return; }
+      el.disabled = true;
+      verifyCode(x.email, code).catch(function (err) { el.disabled = false; toast('Code not accepted: ' + err.message); });
+    },
+    'sync-now': function () { syncNow().then(function (r) { toast(r ? 'Synced' : 'Not synced: ' + (syncInfo().error || 'offline')); }); },
+    'sync-out': function () { confirmModal('Sign out of sync?', 'Your data stays on this device. Syncing stops until you sign in again.', 'Sign out', signOut); },
     'export-today': function (el) { exportToday(el.getAttribute('data-key') || todayKey()); if (ui.tab === 'home') render(); },
     'import-filled': function () { var f = $('#import-filled'); f.value = ''; f.click(); },
     'import': function () { var f = $('#import-file'); f.value = ''; f.click(); },
@@ -4241,6 +4567,7 @@ var App = (function () {
     });
   }
   function onResume() {
+    scheduleSync(800); // v2 Part F
     applyDuePending();
     if (finishCooldownIfDue()) { render(); return; }
     tickCooldownDom();
@@ -4291,6 +4618,7 @@ var App = (function () {
     if (t - lastSlow >= 20000) {
       lastSlow = t;
       applyTheme();
+      if (signedIn() && t - sync.last > 120000) syncNow(); // v2 Part F: every 2 minutes
       var applied = applyDuePending();
       if (!ui.holding && !drag && (ui.tab !== 'settings' || (applied && !ui.editor))) render();
     }
@@ -4314,6 +4642,9 @@ var App = (function () {
     lastSlow = Date.now();
     setInterval(tick, 250);
     registerSW();
+    // v2 Part F: a magic-link return signs in; otherwise sync once on open if signed in.
+    if (!readAuthRedirect() && signedIn()) syncNow();
+    window.addEventListener('online', function () { scheduleSync(500); });
   }
 
   var api = {
@@ -4362,6 +4693,12 @@ var App = (function () {
     statsFor: statsFor,
     seriesKeysFor: seriesKeysFor,
     eventLabel: eventLabel,
+    // v2 Part F
+    mergeDay: mergeDay,
+    dayStampOf: dayStampOf,
+    dayHash: dayHash,
+    syncNow: syncNow,
+    signedIn: signedIn,
     WORD_LOOP: WORD_LOOP,
     HOME_STATES: HOME_STATES,
     homeNow: function () { return homeNow(); },
