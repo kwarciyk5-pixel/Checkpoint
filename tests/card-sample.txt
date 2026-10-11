@@ -1,0 +1,14 @@
+CHECKPOINT CARD
+CP1 | date 2026-10-09 | built 20:19
+BIAS | Balance day, neutral-to-long toward the 31,240–31,267 TrigUp/ONH shelf, gated by the 21:00 TH print; invalid on acceptance below 31,090–31,116 with ES below 7,813.96
+S1 | long | zone 31,128–31,150 | trigger defenders + absorption, ES holds 7,838–7,844 | SL 31,090 | T1 31,207 | T2 31,250 | invalid acceptance below 31,090 | RR 1:1.4
+S2 | short | zone 31,240–31,267 | trigger failed acceptance, no hold above ONH, ES fails 7,849–7,858 | SL 31,300 | T1 31,207 | T2 31,140 | invalid acceptance above 31,300 / PWH | RR 1:1.0
+S4 | long | zone — | trigger NQ accepts above 31,300 with ES above 7,858 | SL 31,267 | T1 31,345 | T2 31,417 | invalid back below 31,267 | RR 1:1.4
+S4 | short | zone — | trigger accepts below 31,090, ES below 7,813.96, both flows short | SL — | T1 31,035 | T2 30,952 | invalid ES reclaims 7,813.96 | RR —
+S3 | DO-NOTHING
+BOX | 31,150 → 31,172 | COIL 31,150–31,172 | +γ neutral, fade extremes toward the flip after the print, structure-only
+GUARD | ES flip 7,813.96 | no new orders below until two 5-min closes back above, or short flow confirmed in both books
+EVENTS | 21:00 TH Michigan sentiment / inflation expectations
+SIZE | $150 | — | band low
+DONE | 2 SL or +3R | cap 2 (hard 3)
+WALLS | provisional (pre-open)

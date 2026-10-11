@@ -72,6 +72,7 @@ async function fakeSupabase(ctx) {
   const errors = [];
   async function device(name, viewport) {
     const ctx = await browser.newContext({ viewport, deviceScaleFactor: 2, serviceWorkers: 'block', hasTouch: viewport.width < 900 });
+    await ctx.addInitScript(() => { window.__CP_HOME_VIEW = 'classic'; }); // v3: these tests cover the v2 (classic) home
     await routeFonts(ctx);
     await fakeSupabase(ctx);
     const page = await ctx.newPage();

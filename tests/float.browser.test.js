@@ -35,6 +35,7 @@ async function routeFonts(ctx) {
   const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium' });
   const errors = [];
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, serviceWorkers: 'block', deviceScaleFactor: 2 });
+  await ctx.addInitScript(() => { window.__CP_HOME_VIEW = 'classic'; }); // v3: these tests cover the v2 (classic) home
   await routeFonts(ctx);
   const page = await ctx.newPage();
   const watch = p => {
@@ -154,6 +155,7 @@ async function routeFonts(ctx) {
   assert.ok(man.icons.some(i => i.sizes === '512x512'), '512 icon');
   assert.ok(/^\.?\/?$|^\.\/index\.html$/.test(man.start_url) || man.start_url === './', 'relative start_url: ' + man.start_url);
   const phone = await browser.newContext({ viewport: { width: 360, height: 740 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true, serviceWorkers: 'block' });
+  await phone.addInitScript(() => { window.__CP_HOME_VIEW = 'classic'; }); // v3: these tests cover the v2 (classic) home
   await routeFonts(phone);
   const ph = await phone.newPage();
   watch(ph);

@@ -19,6 +19,7 @@ const at = (d, h, m, s) => new Date(2026, 9, d, h, m, s || 0); // Oct 2026 (1 = 
   const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium' });
   const errors = [];
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 2 });
+  await ctx.addInitScript(() => { window.__CP_HOME_VIEW = 'classic'; }); // v3: these tests cover the v2 (classic) home
   ctx.on('page', p => {
     p.on('console', m => { if (m.type() === 'error') errors.push(m.text() + ' @ ' + (m.location().url || '')); });
     p.on('pageerror', e => errors.push(String(e)));

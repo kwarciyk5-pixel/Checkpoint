@@ -18,6 +18,7 @@ const at = (h, m) => new Date(2026, 9, 1, h, m, 0);
 async function newPage(browser, viewport, time, errors) {
   // serviceWorkers blocked: on a fresh profile the worker takes control and reloads the page mid-test (flaky).
   const ctx = await browser.newContext({ viewport, deviceScaleFactor: 2, hasTouch: viewport.width < 900, serviceWorkers: 'block' });
+  await ctx.addInitScript(() => { window.__CP_HOME_VIEW = 'classic'; }); // v3: these tests cover the v2 (classic) home
   const page = await ctx.newPage();
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text() + ' @ ' + (m.location().url || '')); });
   page.on('pageerror', e => errors.push(String(e)));

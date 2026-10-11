@@ -468,6 +468,146 @@ body[data-nav="hidden"] .home{min-height:calc(100dvh - var(--bandh) - env(safe-a
 .lg li:last-child{border-bottom:0}
 .lg time{color:var(--muted);font-variant-numeric:tabular-nums;flex:none;width:42px}
 
+/* ==== STYLE: run sheet ==== */
+/* v3 (spec v3 §5). The run-sheet home: the "you are here" strip, the steps, the plan card, the calm line.
+   Wider column on an iPad (portrait 820 px); the strip colours are fixed in both themes, like the band. */
+.wrap.run-wrap{max-width:680px}
+.band[data-s="breach"]{background:var(--breach)}
+:root[data-run="overtime"]{--bg:#F1DCCB;--line:#DDBFA6}
+:root[data-theme="dim"][data-run="overtime"]{--bg:#3A2A20;--line:#5A4030}
+.run{display:flex;flex-direction:column;gap:14px;min-height:calc(100dvh - var(--bandh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--tabh) - 48px)}
+body[data-nav="hidden"] .run{min-height:calc(100dvh - var(--bandh) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 48px)}
+.run-body{flex:1;display:flex;flex-direction:column;gap:14px}
+.strip{background:var(--wait);color:#1C1A17;border-radius:4px;padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.strip[role="button"]{cursor:pointer;padding:8px 14px}
+.strip[data-st="intrade"]{background:#3F6B55;color:#F4EFE6}
+.strip[data-st="cool-red"],.strip[data-st="cool-green"]{background:var(--cool);color:#1C1A17}
+.strip[data-st="overtime"]{background:#8A4B1F;color:#F4EFE6}
+.strip-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:12px;font-weight:600;letter-spacing:.12em}
+.strip-t{font-weight:500}
+.strip-why{font-size:16px;line-height:1.35}
+.run-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;color:var(--muted)}
+.run-head .textbtn{min-height:32px;padding:0;font-size:12px;letter-spacing:.08em}
+.run-count{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.run-big{font-family:var(--font-serif);font-size:40px;line-height:1.1;margin:0}
+.run-sub{font-size:14px;color:var(--muted);margin:0;text-align:center}
+.run-sub.left,.run-count .run-sub{text-align:right}
+.run-sub.left{text-align:left;font-size:16px;color:var(--ink-2)}
+.run-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.run-mid.tight{flex:none;gap:14px;padding-top:8px}
+.run-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:12px;border-top:1px solid var(--line)}
+.run-foot .btn{min-height:60px;font-size:17px}
+.run-foot .btn.run-enter.primary{min-height:68px;font-size:20px}
+.run-links{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px}
+.run-flag{font-size:14px;color:var(--breach);margin:0}
+.run-flag b{font-weight:500}
+.run-dashed{border-style:dashed !important;border-color:var(--breach) !important;color:var(--breach) !important}
+.run-amber{font-size:15px;font-weight:500;color:var(--cool-ink);background:var(--lock-a);border-radius:4px;padding:10px 14px}
+.run-practise{font-family:var(--font-serif);font-size:17px;color:var(--ink-2);margin:0}
+.rs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.rs-row{display:flex;gap:14px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.rs-row:last-child{border-bottom:0}
+.rs-t{width:56px;flex:none;font-size:14px;font-weight:600;padding-top:2px}
+.rs-x{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rs-x b{font-size:16px;font-weight:500}
+.rs-x small{font-size:14px;color:var(--muted)}
+.rs-s{font-size:13px;color:var(--muted);padding-top:3px}
+.rs-tick{width:44px;height:44px;margin:-10px -8px -10px 0;display:grid;place-items:center;flex:none}
+.rs-row.past{color:var(--muted)}
+.rs-row.past .rs-t{font-weight:400}
+.rs-row.past .rs-x b{font-weight:400}
+.rs-row.cur{border:1.5px solid var(--ink);border-radius:4px;padding:14px 12px;margin:6px 0;background:var(--info-a)}
+.rs-row.cur .rs-x b{font-family:var(--font-serif);font-size:24px;font-weight:400}
+.rs-row.cur .rs-x small{font-size:15px;color:var(--ink-2)}
+.rs-gates,.rs-build{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.rs-gate{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:15px}
+.rs-gate .gate-btns{flex:none}
+.rs-build .item{min-height:44px;padding:6px 10px}
+.rs-built{font-size:15px;font-weight:600;color:var(--live-ink);align-self:center}
+.rs-card{font-size:13px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px}
+.tiles.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tile{border:1px solid var(--line);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile span{font-size:13px;color:var(--muted)}
+.tile b{font-family:var(--font-serif);font-weight:400;font-size:26px;line-height:1.1;overflow-wrap:anywhere}
+.tile b.sm{font-family:var(--font-sans);font-size:16px;font-weight:500;padding-top:6px}
+.plan{display:flex;flex-direction:column;gap:10px}
+.plan.dim{opacity:.55}
+.plan.empty{border:1px dashed var(--line);border-radius:4px;padding:16px;align-items:flex-start}
+.plan.empty p{margin:0;color:var(--muted)}
+.plan-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.plan-bias{font-family:var(--font-serif);font-size:19px;line-height:1.35;margin:0}
+.su{border:1.5px solid var(--ink);border-radius:4px;padding:10px 14px;display:flex;flex-direction:column;gap:3px;background:var(--info-a)}
+.su-h{font-size:18px;font-weight:600}
+.su-t{font-size:15px}
+.su-n{font-size:14px;color:var(--ink-2)}
+.su-low{color:var(--muted);font-style:italic}
+.plan-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 16px;font-size:14px}
+.plan-g span{color:var(--muted)}
+.run-checks{border:1px solid var(--line);border-radius:4px;padding:0 12px}
+.run-checks summary{min-height:44px;display:flex;align-items:center;font-size:14px;color:var(--muted);cursor:pointer}
+.run-checks ol{margin:0 0 12px;padding-left:20px;font-size:15px;display:flex;flex-direction:column;gap:6px}
+.run-checks small{color:var(--muted)}
+.calm{display:flex;align-items:center;justify-content:center;width:100%;padding:8px 0}
+.calm.ring{width:min(320px,80vw);aspect-ratio:1;border-radius:50%;background:var(--accent-a);margin:4px auto;padding:36px;animation:cp-breathe 10s ease-in-out infinite}
+.calm .wl{min-height:96px}
+.calm .wl span{font-size:26px}
+.calm-note{font-size:13px}
+.linkbtn{min-height:32px;padding:0 4px;font-size:13px;color:inherit;text-decoration:underline;text-underline-offset:3px}
+.allowed{border:1px solid var(--line);border-radius:4px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.allowed p{margin:0;font-size:15px}
+.run-counts{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;font-size:14px;color:var(--ink-2)}
+.run .ring-wrap{width:200px;margin:0}
+.run .ring-wrap .big{font-family:var(--font-serif);font-size:48px}
+.flagged{border:1.5px solid var(--breach);border-radius:4px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.flagged div{display:flex;gap:12px}
+.flagged div span{width:48px;flex:none;color:var(--breach)}
+.closeout{display:flex;flex-direction:column}
+.run .so-row{width:100%;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px;border-bottom:1px solid var(--line);text-align:left}
+.run .so-row:last-child{border-bottom:0}
+.run .badges{justify-content:center}
+.rs-ed input[type="text"]{width:100%}
+input[type="range"]{width:100%;accent-color:var(--ink)}
+.st-flags{display:flex;flex-direction:column;gap:4px;font-size:15px}
+.st-flags b{font-family:var(--font-serif);font-weight:400;font-size:20px;margin-right:6px}
+/* Entered (and Stopped / Target) stay on screen while the plan scrolls under them. */
+.run-foot{position:sticky;bottom:calc(var(--tabh) + env(safe-area-inset-bottom));background:var(--bg);padding-bottom:8px;z-index:5}
+body[data-nav="hidden"] .run-foot{bottom:env(safe-area-inset-bottom)}
+.su.minor{border-width:1px;border-color:var(--line);background:transparent;padding:8px 14px}
+.su.minor .su-h{font-size:16px}
+@media (max-width:520px){
+  .calm.ring{width:min(250px,64vw);padding:24px}
+  .calm .wl{min-height:80px}
+  .calm .wl span{font-size:21px}
+  .run-big{font-size:30px}
+  .tile b{font-size:21px}
+  .strip-why{font-size:15px}
+  .run .ring-wrap{width:160px}
+  .run .ring-wrap .big{font-size:40px}
+  .calm-info{display:none}
+  .run-mid.tight{gap:6px;padding-top:0}
+  .run .ring-wrap{width:132px}
+  .run .ring-wrap .big{font-size:34px}
+  .allowed{padding:8px 12px}
+  .allowed p{font-size:14px}
+  .run-counts span:last-child{display:none}
+  .run-body{gap:10px}
+  .run-foot .btn{min-height:52px}
+}
+@media (min-width:700px){
+  .run-big{font-size:44px}
+  .calm .wl span{font-size:30px}
+}
+@media (max-height:780px){
+  .calm.ring{width:min(240px,64vw);padding:24px}
+  .calm .wl span{font-size:21px}
+  .calm .wl{min-height:78px}
+  .run .ring-wrap{width:150px}
+  .run .ring-wrap .big{font-size:38px}
+  .run-big{font-size:32px}
+  .run-foot .btn{min-height:52px}
+}
+
 /* ==== STYLE: modal + toast ==== */
 .modal-back{position:fixed;inset:0;z-index:80;background:rgba(28,26,23,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 @media (min-width:600px){.modal-back{align-items:center}}
@@ -561,7 +701,13 @@ var App = (function () {
   // v2 (spec §2.3, §2.5, §2.6) prefilled texts. migrateV2 swaps the v1 texts for these only where she never edited them.
   var AFTER_SL_STEPS = ['Two physiological sighs', 'Stand up, leave the desk', 'One minute: in 4, out 8, looking far away', 'Cold water on the face (optional — try it once on a calm day first)'];
   var SESSION_OVER_ITEMS = ['Accounts locked', 'Charts closed (Pyae\'s too)', 'Away from the desk'];
+  // v3: the run-sheet home is the default. 'classic' keeps the v2 home and its rules exactly (tests and rollback
+  // set window.__CP_HOME_VIEW = 'classic' before load; Settings → Home view switches it too).
+  function defaultHomeView() {
+    try { return typeof __CP_HOME_VIEW !== 'undefined' && __CP_HOME_VIEW === 'classic' ? 'classic' : 'run'; } catch (e) { return 'run'; }
+  }
   function makeDefaults() {
+    var run = defaultHomeView() === 'run';
     function cat(name, items, row) { var c = { id: uid(), name: name, items: items }; if (row) c.row = row; return c; }
     function pm(text, note, time, flags, role) {
       flags = flags || '';
@@ -592,28 +738,39 @@ var App = (function () {
         'Have you cooled down? Don\'t forget that our goal is to stay in the game long enough to win. Trade today so that you can trade tomorrow.'),
       preset('Green Day', 60, ['Close the platform', 'Write your journal'],
         'Green is done. The reward is the discipline, not the number. One more trade now is gambling with today\'s work. Close the platform and write your journal. Tomorrow is a new day.',
-        'Remember, small compounding wins.')
+        'Remember, small compounding wins.'),
+      // v3: 5 minutes after any exit, a target too (Trading project rules, 11 Oct)
+      preset('After target', 300, ['Stand up', 'Water', 'Let the number sit'],
+        'Green is done. The reward is the discipline, not the number.',
+        'Cooldown done. New trigger at a new level, or nothing.')
     ];
     return {
       schema: 1,
       settings: {
         theme: 'auto',
+        homeView: run ? 'run' : 'classic', // v3
         resetHour: '06:00',
         activeDays: [1, 2, 3, 4, 5],
-        session: { start: '09:30', end: '10:40', tz: 'America/New_York', observeMin: 15 },
+        session: { start: '09:30', end: run ? '10:30' : '10:40', tz: 'America/New_York', observeMin: 15 },
         series: { start: '2026-10-06', days: 20, passTarget: 3000 },
         rules: {
           tradeCap: 2, maxDailyLoss: 600, maxRiskPerTrade: 300, notATradeMsg: 'Not a trade. Arm every check first.',
-          rrFloor: 1.5, rrPreferred: 2, doneTp: 2, doneSl: 2, greenCap: null
+          rrFloor: 1.5, rrPreferred: 2, doneTp: 2, doneSl: 2, greenCap: null,
+          doneR: 3, hardCap: 3, eventMin: 5 // v3: done = 2 SL or +3R; a 3rd idea and the hard cap are flags, never locks
         },
         behaviour: {
           slStartsCooldown: true, dayDoneAfterTP: false, lockAtCap: true, lockDuringCooldown: true,
           holdToEnterSec: 2, endEarlyHoldSec: 5, urgeHoldSec: 3
         },
-        presetLinks: { sl: presets[0].id, urge: presets[2].id, redDay: presets[3].id, greenDay: presets[4].id, notGood: presets[1].id },
+        presetLinks: { sl: presets[0].id, urge: presets[2].id, redDay: presets[3].id, greenDay: presets[4].id, notGood: presets[1].id, tp: presets[5].id },
         sound: true, vibration: false, focusMode: false,
         sessionOverMsg: 'Is the platform closed? Session should be over. No other accounts. No revenge.',
         lastExportAt: null,
+        // v3 (spec v3 §3, §6): the run sheet, the calm words and the calming sound
+        runSheet: defaultRunSheet(),
+        calm: { everySec: 10, intrade: CALM_DEFAULT.intrade.slice(), red: CALM_DEFAULT.red.slice(), green: CALM_DEFAULT.green.slice() },
+        audio: { noise: true, noiseType: 'pink', noiseVol: 0.25, breath: true, breathVol: 0.3 },
+        run: { checkins: false },
         checkins: {
           question: 'How\'s it going?',
           goodMsg: 'Keep following your rules.',
@@ -703,7 +860,9 @@ var App = (function () {
       looking: null, lookingLeftAt: null, enteredAt: null, enteredSetup: null,
       dllHit: null, greenCapHit: null, sitouts: [], leftDesk: [],
       // v2 Part D: the day's event log (append-only) and Claude's end-of-day fill (from Import filled)
-      events: [], filled: null
+      events: [], filled: null,
+      // v3: pasted Checkpoint cards, Built, the night closed, lock moves, run-sheet ticks, the card setup in trade
+      cards: [], builtAt: null, closedAt: null, lockMoved: [], steps: {}, enteredCard: null
     };
   }
 
@@ -827,9 +986,12 @@ var App = (function () {
     }
     var firstV2 = !(isObj(s.meta) && s.meta.v2b);
     var firstV2c = !(isObj(s.meta) && s.meta.v2c);
+    var firstV3 = !(isObj(s.meta) && s.meta.v3);
+    var hadHome = isObj(s.settings) && typeof s.settings.homeView === 'string';
     fillMissing(s, defs);
     if (firstV2) migrateV2(s);
     if (firstV2c) migrateV2C(s);
+    if (firstV3) migrateV3(s, hadHome);
     if (!Array.isArray(s.presets) || !s.presets.length) s.presets = defs.presets;
     Object.keys(s.settings.presetLinks).forEach(function (k) {
       if (!findPresetIn(s, s.settings.presetLinks[k])) s.settings.presetLinks[k] = s.presets[0].id;
@@ -885,6 +1047,21 @@ var App = (function () {
       c.items = c.items.filter(function (it) { return !(it.text === 'Pyae knows today\'s plan and cap' && !it.note); });
       c.items.forEach(function (it) { if (!it.role && ROLE[it.text]) it.role = ROLE[it.text]; });
     });
+  }
+  // v3, once per data set: the run-sheet home and the Trading project's rules of 11 Oct. The window end moves
+  // 10:40 → 10:30 ET only if she never changed it; the After target preset is added and linked. Nothing is deleted.
+  function migrateV3(s, hadHome) {
+    s.meta.v3 = true;
+    if (!hadHome) s.settings.homeView = defaultHomeView();
+    if (s.settings.homeView !== 'run') return;
+    if (s.settings.session.tz === 'America/New_York' && s.settings.session.end === '10:40') s.settings.session.end = '10:30';
+    var tp = s.presets.filter(function (p) { return p.name === 'After target'; })[0];
+    if (!tp) {
+      tp = { id: uid(), name: 'After target', seconds: 300, startMsg: 'Green is done. The reward is the discipline, not the number.', endMsg: 'Cooldown done. New trigger at a new level, or nothing.',
+        steps: ['Stand up', 'Water', 'Let the number sit'].map(function (t) { return { id: uid(), text: t }; }) };
+      s.presets.push(tp);
+    }
+    if (!findPresetIn(s, s.settings.presetLinks.tp)) s.settings.presetLinks.tp = tp.id;
   }
   function load() {
     var raw = null;
@@ -1000,7 +1177,8 @@ var App = (function () {
     'session': 'change', 'activeDays': 'change', 'presetLinks': 'change',
     'resetHour': 'change',
     'rules.doneTp': 'up', 'rules.doneSl': 'up', 'rules.rrFloor': 'down', 'rules.rrPreferred': 'down',
-    'rules.greenCap': 'upOrNone'
+    'rules.greenCap': 'upOrNone',
+    'rules.doneR': 'up', 'rules.hardCap': 'up', 'rules.eventMin': 'down' // v3
   };
   function isLoosening(ch) {
     switch (LOOSEN[ch.key]) {
@@ -1158,9 +1336,16 @@ var App = (function () {
   // In trade and in cooldown the nav is hidden and the home screen is the only screen.
   var HOME_BAND = { intrade: 'live', cooldown: 'cool', done: 'done' };
   function homeLocked(st) { return st === 'intrade' || st === 'cooldown'; }
+  // v3: in run mode the stage decides (in trade, cooldowns and overtime keep her on home, nav hidden).
+  var RUN_BAND = { intrade: 'live', 'cool-red': 'cool', 'cool-green': 'cool', overtime: 'breach' };
+  function shellLocked(hs) { return isRun() ? !!RUN_LOCKED[runNow(hs.now).stage] : homeLocked(hs.state); }
   function chromeState() {
+    if (isRun()) {
+      var rs = runNow();
+      return { band: RUN_BAND[rs.stage] || 'wait', nav: !RUN_LOCKED[rs.stage], home: '', run: ui.tab === 'home' ? rs.stage : 'page' };
+    }
     var st = homeNow().state;
-    return { band: HOME_BAND[st] || 'wait', nav: !homeLocked(st), home: ui.tab === 'home' ? st : '' };
+    return { band: HOME_BAND[st] || 'wait', nav: !homeLocked(st), home: ui.tab === 'home' ? st : '', run: '' };
   }
   function applyChrome() {
     var ch = chromeState();
@@ -1169,6 +1354,9 @@ var App = (function () {
     var nav = ch.nav ? 'show' : 'hidden';
     if (document.body.getAttribute('data-nav') !== nav) document.body.setAttribute('data-nav', nav);
     if (document.documentElement.getAttribute('data-home') !== ch.home) document.documentElement.setAttribute('data-home', ch.home);
+    if ((document.documentElement.getAttribute('data-run') || '') !== ch.run) {
+      if (ch.run) document.documentElement.setAttribute('data-run', ch.run); else document.documentElement.removeAttribute('data-run');
+    }
   }
   function setTab(tab) {
     if (ui.tab === tab && tab === 'settings') ui.editor = null;
@@ -1184,7 +1372,7 @@ var App = (function () {
     var fk = active && active.getAttribute && active.getAttribute('data-fk');
     var hs = homeNow();
     ui.homeSig = homeSig(hs);
-    if (homeLocked(hs.state) && ui.tab !== 'home') { ui.tab = 'home'; ui.editor = null; }
+    if (shellLocked(hs) && ui.tab !== 'home') { ui.tab = 'home'; ui.editor = null; }
     $$('.tab').forEach(function (t) { t.setAttribute('aria-selected', String(t.getAttribute('data-tab') === ui.tab)); });
     var html;
     if (ui.tab === 'home') html = viewHome(hs);
@@ -1195,9 +1383,12 @@ var App = (function () {
     else if (ui.tab === 'log') html = viewLog(); // v2 Part E
     else html = viewSettings();
     var banner = ui.tab === 'home' && (homeLocked(hs.state) || hs.state === 'done') ? '' : checkinBanner();
-    view.innerHTML = '<div class="wrap">' + banner + html + '</div>';
+    var rsn = isRun() ? runNow(hs.now) : null;
+    if (rsn && ui.tab === 'home' && RUN_LOCKED[rsn.stage]) banner = '';
+    if (rsn && ui.tab !== 'home') banner = runStrip(rsn, true) + banner; // v3: "you are here" on every page
+    view.innerHTML = '<div class="wrap' + (rsn ? ' run-wrap' : '') + '">' + banner + html + '</div>';
     // A new home state starts at the top of the screen.
-    var shown = ui.tab === 'home' ? hs.state : '';
+    var shown = ui.tab === 'home' ? (rsn ? rsn.stage : hs.state) : '';
     if (shown && shown !== ui.homeShown) window.scrollTo(0, 0);
     ui.homeShown = shown;
     applyChrome();
@@ -1316,6 +1507,12 @@ var App = (function () {
   // Why the day is done, or null. The order decides which heading shows when several apply.
   function doneReasonFor(s, day, now) {
     day = day || {};
+    if (isRun(s)) { // v3: 2 SL or +3R (or the platform's daily loss) first, then a closed night, then the window
+      var rd = runDoneFor(s, day);
+      if (rd) return rd.reason;
+      if (day.dayClosed) return 'closed';
+      return sessionPhase(now, s.settings) === 'after' ? 'time' : null;
+    }
     var r = s.settings.rules, c = dayCounts(day);
     if (day.dayClosed) return 'closed';
     if (day.dllHit) return 'dll';
@@ -1354,7 +1551,7 @@ var App = (function () {
     var day = state.days[key] || null; // read only
     return { state: homeStateFor(state, day, now, { showAnyway: ui.showAnyway }), key: key, day: day, now: now };
   }
-  function homeSig(hs) { return hs.key + '|' + hs.state + '|' + (isEarlyFor(state, hs.now) ? 1 : 0); }
+  function homeSig(hs) { if (isRun()) return runSig(runNow(hs.now)); return hs.key + '|' + hs.state + '|' + (isEarlyFor(state, hs.now) ? 1 : 0); }
   // Today card (filled in Part C): { setups: [{id, text, grade}], contracts, practising, band }.
   function todayCard(day) { return day && isObj(day.today) ? day.today : {}; }
   function findSetup(day, id) {
@@ -1424,6 +1621,7 @@ var App = (function () {
     dll: 'The lock fired.\nThat\'s what it\'s for.',
     green: 'Green cap reached.\nLock. Close. Go.',
     time: 'Window closed.',
+    r: 'Target for the day.\nLock. Close. Go.',
     closed: 'Day closed.\nLock. Close. Go.'
   };
   // Which day message (Green Day / Red Day preset) the Done screen shows.
@@ -1553,6 +1751,17 @@ var App = (function () {
   }
   var OUTCOME_EVENT = { SL: 'stopped', TP: 'target' };
   function exportTodayFor(s, key) {
+    var o = exportTodayV2(s, key);
+    if (!isRun(s)) return o;
+    // v3: the pasted cards, tonight's flags and lock moves (the trades carry rTaken and cardSetup)
+    var day = s.days[key] || {};
+    o.cards = clone(day.cards || []);
+    o.flags = flagsTonight(day);
+    o.lockMoved = clone(day.lockMoved || []);
+    o.dayR = dayRFor(s, day);
+    return o;
+  }
+  function exportTodayV2(s, key) {
     var day = s.days[key] || {};
     var gates = {}, locks = {};
     var pmd = day.premarket || { checked: {}, gateNo: {} };
@@ -1564,14 +1773,15 @@ var App = (function () {
     try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'local'; } catch (e) { /* ignore */ }
     var card = cardFor(s, key);
     return {
-      v: 2, date: key, tz: tz, today: clone(card), gates: gates, locks: locks,
+      v: isRun(s) ? 3 : 2, date: key, tz: tz, today: clone(card), gates: gates, locks: locks,
       events: clone(Array.isArray(day.events) ? day.events : []),
       trades: (day.trades || []).map(function (t) {
         var su = (card.setups || []).filter(function (x) { return x.id === t.setupId; })[0];
         return {
           id: t.id, setupId: t.setupId || null, setup: su ? su.text : null, grade: t.grade || null,
           enteredAt: t.enteredAt || null, closedAt: t.closedAt || t.at || null, outcome: String(t.outcome || '').toLowerCase(),
-          earlyWindow: !!t.earlyWindow, openOffsetMin: t.openOffsetMin == null ? null : t.openOffsetMin, checklistComplete: !!t.checklistComplete
+          earlyWindow: !!t.earlyWindow, openOffsetMin: t.openOffsetMin == null ? null : t.openOffsetMin, checklistComplete: !!t.checklistComplete,
+          rTaken: t.rTaken == null ? undefined : t.rTaken, cardSetup: t.cardSetup || undefined
         };
       }),
       urges: (day.urges || []).length, points: pointsFor(s, key, new Date()), filled: day.filled || null
@@ -1595,7 +1805,7 @@ var App = (function () {
   }
   // A returned day file: { v: 2, date, filled: {trades: [...], offplanFills: [...], dayClean, pointsAdj, comment} }.
   function validFilled(obj) {
-    return isObj(obj) && obj.v === 2 && /^\d{4}-\d{2}-\d{2}$/.test(obj.date || '') && isObj(obj.filled) &&
+    return isObj(obj) && (obj.v === 2 || obj.v === 3) && /^\d{4}-\d{2}-\d{2}$/.test(obj.date || '') && isObj(obj.filled) &&
       (obj.filled.trades === undefined || Array.isArray(obj.filled.trades)) &&
       (obj.filled.offplanFills === undefined || Array.isArray(obj.filled.offplanFills));
   }
@@ -1616,7 +1826,7 @@ var App = (function () {
       var obj;
       try { obj = JSON.parse(fr.result); } catch (e) { obj = null; }
       if (!validFilled(obj)) {
-        var why = isObj(obj) && obj.v === 2 && obj.filled === null ? 'This day file is not filled yet. Send it to Claude for the end-of-day fill first.' : 'This is not a filled Checkpoint day file (v 2, date, filled). Nothing was changed.';
+        var why = isObj(obj) && (obj.v === 2 || obj.v === 3) && obj.filled === null ? 'This day file is not filled yet. Send it to Claude for the end-of-day fill first.' : 'This is not a filled Checkpoint day file (v 2, date, filled). Nothing was changed.';
         openModal({ title: 'Not imported', html: '<p>' + esc(why) + '</p>', actions: [{ label: 'OK', cls: 'ghost' }] });
         return;
       }
@@ -1645,7 +1855,7 @@ var App = (function () {
   // Part D (spec §5). Computed from events + trades + filled every time; never stored as truth.
   // Behaviour only: a clean loss scores like a clean win, and no number here comes from P&L.
   var LEVELS = [[0, 'Observer'], [300, 'Gatekeeper'], [800, 'Custodian'], [1500, 'Operator']];
-  var DONE_RULE_REASONS = ['tp', 'sl', 'cap', 'dll', 'green', 'time', 'closed'];
+  var DONE_RULE_REASONS = ['tp', 'sl', 'cap', 'dll', 'green', 'time', 'closed', 'r'];
   // doneReasonFor checks "window closed" against now's own day; scoring a past day needs that day's window.
   function dayReasonFor(s, day, key, now) {
     var r = doneReasonFor(s, day, now);
@@ -1659,6 +1869,8 @@ var App = (function () {
     if (!reason) return null;
     var r = s.settings.rules, t = day.trades || [];
     function nth(list, n) { var x = list[n - 1]; return x ? Date.parse(x.closedAt || x.at) : null; }
+    if (reason === 'r' || (isRun(s) && (reason === 'sl' || reason === 'green'))) { var rd = runDoneFor(s, day); return rd ? rd.at : null; } // v3
+    if (reason === 'closed' && isRun(s) && day.closedAt) return Date.parse(day.closedAt);
     if (reason === 'dll') return Date.parse(day.dllHit);
     if (reason === 'green') return Date.parse(day.greenCapHit);
     if (reason === 'tp') return nth(t.filter(function (x) { return x.outcome === 'TP'; }), r.doneTp || 2);
@@ -1702,6 +1914,7 @@ var App = (function () {
     if (kept) add('doneKept', 1, 25);
     add('afterDone', after, -50);
     if (day.dllHit) add('dll', 1, -50);
+    add('lockMoved', (day.lockMoved || []).length, -50); // v3: moving the lock mid-session counts like the DLL
     var adj = f && isFinite(Number(f.pointsAdj)) ? Math.round(Number(f.pointsAdj)) : 0;
     if (adj) items.push({ k: 'adj', n: 1, pts: adj });
     var total = items.reduce(function (a, x) { return a + x.pts; }, 0);
@@ -1745,8 +1958,452 @@ var App = (function () {
   }
   function fmtPts(n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + ' pts'; }
 
+  /* ==== RUN: sheet ==== */
+  // v3 (spec v3 §3). settings.runSheet = [{id, at:'HH:MM', tz, kind, title, sub}]. Times in New York time move with
+  // US daylight saving by themselves. kind: step · task (lands by itself) · inventory (gate boxes) · build (locks,
+  // card, Built) · open · close · journal (after the window). Ticks are optional: partial counts as complete.
+  var RUN_KINDS = ['step', 'task', 'inventory', 'build', 'open', 'close', 'journal'];
+  function defaultRunSheet() {
+    function st(at, kind, title, sub) { return { id: uid(), at: at, tz: 'America/New_York', kind: kind, title: title, sub: sub || '' }; }
+    return [
+      st('08:30', 'step', 'At desk', 'Open today\'s chat, paste the opener · water, toilet'),
+      st('08:43', 'task', 'TLADe Pre-Open lands', 'Nothing to do'),
+      st('08:53', 'task', '1BB Pack lands', 'Nothing to do · finish your read'),
+      st('09:00', 'step', 'Your drops', 'Structural block · MQ NQ/ES · OVN + screenshots · Sir\'s brief'),
+      st('09:08', 'inventory', '1BB Desk lands · Inventory', 'Answer the ❔ block and the gate boxes, then say "build"'),
+      st('09:10', 'build', 'Build → Built', 'Paste NQ + ES blocks · paste the Checkpoint card · locks set'),
+      st('09:30', 'open', 'Open', 'Early window first · footprint first'),
+      st('09:52', 'task', 'Re-cut lands', 'Ask "any changes?" · paste the new card if it changed'),
+      st('10:12', 'task', 'Post-print pulls land', ''),
+      st('10:30', 'close', 'Window closes', 'Platform closed'),
+      st('', 'journal', 'Journal', 'Say "journal" to Claude')
+    ];
+  }
+  function isRun(s) { s = s || state; return !!(s && s.settings && s.settings.homeView === 'run'); }
+  function dayStartOf(key, settings) {
+    var d = keyToDate(key);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() + hmToMin(settings.resetHour) * 60000;
+  }
+  // The instant (ms) of a run-sheet time on trading day `key`, kept inside that trading day. null = no time.
+  function stepInstant(key, step, settings) {
+    if (!step || !/^\d{1,2}:\d{2}$/.test(step.at || '')) return null;
+    var ds = dayStartOf(key, settings), t = null;
+    if (step.tz && step.tz !== 'local') t = wallToInstant(step.tz, key, step.at);
+    if (t === null) return ds + relMin(hmToMin(step.at), hmToMin(settings.resetHour)) * 60000;
+    while (t < ds) t += 86400000;
+    while (t >= ds + 86400000) t -= 86400000;
+    return t;
+  }
+  // Each step with its time; a step without a time (Journal) sits just after the window closes.
+  function runStepsFor(key, s) {
+    var end = sessionWindow(key, s.settings).end;
+    return (s.settings.runSheet || []).map(function (st) {
+      var t = stepInstant(key, st, s.settings);
+      return { step: st, t: t === null ? end + 60000 : t, timed: t !== null };
+    }).sort(function (a, b) { return a.t - b.t; });
+  }
+  // Index of the step she is on now: the last one whose time has passed (-1 before the first).
+  function runCurrentIndex(list, now) {
+    var n = now.getTime(), cur = -1;
+    list.forEach(function (x, i) { if (x.t <= n) cur = i; });
+    return cur;
+  }
+
+  /* ==== RUN: stages ==== */
+  // v3 (spec v3 §2). stageFor() is pure: app state + day record + time in, { stage, why, since, next } out.
+  // Rule 1: never block, only flag. Rule 2: every stage says why (her tap and its time, or the clock rule).
+  var RUN_STAGES = ['offday', 'before', 'desk', 'built', 'watching', 'intrade', 'cool-red', 'cool-green', 'overtime', 'closed'];
+  var RUN_LOCKED = { intrade: true, 'cool-red': true, 'cool-green': true, overtime: true };
+  var RUN_LABEL = {
+    offday: 'Day off', before: 'Before desk', desk: 'At desk', built: 'Built', watching: 'Watching', intrade: 'In trade',
+    'cool-red': 'Cooldown', 'cool-green': 'Cooldown · green', overtime: 'Overtime', closed: 'Closed'
+  };
+  function clockOf(iso) { var t = typeof iso === 'number' ? iso : Date.parse(iso); return isFinite(t) ? fmtClock(new Date(t)) : ''; }
+  // R of one trade: a stop is −1R; a target is the R she tapped (else the preferred R:R); scratch / manual 0.
+  function rOfTrade(t, s) {
+    if (!t) return 0;
+    if (t.outcome === 'SL') return -1;
+    if (t.outcome === 'TP') { var r = Number(t.rTaken); return isFinite(r) && r > 0 ? r : (Number(s.settings.rules.rrPreferred) || 2); }
+    return 0;
+  }
+  function dayRFor(s, day) { return ((day && day.trades) || []).reduce(function (a, t) { return a + rOfTrade(t, s); }, 0); }
+  function runR(r) { r = Math.round(r * 10) / 10; return (r > 0 ? '+' : r < 0 ? '−' : '') + Math.abs(r) + 'R'; }
+  // v3 done: 2 SL or +3R on the day (whichever comes first), or the platform's daily loss. { reason, at } or null.
+  function runDoneFor(s, day) {
+    if (!day) return null;
+    var r = s.settings.rules, nsl = r.doneSl || 2, need = Number(r.doneR) || 3, sl = 0, sum = 0;
+    var t = day.trades || [];
+    for (var i = 0; i < t.length; i++) {
+      if (t[i].outcome === 'SL') sl++;
+      sum += rOfTrade(t[i], s);
+      var at = Date.parse(t[i].closedAt || t[i].at);
+      if (sl >= nsl) return { reason: 'sl', at: at };
+      if (sum >= need - 1e-9) return { reason: 'r', at: at };
+    }
+    if (day.dllHit) return { reason: 'dll', at: Date.parse(day.dllHit) };
+    if (day.greenCapHit) return { reason: 'green', at: Date.parse(day.greenCapHit) };
+    return null;
+  }
+  var RUN_DONE_WHY = { sl: '2nd SL', dll: 'daily loss hit', green: 'green cap hit' };
+  function runDoneWhy(s, d) { return d.reason === 'r' ? '+' + (Number(s.settings.rules.doneR) || 3) + 'R reached' : RUN_DONE_WHY[d.reason]; }
+  function runCooling(s, key, now) {
+    var ac = s.activeCooldown;
+    if (!ac || ac.finished || ac.endsAt <= now.getTime()) return null;
+    return tradingDayKey(new Date(ac.startedAt), s.settings.resetHour) === key ? ac : null;
+  }
+  function stageFor(s, day, now, opts) {
+    var key = tradingDayKey(now, s.settings.resetHour);
+    var active = isActiveDayFor(key, s.settings) || !!(opts && opts.showAnyway === key);
+    var list = runStepsFor(key, s), ci = runCurrentIndex(list, now);
+    var nx = list[ci + 1] || null;
+    var nextTxt = nx ? nx.step.title + (nx.timed ? ' at ' + fmtClock(new Date(nx.t)) : '') : '';
+    function out(stage, why, since) { return { stage: stage, why: why, since: since || null, next: nextTxt, key: key, list: list, ci: ci }; }
+    if (!active) return out('offday', 'Not a trading day · nothing to do');
+    day = day || {};
+    var w = sessionWindow(key, s.settings), n = now.getTime();
+    if (day.entered) {
+      var c = day.enteredCard;
+      return out('intrade', (c && c.label ? c.label : 'Not on the card') + ' · entered ' + clockOf(day.enteredAt) + ' · you tapped Entered', day.enteredAt);
+    }
+    if (day.closedAt) return out('closed', 'You closed the night at ' + clockOf(day.closedAt) + ' · say "journal"', day.closedAt);
+    var ac = runCooling(s, key, now);
+    if (ac) {
+      var green = ac.trigger === 'tp';
+      var t0 = ac.trigger === 'sl' ? 'You tapped Stopped at ' : (green ? 'You tapped Target' + (opts && opts.lastR ? ' (' + opts.lastR + ')' : '') + ' at ' : ac.name + ' started at ');
+      return out(green ? 'cool-green' : 'cool-red', t0 + clockOf(ac.startedAt) + ' · ends ' + clockOf(ac.endsAt) + ' · then back to Watching', ac.startedAt);
+    }
+    var d = runDoneFor(s, day);
+    if (d) return out('overtime', 'Day was done at ' + clockOf(d.at) + ' · because: ' + runDoneWhy(s, d) + (n < w.end ? ' · window closes ' + clockOf(w.end) : ''), d.at);
+    if (n >= w.end) return out('overtime', 'Window closed at ' + clockOf(w.end) + ' · the session is over', w.end);
+    var built = day.builtAt ? 'Built ' + clockOf(day.builtAt) : 'Not built yet';
+    if (n >= w.start) {
+      var early = isEarlyFor(s, now);
+      return out('watching', built + ' · window open' + (early ? ' · early window until ' + clockOf(w.start + observeMinOf(s.settings) * 60000) : ' until ' + clockOf(w.end)), w.start);
+    }
+    var mins = Math.ceil((w.start - n) / 60000);
+    if (day.builtAt) return out('built', built + ' · open in ' + mins + ' min', day.builtAt);
+    var first = list[0];
+    if (first && n >= first.t) {
+      var cur = list[ci];
+      return out('desk', 'At desk since ' + fmtClock(new Date(first.t)) + (cur ? ' · now: ' + cur.step.title : ''), first.t);
+    }
+    return out('before', first ? 'Desk at ' + fmtClock(new Date(first.t)) : 'Open at ' + clockOf(w.start));
+  }
+  // Card event times (TH local, from EVENTS) as instants on trading day key.
+  function cardEventsFor(day, key, settings) {
+    var c = latestCard(day);
+    if (!c) return [];
+    var ds = dayStartOf(key, settings), reset = hmToMin(settings.resetHour);
+    return (c.parsed.events || []).filter(function (e) { return e.at; }).map(function (e) {
+      return { t: ds + relMin(hmToMin(e.at), reset) * 60000, at: e.at, name: e.name };
+    });
+  }
+  var FLAG_TEXT = {
+    before_window: 'before the window', not_built: 'not built yet', observe_day: 'observation day', early_window: 'early window',
+    event_window: 'event window', cooldown: 'cooldown', third_idea: '3rd idea · needs 2 clean losses + an A+', over_cap: 'over the hard cap',
+    after_done: 'the day is done', after_window: 'after the window', lock_moved: 'the lock moved tonight', off_card: 'not on the card'
+  };
+  // Why an entry now would be flagged. Never a block: the Entered button always works. [{k, text}]
+  function flagReasonsFor(s, day, now) {
+    day = day || {};
+    var key = tradingDayKey(now, s.settings.resetHour), out = [], n = now.getTime();
+    var r = s.settings.rules, w = sessionWindow(key, s.settings);
+    function add(k, extra) { out.push({ k: k, text: FLAG_TEXT[k] + (extra ? ' ' + extra : '') }); }
+    var done = runDoneFor(s, day);
+    if (n < w.start) add('before_window');
+    if (!day.builtAt) add('not_built');
+    if (gateNoFor(s, day)) add('observe_day');
+    if (n >= w.start && n < w.end && isEarlyFor(s, now)) add('early_window');
+    var em = (Number(r.eventMin) || 5) * 60000;
+    var ev = cardEventsFor(day, key, s.settings).filter(function (e) { return Math.abs(n - e.t) <= em; })[0];
+    if (ev) add('event_window', '(' + ev.at + (ev.name ? ' ' + ev.name : '') + ')');
+    var ac = runCooling(s, key, now);
+    if (ac) add('cooldown', fmtMS((ac.endsAt - n) / 1000) + ' left');
+    var nt = (day.trades || []).length;
+    if (nt >= (Number(r.hardCap) || 3)) add('over_cap');
+    else if (nt >= r.tradeCap) add('third_idea');
+    if (done) add('after_done');
+    if (n >= w.end) add('after_window');
+    if ((day.lockMoved || []).length) add('lock_moved');
+    return out;
+  }
+  // Tonight's flags from the event log, minus those of an entry she undid. [{t, k, text}]
+  function flagsTonight(day) {
+    var ev = (day && day.events) || [];
+    var undone = {};
+    ev.forEach(function (e) { if (e.type === 'undo' && /^enter:/.test(e.detail || '')) undone[e.detail.slice(6)] = true; });
+    return ev.filter(function (e) { return /^flag:/.test(e.type) && !undone[e.detail]; }).map(function (e) {
+      var k = e.type.slice(5);
+      return { t: e.t, k: k, text: FLAG_TEXT[k] || k, id: e.detail || '' };
+    });
+  }
+  // How many entries tonight carried at least one flag.
+  function flaggedEntries(day) {
+    var ids = {};
+    flagsTonight(day).forEach(function (f) { ids[f.id || f.t] = true; });
+    return Object.keys(ids).length;
+  }
+  function runNow(now) {
+    now = now || new Date();
+    var key = todayKey(now);
+    var day = state.days[key] || null; // read only
+    var last = day && day.trades && day.trades[day.trades.length - 1];
+    var rs = stageFor(state, day, now, { showAnyway: ui.showAnyway, lastR: last && last.outcome === 'TP' ? runR(rOfTrade(last, state)) : '' });
+    rs.day = day;
+    rs.now = now;
+    return rs;
+  }
+  function runSig(rs) {
+    var d = rs.day || {};
+    return 'run|' + rs.key + '|' + rs.stage + '|' + rs.ci + '|' + (isEarlyFor(state, rs.now) ? 1 : 0) + '|' + (d.cards || []).length + '|' + (d.builtAt || '') +
+      '|' + flagReasonsFor(state, d, rs.now).map(function (f) { return f.k; }).join(',');
+  }
+
+  /* ==== CARD: paste + parse ==== */
+  // v3 (spec v3 §4). The Trading project's CHECKPOINT CARD block: one item per line, fields split by " | ".
+  // Unknown labels are ignored, "—" stays "—", nothing is guessed. A block that doesn't start with CP1 is refused.
+  function parseCard(text) {
+    var lines = String(text || '').replace(/\r/g, '').split('\n').map(function (l) { return l.trim(); })
+      .filter(function (l) { return l && !/^```/.test(l) && !/^CHECKPOINT CARD$/i.test(l); });
+    if (!lines.length || !/^CP1\b/i.test(lines[0])) return { ok: false, err: 'This doesn\'t look like a Checkpoint card. The first line must start with CP1.' };
+    var c = { ok: true, date: null, kind: 'built', at: null, bias: '', setups: [], doNothing: '', box: null, guard: null, events: [], eventsText: '', size: null, done: '', walls: '' };
+    function kv(x) { var m = /^(\S+)\s+([\s\S]*)$/.exec(x); return m ? [m[1].toLowerCase(), m[2].trim()] : [x.toLowerCase(), '']; }
+    lines.forEach(function (line) {
+      var f = line.split(/\s\|\s/).map(function (x) { return x.trim(); });
+      var lab = f[0].toUpperCase();
+      if (lab === 'CP1') {
+        f.slice(1).forEach(function (x) {
+          var p = kv(x);
+          if (p[0] === 'date') c.date = p[1];
+          if (p[0] === 'built' || p[0] === 'recut') { c.kind = p[0]; c.at = p[1]; }
+        });
+      } else if (lab === 'BIAS') c.bias = f.slice(1).join(' · ');
+      else if (/^S\d+$/.test(lab)) {
+        if (/^DO-NOTHING/i.test(f[1] || '')) { c.doNothing = lab; return; }
+        var su = { key: lab, dir: String(f[1] || '').toLowerCase() };
+        f.slice(2).forEach(function (x) { var p = kv(x); if (['zone', 'trigger', 'sl', 't1', 't2', 'invalid', 'rr'].indexOf(p[0]) >= 0) su[p[0]] = p[1]; });
+        var rm = /^1\s*:\s*(\d+(?:\.\d+)?)$/.exec(su.rr || '');
+        su.rrNum = rm ? Number(rm[1]) : null;
+        su.id = lab;
+        su.label = lab + (su.dir ? ' ' + su.dir : '');
+        c.setups.push(su);
+      } else if (lab === 'BOX') {
+        var fc = String(f[1] || '').split('→').map(function (x) { return x.trim(); });
+        c.box = { floor: fc[0] || '—', ceiling: fc[1] || '—', coil: kv(f[2] || '')[1] || '', posture: f.slice(3).join(' · ') };
+      } else if (lab === 'GUARD') {
+        var g = String(f[1] || '');
+        c.guard = { flip: g.replace(/^ES flip\s*/i, '') || '—', cond: f.slice(2).join(' · ') };
+      } else if (lab === 'EVENTS') {
+        c.eventsText = f.slice(1).join(' · ');
+        c.events = c.eventsText.split(';').map(function (x) {
+          var m = /^(\d{1,2}:\d{2})\s*(?:TH)?\s*([\s\S]*)$/i.exec(x.trim());
+          return m ? { at: (m[1].length === 4 ? '0' : '') + m[1], name: m[2].trim() } : null;
+        }).filter(Boolean);
+      } else if (lab === 'SIZE') {
+        c.size = { risk: f[1] || '—', contracts: f[2] || '—', band: kv(f[3] || '')[1] || '' };
+      } else if (lab === 'DONE') c.done = f.slice(1).join(' · ');
+      else if (lab === 'WALLS') c.walls = f.slice(1).join(' · ');
+    });
+    // A second S-line with the same key (S4 long / S4 short) gets its direction in the id; give the first one too.
+    c.setups.forEach(function (su) { if (c.setups.filter(function (x) { return x.key === su.key; }).length > 1) su.id = su.key + '-' + su.dir; });
+    if (!c.setups.length && !c.bias) return { ok: false, err: 'The card has no BIAS line and no S-lines.' };
+    return c;
+  }
+  function latestCard(day) {
+    var cs = day && Array.isArray(day.cards) ? day.cards : [];
+    for (var i = cs.length - 1; i >= 0; i--) if (cs[i] && cs[i].parsed && cs[i].parsed.ok) return cs[i];
+    return null;
+  }
+  function cardSetup(day, id) {
+    var c = latestCard(day);
+    return c ? c.parsed.setups.filter(function (x) { return x.id === id; })[0] || null : null;
+  }
+  function addCard(day, text, now) {
+    var p = parseCard(text);
+    if (!p.ok) return p;
+    day.cards.push({ at: isoLocal(now || new Date()), kind: p.kind, raw: String(text), parsed: p });
+    return p;
+  }
+
+  /* ==== CALM: words + sound ==== */
+  // v3 (spec v3 §6). In trade and in both cooldowns a calm line changes every 10 s, shuffled: every line once
+  // before any repeats, and never the same line twice in a row. Sound is made in the page (Web Audio):
+  // soft noise in trade, a breath tone (in 4, out 6) in the cooldowns. Nothing is downloaded.
+  var CALM_DEFAULT = {
+    intrade: [
+      'The bracket is on. Nothing to decide.',
+      'Both exits were set before you entered. The trade is already managed.',
+      'An add is a second trade. It needs its own trigger.',
+      'The stop was decided when you were calm. Leave it.',
+      'Price against you is not information. The stop is where the idea is wrong.',
+      'Price for you is no reason to grab it early.',
+      'The itch to do something is the dopamine, not the market.',
+      'Hands off the mouse. Breathe out longer than you breathe in.',
+      'One clean trade is worth more than a green one.',
+      'You\'re allowed to lose this one. Losing it clean is still a win.',
+      'This is one trade of the next hundred. Let it be ordinary.',
+      'A business runs on process. Your job right now is to wait.',
+      'Notice the urge. Name it. Let it rise and pass like a wave.',
+      'The risk was paid when you entered. There is nothing left to buy.',
+      'Watching every tick doesn\'t change the outcome. Soften your eyes.',
+      'Fast money is not the goal. Repeatable is the goal.',
+      'Feel your feet on the floor. Your hands can rest.',
+      'The plan made this decision. You only have to let it happen.',
+      'Excitement is not edge. Stay boring.',
+      'The next step is already written: Stopped or Target.'
+    ],
+    red: [
+      'A clean loss. Stand up. Leave the desk.',
+      'Hands off the mouse. A loss is one day out of hundreds.',
+      'Your rules protected the account. The plan is still good.',
+      'The pull to win it back is the dopamine. It passes in minutes.',
+      'Breathe in for four, out for six.',
+      'The next trade needs a new trigger at a new level, not this feeling.',
+      'Trade today so that you can trade tomorrow.',
+      'Stay in the game long enough to win.',
+      'A stop is a business expense. It was budgeted before you entered.',
+      'You didn\'t lose money. You paid for information, as planned.',
+      'Revenge looks like a setup. It never is.',
+      'The urge peaks, then fades. You only have to outlast it.',
+      'Losing 1R is the system working. Chasing it is the system breaking.',
+      'Walk away from the screen. The level will still be there.',
+      'Nothing needs fixing in the next five minutes.',
+      'Your edge shows over many trades, never in the next one.',
+      'Drink some water. Let your shoulders drop.',
+      'Good traders lose often and calmly. Be one of them.'
+    ],
+    green: [
+      'Green is done. The reward is the discipline, not the number.',
+      'The lift you feel now is the pull that used to start the next trade.',
+      'One more trade now is gambling with today\'s work.',
+      'Let the number sit. It doesn\'t need to get bigger.',
+      'After a win is when it usually slips. Slow down here.',
+      'Nothing on the screen needs you for the next five minutes.',
+      'Breathe in for four, out for six.',
+      'Small compounding wins.',
+      'A good business banks profit before it expands.',
+      'This win came from waiting. Keep waiting.',
+      'Feeling invincible is a signal to stop, not to size up.',
+      'The next trade owes you nothing because this one worked.',
+      'You followed the plan. That\'s the part worth repeating.',
+      'Excitement fades in minutes. Your process is what lasts.',
+      'Protect today\'s work like an asset.',
+      'Stand up. Let the good feeling settle away from the desk.',
+      'A calm green day beats a big one.',
+      'If the next setup is real, it will still be clean in five minutes.'
+    ]
+  };
+  var CALM_SET = { intrade: 'intrade', 'cool-red': 'red', 'cool-green': 'green' };
+  // A new shuffled bag of indexes 0..n-1 whose first item is not `last` (when n > 1). rnd = Math.random by default.
+  function shuffleBag(n, last, rnd) {
+    rnd = rnd || Math.random;
+    var a = [];
+    for (var i = 0; i < n; i++) a.push(i);
+    for (var j = n - 1; j > 0; j--) { var k = Math.floor(rnd() * (j + 1)); var x = a[j]; a[j] = a[k]; a[k] = x; }
+    if (n > 1 && a[0] === last) { var y = a[0]; a[0] = a[n - 1]; a[n - 1] = y; }
+    return a;
+  }
+  var calm = { set: '', bag: [], idx: -1, at: 0, n: 0 };
+  function calmLines(set) {
+    var c = state.settings.calm || {};
+    var l = (Array.isArray(c[set]) ? c[set] : []).filter(function (x) { return String(x || '').trim(); });
+    return l.length ? l : CALM_DEFAULT[set];
+  }
+  // The line to show for this set now; moves on every everySec seconds.
+  function calmLine(set, nowMs) {
+    var lines = calmLines(set);
+    var every = Math.max(3, Number(state.settings.calm && state.settings.calm.everySec) || 10) * 1000;
+    if (calm.set !== set || calm.idx < 0 || calm.idx >= lines.length) { calm.set = set; calm.bag = []; calm.idx = -1; calm.at = 0; }
+    if (calm.idx < 0 || nowMs - calm.at >= every) {
+      if (!calm.bag.length) calm.bag = shuffleBag(lines.length, calm.idx);
+      calm.idx = calm.bag.shift();
+      calm.at = nowMs;
+      calm.n++;
+    }
+    return { text: lines[calm.idx], n: calm.n };
+  }
+  // Sound: which sound this stage wants ('noise' | 'breath' | '').
+  function soundFor(stage, audio) {
+    audio = audio || {};
+    if (stage === 'intrade') return audio.noise ? 'noise' : '';
+    if (stage === 'cool-red' || stage === 'cool-green') return audio.breath ? 'breath' : '';
+    return '';
+  }
+  var snd = { mode: '', src: null, osc: null, gain: null, until: 0, sig: '' };
+  function noiseBuffer(type) {
+    var len = actx.sampleRate * 4, buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+    var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, last = 0;
+    for (var i = 0; i < len; i++) {
+      var w = Math.random() * 2 - 1;
+      if (type === 'brown') { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
+      else {
+        b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.96900 * b2 + w * 0.1538520;
+        b3 = 0.86650 * b3 + w * 0.3104856; b4 = 0.55000 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.0168980;
+        d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
+      }
+    }
+    return buf;
+  }
+  function stopSound() {
+    if (!actx || !snd.gain) { snd.mode = ''; return; }
+    var t = actx.currentTime, g = snd.gain, src = snd.src, osc = snd.osc;
+    try { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t); g.gain.linearRampToValueAtTime(0.0001, t + 1.5); } catch (e) { /* ignore */ }
+    setTimeout(function () { try { if (src) src.stop(); if (osc) osc.stop(); g.disconnect(); } catch (e) { /* ignore */ } }, 1700);
+    snd = { mode: '', src: null, osc: null, gain: null, until: 0, sig: '' };
+  }
+  function startSound(mode) {
+    unlockAudio();
+    if (!actx || actx.state !== 'running') return false;
+    var a = state.settings.audio || {}, t = actx.currentTime;
+    var g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.connect(actx.destination);
+    snd = { mode: mode, src: null, osc: null, gain: g, until: t, sig: '' };
+    if (mode === 'noise') {
+      var src = actx.createBufferSource();
+      src.buffer = noiseBuffer(a.noiseType === 'brown' ? 'brown' : 'pink');
+      src.loop = true;
+      src.connect(g);
+      src.start(t);
+      g.gain.linearRampToValueAtTime(Math.max(0.0001, Math.min(1, Number(a.noiseVol) || 0.25)) * 0.6, t + 2);
+      snd.src = src;
+    } else {
+      var o = actx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = 196;
+      o.connect(g);
+      o.start(t);
+      snd.osc = o;
+      scheduleBreath();
+    }
+    return true;
+  }
+  // Breath tone: rises for 4 s, falls for 6 s, scheduled about 20 s ahead.
+  function scheduleBreath() {
+    if (!actx || !snd.gain || snd.mode !== 'breath') return;
+    var vol = Math.max(0.0001, Math.min(1, Number((state.settings.audio || {}).breathVol) || 0.3)) * 0.25;
+    var t = Math.max(snd.until, actx.currentTime + 0.05);
+    while (t < actx.currentTime + 20) {
+      snd.gain.gain.setValueAtTime(0.0001, t);
+      snd.gain.gain.linearRampToValueAtTime(vol, t + 4);
+      snd.gain.gain.linearRampToValueAtTime(0.0001, t + 10);
+      t += 10;
+    }
+    snd.until = t;
+  }
+  function soundTick(rs) {
+    var stageKey = rs ? rs.stage + '|' + (rs.since || '') : '';
+    var want = rs && ui.muted !== stageKey ? soundFor(rs.stage, state.settings.audio) : '';
+    var sig = want + '|' + JSON.stringify(state.settings.audio || {});
+    if (want && snd.mode === want && snd.sig === sig) { if (want === 'breath') scheduleBreath(); return; }
+    if (snd.mode) stopSound();
+    if (want && startSound(want)) snd.sig = sig;
+  }
+
   /* ==== VIEW: home ==== */
   function viewHome(hs) {
+    if (isRun()) return viewRun(runNow(hs.now)); // v3
     var fn = {
       premarket: homePremarket, waiting: homeWaiting, observe: homeWaiting, looking: homeLooking,
       intrade: homeInTrade, cooldown: homeCooldown, done: homeDone, offday: homeOffday
@@ -1932,6 +2589,7 @@ var App = (function () {
     if (!state) return;
     if (!doc) { if (ui.tab !== 'home') return; doc = document; } // Part G: also the floating window's document
     var now = new Date();
+    if (isRun()) { tickRunDom(doc, runNow(now)); return; } // v3
     // Part C: a timed premarket item comes up at its time (re-render, unless she is typing).
     var hm = $('.home[data-hs="premarket"]', doc);
     if (hm && doc === document) {
@@ -1974,6 +2632,258 @@ var App = (function () {
     on.setAttribute('aria-hidden', 'true');
     on.classList.remove('on');
     next.classList.add('on');
+  }
+
+  /* ==== VIEW: run sheet ==== */
+  // v3 (spec v3 §5). The home in run mode: the "you are here" strip on top of every stage, then the stage itself.
+  // Entered is on every stage before the trade, always tappable; what it would flag is written under it.
+  function runStrip(rs, compact) {
+    return '<div class="strip" data-st="' + esc(rs.stage) + '"' + (compact ? ' data-act="go-tab" data-tab="home" role="button" tabindex="0"' : '') + '>' +
+      '<div class="strip-top"><span class="strip-st">' + (compact ? '' : 'YOU ARE HERE · ') + esc(RUN_LABEL[rs.stage]).toUpperCase() + '</span>' +
+      '<span class="strip-t" data-run-clock>' + esc(fmtClock(rs.now)) + '</span></div>' +
+      (compact ? '' : '<div class="strip-why" data-run-why>' + esc(rs.why) + (rs.next && /^(desk|built|before|watching)$/.test(rs.stage) ? ' · next: ' + esc(rs.next) : '') + '</div>') + '</div>';
+  }
+  function viewRun(rs) {
+    var fn = {
+      offday: runOffday, before: runDesk, desk: runDesk, built: runDesk, watching: runWatching, intrade: runInTrade,
+      'cool-red': runCool, 'cool-green': runCool, overtime: runOvertime, closed: runClosed
+    }[rs.stage];
+    return '<div class="run" data-st="' + esc(rs.stage) + '">' + runStrip(rs) + '<div class="run-body">' + fn(rs) + '</div></div>';
+  }
+  function flagLine(flags, lead) {
+    if (!flags.length) return '';
+    return '<p class="run-flag" data-run-flags>' + esc(lead || 'Always tappable. Right now it would be flagged:') + ' <b>' + esc(flags.map(function (f) { return f.text; }).join(' · ')) + '</b></p>';
+  }
+  function enteredBtn(rs, style) {
+    var flags = flagReasonsFor(state, rs.day, rs.now);
+    var cls = style === 'primary' && !flags.length ? 'btn primary' : (style === 'dashed' ? 'btn run-dashed' : 'btn');
+    return '<button type="button" class="' + cls + ' run-enter" data-act="run-enter">Entered</button>' + flagLine(flags, style === 'dashed' ? 'Allowed, and flagged:' : '');
+  }
+  function runTiles(rs) {
+    var day = rs.day || {}, r = state.settings.rules;
+    var n = (day.trades || []).length;
+    return '<div class="tiles"><div class="tile"><span>ideas</span><b>' + n + ' of ' + esc(r.tradeCap) + '</b></div>' +
+      '<div class="tile"><span>day</span><b data-run-r>' + esc(runR(dayRFor(state, day))) + '</b></div>' +
+      '<div class="tile wide"><span>done when</span><b class="sm">' + esc(r.doneSl || 2) + ' SL or +' + esc(r.doneR || 3) + 'R</b></div></div>';
+  }
+  function suRow(su, big, minor) {
+    var low = su.rrNum != null && su.rrNum < (Number(state.settings.rules.rrFloor) || 1.5);
+    var bits = [];
+    if (su.sl) bits.push('SL ' + su.sl);
+    if (su.t1) bits.push('T1 ' + su.t1);
+    if (su.t2) bits.push('T2 ' + su.t2);
+    if (su.rr) bits.push('RR ' + su.rr);
+    return '<div class="su' + (big ? ' big' : '') + (minor ? ' minor' : '') + '"><div class="su-h">' + esc(su.label) + (su.zone && su.zone !== '—' ? ' · ' + esc(su.zone) : '') + '</div>' +
+      (su.trigger ? '<div class="su-t">trigger: ' + esc(su.trigger) + '</div>' : '') +
+      '<div class="su-n">' + esc(bits.join(' · ')) + (su.invalid ? '<br>invalid: ' + esc(su.invalid) : '') + (low ? ' <span class="su-low">below 1:' + esc(state.settings.rules.rrFloor) + '</span>' : '') + '</div></div>';
+  }
+  function planCard(rs, dimmed) {
+    var c = latestCard(rs.day);
+    if (!c) {
+      return '<div class="plan empty"><p>No Checkpoint card yet.</p><button type="button" class="btn" data-act="run-paste">Paste card</button></div>';
+    }
+    var p = c.parsed;
+    var out = '<div class="plan' + (dimmed ? ' dim' : '') + '"><div class="plan-h"><span class="eyebrow">Today\'s plan · ' + esc(p.kind === 'recut' ? 're-cut ' : 'built ') + esc(p.at || clockOf(c.at)) + '</span>' +
+      '<span class="eyebrow">' + esc(p.walls || '') + '</span></div>';
+    if (p.bias) out += '<p class="plan-bias">' + esc(p.bias) + '</p>';
+    out += p.setups.map(function (su) { return suRow(su, false, !/^S[12]$/.test(su.key)); }).join('');
+    var g = [];
+    if (p.box) g.push(['Do nothing', p.box.floor + ' → ' + p.box.ceiling + (p.box.coil ? ' · COIL ' + p.box.coil : '')]);
+    if (p.guard) g.push(['ES guard', p.guard.flip + (p.guard.cond ? ' · ' + p.guard.cond : '')]);
+    if (p.eventsText) g.push(['Events', p.eventsText]);
+    if (p.size) g.push(['Size', p.size.risk + ' · ' + p.size.contracts + (p.size.band ? ' · ' + p.size.band : '')]);
+    out += '<div class="plan-g">' + g.map(function (x) { return '<div><span>' + esc(x[0]) + '</span> ' + esc(x[1]) + '</div>'; }).join('') + '</div>';
+    return out + '</div>';
+  }
+  function practisingLine(day) {
+    var pr = todayCard(day).practising;
+    return pr ? '<p class="run-practise">Practising: ' + esc(pr) + '</p>' : '';
+  }
+  function runHeadLine(rs) {
+    var sd = seriesDayFor(rs.key, state.settings);
+    return '<div class="run-head"><span>' + esc(fmtDayKey(rs.key)) + (sd && sd.n >= 1 && sd.n <= sd.of ? ' · day ' + sd.n + ' of ' + esc(sd.of) : '') + '</span>' + SETTINGS_LINK + '</div>';
+  }
+  function runOffday(rs) {
+    return runHeadLine(rs) + '<div class="run-mid"><p class="run-big">No session today.</p><p class="run-sub">Days off stay quiet.</p></div>' +
+      '<div class="run-foot"><button type="button" class="btn block" data-act="home-show-anyway">Show the day anyway</button></div>';
+  }
+  // Pre-open: the countdown, the run sheet (current step boxed), Entered at the bottom.
+  function runDesk(rs) {
+    var w = sessionWindow(rs.key, state.settings);
+    var mins = Math.ceil((w.start - rs.now.getTime()) / 60000);
+    var out = runHeadLine(rs) + '<div class="run-count"><span class="run-big" data-run-count>' + esc(mins > 0 ? 'Open in ' + fmtDur(mins).toLowerCase() : 'Opening') + '</span>' +
+      '<span class="run-sub">window<br>' + esc(clockOf(w.start)) + '–' + esc(clockOf(w.end)) + '</span></div>';
+    out += '<ol class="rs">' + rs.list.map(function (x, i) { return runStepRow(rs, x, i); }).join('') + '</ol>';
+    return out + '<div class="run-foot">' + enteredBtn(rs, 'outline') + '</div>';
+  }
+  function runStepRow(rs, x, i) {
+    var st = x.step, day = rs.day || {}, ticked = !!(day.steps && day.steps[st.id]);
+    var time = x.timed ? (st.kind === 'task' ? '~' : '') + fmtClock(new Date(x.t)) : 'EOD';
+    var past = i < rs.ci, cur = i === rs.ci;
+    var status = ticked ? 'done' : (past && st.kind === 'task' ? 'landed' : '');
+    if (!cur) {
+      return '<li class="rs-row' + (past ? ' past' : '') + '"><span class="rs-t">' + esc(time) + '</span><span class="rs-x"><b>' + esc(st.title) + '</b>' +
+        (!past && st.sub ? '<small>' + esc(st.sub) + '</small>' : '') + '</span>' +
+        (st.kind === 'task' ? '<span class="rs-s">' + esc(status) + '</span>' : '<button type="button" class="rs-tick" data-act="run-step" data-id="' + esc(st.id) + '" aria-pressed="' + ticked + '" aria-label="' + esc(st.title) + ' done">' + cbx(ticked) + '</button>') + '</li>';
+    }
+    var out = '<li class="rs-row cur" aria-current="step"><span class="rs-t">' + esc(time) + '</span><span class="rs-x"><b>' + esc(st.title) + '</b>' + (st.sub ? '<small>' + esc(st.sub) + '</small>' : '');
+    out += runStepExtra(rs, st) + '</span>';
+    out += st.kind === 'task' ? '<span class="rs-s">' + esc(status || 'landing') + '</span>' :
+      '<button type="button" class="rs-tick" data-act="run-step" data-id="' + esc(st.id) + '" aria-pressed="' + ticked + '" aria-label="' + esc(st.title) + ' done">' + cbx(ticked) + '</button>';
+    return out + '</li>';
+  }
+  // What the current step needs from her: the gate boxes at Inventory; locks, card and Built at Build.
+  function runStepExtra(rs, st) {
+    var day = rs.day || {}, pmd = day.premarket || EMPTY_PMD;
+    if (st.kind === 'inventory') {
+      var gates = itemsOfRow(state, 'body').filter(function (it) { return it.gate; });
+      return gates.length ? '<span class="rs-gates">' + gates.map(function (it) {
+        return '<span class="rs-gate"><span>' + esc(it.text) + '</span>' + gateButtons(it, pmd) + '</span>';
+      }).join('') + '</span>' : '';
+    }
+    if (st.kind === 'build') {
+      var locks = itemsOfRow(state, 'accounts').filter(function (it) { return it.role === 'lock'; });
+      var c = latestCard(day);
+      return '<span class="rs-build">' + locks.map(function (it) {
+        var on = !!(pmd.checked && pmd.checked[it.id]);
+        return '<button type="button" class="item" data-act="pm-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '">' + cbx(on) + '<span class="txt"><b>' + esc(it.text) + '</b></span></button>';
+      }).join('') +
+        '<span class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-act="run-paste">' + (c ? 'Paste a new card' : 'Paste card') + '</button>' +
+        (day.builtAt ? '<span class="rs-built">Built ' + esc(clockOf(day.builtAt)) + '</span>' : '<button type="button" class="btn primary" data-act="run-built">Built</button>') + '</span>' +
+        (c ? '<span class="rs-card">Card ' + esc(c.parsed.kind === 'recut' ? 're-cut ' : 'built ') + esc(c.parsed.at || '') + ' · ' + c.parsed.setups.length + ' setups</span>' : '') + '</span>';
+    }
+    return '';
+  }
+  function runWatching(rs) {
+    var day = rs.day || {}, w = sessionWindow(rs.key, state.settings);
+    var out = '';
+    if (isEarlyFor(state, rs.now)) out += '<div class="run-amber" role="status">Early window until ' + esc(clockOf(w.start + observeMinOf(state.settings) * 60000)) + ' · an entry now is flagged, not blocked</div>';
+    out += runTiles(rs) + planCard(rs) + practisingLine(day);
+    var items = [];
+    state.checklists.trade.categories.forEach(function (cat) { cat.items.forEach(function (it) { if (!it.afterStopOnly || (day.trades || []).some(function (t) { return t.outcome === 'SL'; })) items.push(it); }); });
+    out += '<details class="run-checks"><summary>The checks (' + items.length + ')</summary><ol>' + items.map(function (it) { return '<li>' + esc(it.text) + (it.note ? ' <small>' + esc(it.note) + '</small>' : '') + '</li>'; }).join('') + '</ol></details>';
+    var c = latestCard(day);
+    return out + '<div class="run-foot">' + enteredBtn(rs, 'primary') +
+      '<div class="run-links">' + urgeNoteBtn() + '<button type="button" class="textbtn" data-act="run-lock">I moved the lock</button>' +
+      (c ? '<button type="button" class="textbtn" data-act="run-paste">Paste re-cut card</button>' : '') + '</div></div>';
+  }
+  function calmHtml(rs) {
+    var set = CALM_SET[rs.stage];
+    var l = calmLine(set, rs.now.getTime());
+    var a = state.settings.audio || {}, want = soundFor(rs.stage, a);
+    var stageKey = rs.stage + '|' + (rs.since || '');
+    var every = Math.max(3, Number(state.settings.calm && state.settings.calm.everySec) || 10);
+    return '<div class="calm' + (rs.stage === 'intrade' ? ' ring' : '') + '"><div class="wl" data-calm="' + l.n + '"><span class="on">' + esc(l.text) + '</span><span aria-hidden="true"></span></div></div>' +
+      '<p class="run-sub calm-note"><span class="calm-info">' + calmLines(set).length + ' lines · shuffled · new line every ' + every + ' s</span>' +
+      (want ? '<span class="calm-info"> · </span>' + (want === 'noise' ? 'soft noise' : 'breath tone') + ' · <button type="button" class="linkbtn" data-act="run-mute" data-k="' + esc(stageKey) + '">' + (ui.muted === stageKey ? 'unmute' : 'mute') + '</button>' : '') + '</p>';
+  }
+  function runInTrade(rs) {
+    var day = rs.day || {}, c = day.enteredCard, r = state.settings.rules, w = sessionWindow(rs.key, state.settings);
+    var el = day.enteredAt ? Math.max(0, (rs.now.getTime() - Date.parse(day.enteredAt)) / 1000) : 0;
+    var out = '<div class="run-head"><span class="eyebrow">This trade</span><span class="eyebrow">in for <span data-home-el>' + fmtMS(Math.floor(el)) + '</span></span></div>';
+    out += '<p class="run-big">' + esc(c && c.label ? c.label + (c.zone && c.zone !== '—' ? ' · ' + c.zone : '') : 'Not on the card') + '</p>';
+    if (c) {
+      out += '<div class="tiles three"><div class="tile"><span>stop</span><b>' + esc(c.sl || '—') + '</b></div><div class="tile"><span>T1</span><b>' + esc(c.t1 || '—') + '</b></div><div class="tile"><span>T2</span><b>' + esc(c.t2 || '—') + '</b></div></div>';
+    }
+    out += calmHtml(rs);
+    out += '<p class="run-sub">day ' + esc(runR(dayRFor(state, day))) + ' · done when ' + esc(r.doneSl || 2) + ' SL or +' + esc(r.doneR || 3) + 'R · window closes ' + esc(clockOf(w.end)) + '</p>';
+    return out + '<div class="run-foot"><div class="outcome2"><button type="button" class="btn" data-act="run-out" data-o="SL">Stopped</button>' +
+      '<button type="button" class="btn primary" data-act="run-out" data-o="TP">Target</button></div>' + urgeNoteBtn() + '</div>';
+  }
+  function runCool(rs) {
+    var ac = state.activeCooldown, day = rs.day || {}, r = state.settings.rules, green = rs.stage === 'cool-green';
+    var left = Math.max(0, (ac.endsAt - rs.now.getTime()) / 1000);
+    var off = RING_C * (1 - (ac.seconds ? left / ac.seconds : 0));
+    var out = '<div class="run-mid tight"><div class="ring-wrap" role="timer" aria-label="Time left"><svg viewBox="0 0 200 200" aria-hidden="true">' +
+      '<circle cx="100" cy="100" r="88" fill="none" stroke="var(--ring)" stroke-width="10"/>' +
+      '<circle data-cd-ring cx="100" cy="100" r="88" fill="none" stroke="' + (green ? 'var(--live)' : 'var(--cool)') + '" stroke-width="10" stroke-dasharray="' + RING_C.toFixed(2) + '" stroke-dashoffset="' + off.toFixed(2) + '"/></svg>' +
+      '<div class="center"><span class="big" data-cd-left>' + fmtMS(left) + '</span></div></div>' + calmHtml(rs) + '</div>';
+    var dr = dayRFor(state, day), need = Number(r.doneR) || 3;
+    out += '<div class="allowed"><span class="eyebrow">What\'s allowed next</span>' +
+      (green ? '<p>New trigger · different level · not the same move again</p><p>' + esc(runR(Math.max(0, need - dr))) + ' more ends the day</p>'
+        : '<p>New trigger · different level · new macro window (:30 → :10)</p><p>SL covers the POI, or skip · say why and how out loud</p>') + '</div>';
+    var n = (day.trades || []).length, sl = (day.trades || []).filter(function (t) { return t.outcome === 'SL'; }).length;
+    out += '<div class="run-counts"><span>idea ' + n + ' of ' + esc(r.tradeCap) + ' used</span><span>' + sl + ' SL · day ' + esc(runR(dr)) + '</span><span>done when ' + esc(r.doneSl || 2) + ' SL or +' + esc(need) + 'R</span></div>';
+    var leftDesk = (day.leftDesk || []).some(function (x) { return Date.parse(x.at) >= ac.startedAt; });
+    return out + '<div class="run-foot"><div class="outcome2">' +
+      (leftDesk ? '<span class="run-sub" style="align-self:center">Left the desk · logged</span>' : '<button type="button" class="btn" data-act="left-desk">I left the desk</button>') +
+      enteredBtnCompact(rs) + '</div>' + flagLine(flagReasonsFor(state, day, rs.now), 'Entering now is allowed and flagged:') + '</div>';
+  }
+  function enteredBtnCompact() { return '<button type="button" class="btn run-dashed run-enter" data-act="run-enter">Entered</button>'; }
+  function runOvertime(rs) {
+    var day = rs.day || {}, w = sessionWindow(rs.key, state.settings);
+    var d = runDoneFor(state, day);
+    var head = d ? 'The day ended at ' + clockOf(d.at) + '.' : 'The window closed at ' + clockOf(w.end) + '.';
+    var sub = d ? (d.reason === 'sl' ? 'Two clean stops. The day protected you.' : d.reason === 'r' ? 'Target for the day reached. Lock it in.' : 'The lock fired. That\'s what it\'s for.') + ' Anything from here is outside the plan.'
+      : 'The session is over. Anything from here is outside the plan.';
+    var out = '<p class="run-big">' + esc(head) + '</p><p class="run-sub left">' + esc(sub) + '</p>';
+    var fl = flagsTonight(day);
+    if (fl.length) out += '<div class="flagged"><span class="eyebrow">Flagged tonight</span>' + fl.map(function (f) { return '<div><span>' + esc(clockOf(f.t)) + '</span>' + esc(f.text) + '</div>'; }).join('') + '</div>';
+    if ((day.lockMoved || []).length) out += '<p class="run-sub left">Lock moved at ' + esc(day.lockMoved.map(function (x) { return clockOf(x.at); }).join(', ')) + '</p>';
+    out += '<div class="closeout"><span class="eyebrow">Close out</span>' + closeoutRows(day) + '</div>';
+    return out + '<div class="run-foot"><div class="outcome2"><button type="button" class="btn primary" data-act="run-close">I\'m done for tonight</button>' + enteredBtnCompact() + '</div>' +
+      '<p class="run-flag">Still tappable · it would be flagged entry ' + (flaggedEntries(day) + 1) + ' tonight</p></div>';
+  }
+  function closeoutRows(day) {
+    var sod = (day.sessionOver && day.sessionOver.checked) || {}, out = '';
+    state.checklists.sessionOver.categories.forEach(function (cat) {
+      cat.items.forEach(function (it) {
+        var on = !!sod[it.id];
+        out += '<button type="button" class="so-row" data-act="so-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '"><span>' + esc(it.text) + '</span>' + cbx(on) + '</button>';
+      });
+    });
+    return out;
+  }
+  function runClosed(rs) {
+    var day = rs.day || {}, t = day.trades || [];
+    var pts = pointsFor(state, rs.key, rs.now);
+    var bits = [t.length + (t.length === 1 ? ' idea' : ' ideas'), t.filter(function (x) { return x.outcome === 'SL'; }).length + ' SL',
+      t.filter(function (x) { return x.outcome === 'TP'; }).length + ' target', runR(dayRFor(state, day)), urgeText(day), flagsTonight(day).length + ' flags'];
+    var badges = dayBadgesFor(state, rs.key, rs.now, pts);
+    return runHeadLine(rs) + '<div class="run-mid"><p class="run-big">Closed ' + esc(clockOf(day.closedAt)) + '.</p><p class="run-sub">' + esc(bits.join(' · ')) + '</p>' +
+      '<p class="run-sub">' + esc(fmtPts(pts.total)) + ' · behaviour only</p>' +
+      (badges.length ? '<div class="badges">' + badges.map(function (b) { return '<span class="badge">' + esc(b) + '</span>'; }).join('') + '</div>' : '') +
+      '<p class="run-sub">Now say "journal" to Claude.</p></div>' +
+      '<div class="run-foot"><button type="button" class="btn primary block" data-act="export-today" data-key="' + esc(rs.key) + '">' + (hasEvent(day, 'export') ? 'Export again' : 'Export today') + '</button>' +
+      '<div class="run-links"><button type="button" class="textbtn" data-act="go-tab" data-tab="log">Log</button><button type="button" class="textbtn" data-act="go-tab" data-tab="stats">Stats</button>' +
+      '<button type="button" class="textbtn" data-act="run-reopen">Reopen tonight</button></div></div>';
+  }
+  // Per tick in run mode: clock, countdown, elapsed time in trade, the calm line (crossfade). No re-render.
+  function tickRunDom(doc, rs) {
+    doc = doc || document;
+    var c = $('[data-run-clock]', doc), now = rs.now;
+    if (c && c.textContent !== fmtClock(now)) c.textContent = fmtClock(now);
+    var cnt = $('[data-run-count]', doc);
+    if (cnt) {
+      var mins = Math.ceil((sessionWindow(rs.key, state.settings).start - now.getTime()) / 60000);
+      var txt = mins > 0 ? 'Open in ' + fmtDur(mins).toLowerCase() : 'Opening';
+      if (cnt.textContent !== txt) cnt.textContent = txt;
+    }
+    var why = $('[data-run-why]', doc);
+    if (why) {
+      var wt = rs.why + (rs.next && /^(desk|built|before|watching)$/.test(rs.stage) ? ' · next: ' + rs.next : '');
+      if (why.textContent !== wt) why.textContent = wt;
+    }
+    var el = $('[data-home-el]', doc), day = rs.day;
+    if (el && day && day.enteredAt) {
+      var t = fmtMS(Math.floor(Math.max(0, (now.getTime() - Date.parse(day.enteredAt)) / 1000)));
+      if (el.textContent !== t) el.textContent = t;
+    }
+    var wl = $('.wl[data-calm]', doc);
+    if (wl && CALM_SET[rs.stage]) {
+      var l = calmLine(CALM_SET[rs.stage], now.getTime());
+      if (+wl.getAttribute('data-calm') !== l.n) {
+        wl.setAttribute('data-calm', String(l.n));
+        var sp = wl.querySelectorAll('span');
+        var on = sp[0].classList.contains('on') ? sp[0] : sp[1];
+        var next = on === sp[0] ? sp[1] : sp[0];
+        next.textContent = l.text;
+        next.removeAttribute('aria-hidden');
+        on.setAttribute('aria-hidden', 'true');
+        on.classList.remove('on');
+        next.classList.add('on');
+      }
+    }
   }
 
   /* ==== VIEW: today ==== */
@@ -2156,6 +3066,15 @@ var App = (function () {
     // Points
     out += '<section class="st-sec"><span class="eyebrow">Points · behaviour only</span><div class="st-row"><span><b>' + st.total + '</b> pts</span><span>' + esc(st.level) + '</span></div>' +
       (st.badges.length ? '<div class="badges" style="justify-content:flex-start">' + st.badges.map(function (b) { return '<span class="badge">' + esc(b) + '</span>'; }).join('') + '</div>' : '') + '</section>';
+    // v3: flags over the series (behaviour only, never P&L)
+    if (isRun()) {
+      var fc = {}, ft = 0;
+      seriesKeysFor(state.settings).forEach(function (k) { flagsTonight(state.days[k]).forEach(function (f) { fc[f.k] = (fc[f.k] || 0) + 1; ft++; }); });
+      out += '<section class="st-sec"><span class="eyebrow">Flags · entries off the rules</span>' +
+        (ft ? '<div class="st-flags">' + Object.keys(fc).sort(function (a, b) { return fc[b] - fc[a]; }).map(function (k) {
+          return '<div><b>' + fc[k] + '</b> ' + esc(FLAG_TEXT[k] || k) + '</div>';
+        }).join('') + '</div>' : '<div class="st-note">No flags yet.</div>') + '</section>';
+    }
     // Calendar
     out += '<section class="st-sec"><span class="eyebrow">Series</span><div class="st-cal" role="list">';
     if (st.calendar.length) {
@@ -2207,12 +3126,17 @@ var App = (function () {
     gate_yes: 'Gate yes', gate_no: 'Gate no', plan_ready: 'Plan ready', locks_ready: 'Accounts locked', desk_ready: 'Desk ready',
     start_looking: 'Started looking', enter: 'Entered', stopped: 'Stopped', target: 'Target', undo: 'Undo', urge: 'Urge',
     left_desk: 'Left the desk', cooldown_start: 'Cooldown started', cooldown_end: 'Cooldown ended', sitout: 'Sat out',
-    early_warning_shown: 'Early-window warning', greencap: 'Green cap hit', dll: 'Daily loss hit', export: 'Exported', import: 'Imported a fill'
+    early_warning_shown: 'Early-window warning', greencap: 'Green cap hit', dll: 'Daily loss hit', export: 'Exported', import: 'Imported a fill',
+    built: 'Built', card_paste: 'Card pasted', card_recut: 'Re-cut card pasted', lock_moved: 'Moved the lock', night_closed: 'Closed the night', sound_mute: 'Sound muted'
   };
   function eventLabel(e) {
     var t = String(e.type || '');
     if (/^setup_pick:/.test(t)) return 'Picked ' + (e.detail || 'a setup');
     if (/^check_tick:/.test(t)) return 'Check ' + t.split(':')[1] + (e.detail ? ' · ' + e.detail : '');
+    if (/^flag:/.test(t)) return 'Flagged · ' + (FLAG_TEXT[t.slice(5)] || t.slice(5)); // v3
+    if (/^step_tick:/.test(t)) return 'Step done' + (e.detail ? ' · ' + e.detail : '');
+    if (t === 'undo' && /^enter:/.test(e.detail || '')) return 'Undo · Entered';
+    if (t === 'enter' && e.detail) return 'Entered · ' + (e.detail === 'off-card' ? 'not on the card' : e.detail);
     var l = EVENT_LABEL[t] || t;
     if ((t === 'gate_yes' || t === 'gate_no') && e.detail) return l + ' · ' + e.detail;
     if (t === 'cooldown_start' && e.detail) return l + ' · ' + e.detail;
@@ -2509,10 +3433,10 @@ var App = (function () {
     return out;
   }
   var UNDO_MS = 10000;
-  function logTrade(outcome) {
+  function logTrade(outcome, opts) {
     var c = tradeCtx();
     var day = c.day, b = c.s.behaviour;
-    var before = { tradeChecks: clone(day.tradeChecks), entered: !!day.entered, dayDoneShown: !!day.dayDoneShown, enteredAt: day.enteredAt || null, enteredSetup: day.enteredSetup || null };
+    var before = { tradeChecks: clone(day.tradeChecks), entered: !!day.entered, dayDoneShown: !!day.dayDoneShown, enteredAt: day.enteredAt || null, enteredSetup: day.enteredSetup || null, enteredCard: day.enteredCard || null, enterId: day.enterId || null };
     var rec = {
       n: day.trades.length + 1, outcome: outcome,
       checklistComplete: !!day.entered || (c.allArmed && c.visible.length > 0),
@@ -2529,15 +3453,30 @@ var App = (function () {
     rec.closedAt = rec.at;
     rec.openOffsetMin = openMin === null ? null : Math.floor(openMin);
     rec.earlyWindow = openMin !== null && openMin >= 0 && openMin < observeMinOf(c.s);
+    // v3: the card setup she entered on, and the R she took on a target
+    if (day.enteredCard) { rec.cardSetup = clone(day.enteredCard); rec.setupId = day.enteredCard.id; }
+    if (outcome === 'TP' && opts && isFinite(Number(opts.r))) rec.rTaken = Number(opts.r);
+    if (day.enterId) rec.enterId = day.enterId;
     day.trades.push(rec);
     logEvent(OUTCOME_EVENT[outcome] || String(outcome).toLowerCase(), rec.id, c.key);
     day.tradeChecks = {};
     day.entered = false;
     day.enteredAt = null;
     day.enteredSetup = null;
+    day.enteredCard = null;
+    day.enterId = null;
     day.looking = null;
     save();
     var key = c.key;
+    if (isRun()) {
+      // v3: a 5-minute cooldown after any exit; the stage strip says why.
+      toast((outcome === 'TP' ? 'Target' : outcome === 'SL' ? 'Stopped' : outcome) + ' · idea ' + day.trades.length, { label: 'UNDO', fn: function () { undoTrade(key, rec, before); } }, UNDO_MS);
+      ui.tab = 'home';
+      if (outcome === 'SL' && b.slStartsCooldown) { startCooldown(c.s.presetLinks.sl, 'sl', { force: true }); return; }
+      if (outcome === 'TP' && b.cooldownAfterTarget !== false && findPreset(c.s.presetLinks.tp)) { startCooldown(c.s.presetLinks.tp, 'tp', { force: true }); return; }
+      render();
+      return;
+    }
     toast(outcome + ' logged · trade ' + pad2(day.trades.length), { label: 'UNDO', fn: function () { undoTrade(key, rec, before); } }, UNDO_MS);
     if (outcome === 'SL' && b.slStartsCooldown) { startCooldown(c.s.presetLinks.sl, 'sl'); return; }
     if (outcome === 'TP' && b.dayDoneAfterTP) { day.dayDoneShown = true; ui.dayDone = true; save(); }
@@ -2553,7 +3492,7 @@ var App = (function () {
     day.trades.splice(i, 1);
     var ac = state.activeCooldown;
     var cancelled = false;
-    if (ac && ac.trigger === 'sl' && rec.outcome === 'SL' && ac.startedAt >= Date.parse(rec.at)) {
+    if (ac && ((ac.trigger === 'sl' && rec.outcome === 'SL') || (ac.trigger === 'tp' && rec.outcome === 'TP')) && ac.startedAt >= Date.parse(rec.at)) {
       state.activeCooldown = null;
       releaseWakeLock();
       cancelled = true;
@@ -2563,10 +3502,12 @@ var App = (function () {
     day.entered = before.entered;
     day.enteredAt = before.enteredAt;
     day.enteredSetup = before.enteredSetup;
+    day.enteredCard = before.enteredCard || null;
+    day.enterId = before.enterId || null;
     day.undone.push({ outcome: rec.outcome, n: rec.n, loggedAt: rec.at, undoneAt: new Date().toISOString(), cooldownCancelled: cancelled, id: uid(), kind: 'trade', device: devId() });
     logEvent('undo', rec.id, key);
     saveNow();
-    ui.tab = 'trade';
+    ui.tab = isRun() ? 'home' : 'trade';
     try { sessionStorage.setItem('checkpoint.tab', 'trade'); } catch (e) { /* ignore */ }
     render();
     toast('Undone · ' + rec.outcome + ' removed' + (cancelled ? ' · cooldown cancelled' : ''));
@@ -2615,6 +3556,7 @@ var App = (function () {
     var ac = state.activeCooldown;
     if (!ac || ac.finished || ac.endsAt > Date.now()) return false;
     ac.finished = true;
+    if (isRun()) { recordCooldown(ac, false); state.activeCooldown = null; } // v3: back to Watching by itself
     saveNow();
     releaseWakeLock();
     chime();
@@ -2696,6 +3638,8 @@ var App = (function () {
   var BEHAVIOUR_SW = [['slStartsCooldown', 'SL starts cooldown'], ['dayDoneAfterTP', 'Day-done screen after TP'], ['lockAtCap', 'Lock trade tab at cap'], ['lockDuringCooldown', 'Lock checklist during cooldown']];
   var HOLD_FIELDS = [['holdToEnterSec', 'Hold to enter (seconds)'], ['endEarlyHoldSec', 'End-early hold (seconds)'], ['urgeHoldSec', 'Urge hold (seconds)']];
   function viewSettings() {
+    if (ui.editor && ui.editor.type === 'runsheet') return viewRunSheetEditor(); // v3
+    if (ui.editor && ui.editor.type === 'calm') return viewCalmEditor(); // v3
     if (ui.editor && ui.editor.type === 'checklist') return viewChecklistEditor(ui.editor.list);
     if (ui.editor && ui.editor.type === 'preset') {
       if (findPreset(ui.editor.id)) return viewPresetEditor(ui.editor.id);
@@ -2706,6 +3650,7 @@ var App = (function () {
     if (sessionLive()) {
       out += '<div class="banner" role="status"><span class="mono">SESSION LIVE</span>Session is live (' + esc(sessionTimes().start) + '–' + esc(sessionTimes().end) + '). Rule changes that loosen your limits apply tomorrow at ' + esc(s.resetHour) + '.</div>';
     }
+    out += runSettings(); // v3
     // 1. Checklists
     out += '<div class="sec-title">Checklists</div><div class="card list-card">' +
       [['premarket', 'Premarket'], ['trade', 'Trade'], ['sessionOver', 'Session over']].map(function (l) {
@@ -3032,7 +3977,7 @@ var App = (function () {
     return state.settings.checkins.times.filter(function (t) { return /^\d{2}:\d{2}/.test(t.time || ''); })
       .slice().sort(function (a, b) { return relMin(hmToMin(a.time), reset) - relMin(hmToMin(b.time), reset); });
   }
-  function checkinsActive() { return !!(device && device.checkinsHere); }
+  function checkinsActive() { return !!(device && device.checkinsHere) && (!isRun() || !!(state.settings.run && state.settings.run.checkins)); }
   // Pure: which scheduled check-in is due at `now` for this day record (or null).
   function dueCheckinFor(times, day, now, resetHour) {
     if (day && day.dayClosed) return null;
@@ -3239,8 +4184,9 @@ var App = (function () {
     var undo = ui.pipUndo && ui.pipUndo.until > Date.now() ? '<div class="pw-undo"><span>' + esc(ui.pipUndo.msg) + '</span><button type="button" data-act="pip-undo">UNDO</button></div>' : '';
     if (mode === 'home') {
       var hsn = homeNow(now);
-      var lockd = homeLocked(hsn.state) || hsn.state === 'done';
-      return '<div class="pw pw-home" data-s="' + (HOME_BAND[hsn.state] || 'wait') + '">' + undo +
+      var rsp = isRun() ? runNow(now) : null; // v3: the run sheet in the window too
+      var lockd = rsp ? !!RUN_LOCKED[rsp.stage] : (homeLocked(hsn.state) || hsn.state === 'done');
+      return '<div class="pw pw-home" data-s="' + (rsp ? RUN_BAND[rsp.stage] || 'wait' : HOME_BAND[hsn.state] || 'wait') + '">' + undo +
         '<div class="pw-body">' + viewHome(hsn) + '</div>' + (lockd ? '' : pipCheckinLine(now)) + '</div>';
     }
     var out = '<div class="pw' + cls + '"><div class="pw-head"><span class="dot"></span><b>CHECKPOINT</b><span>ALWAYS ON TOP</span></div>' + undo;
@@ -3974,6 +4920,156 @@ var App = (function () {
     return out + '</div>';
   }
 
+  /* ==== VIEW: run settings ==== */
+  // v3. Settings → Run sheet & calm: home view, the run-sheet editor, the calm words, the sound.
+  // Also the Entered flow (setup picker + flags) and the card paste flow, which open modals.
+  function runSettings() {
+    var s = state.settings, a = s.audio || {};
+    var out = '<div class="sec-title">Run sheet &amp; calm</div><div class="card">' +
+      '<div class="field"><span class="lbl">Home view</span><div class="seg" role="group" aria-label="Home view">' +
+      [['run', 'Run sheet (v3)'], ['classic', 'Classic (v2)']].map(function (o) {
+        return '<button type="button" data-act="home-view" data-v="' + o[0] + '" aria-pressed="' + (s.homeView === o[0]) + '">' + o[1] + '</button>';
+      }).join('') + '</div><span class="hint">Classic brings back the v2 home exactly as it was.</span></div>';
+    if (s.homeView === 'run') {
+      out += '<button type="button" class="list-row" data-act="open-runsheet"><span>Run sheet<br><small>' + s.runSheet.length + ' steps</small></span><span class="muted" aria-hidden="true">›</span></button>' +
+        '<button type="button" class="list-row" data-act="open-calm"><span>Calm words<br><small>' + calmLines('intrade').length + ' in trade · ' + calmLines('red').length + ' red · ' + calmLines('green').length + ' green · every ' + esc(s.calm.everySec) + ' s</small></span><span class="muted" aria-hidden="true">›</span></button>' +
+        '<div class="field"><div class="inline"><label for="f-dr">Day done at +R</label><input id="f-dr" class="num-sm" type="number" inputmode="decimal" min="0.5" max="20" step="0.5" value="' + esc(s.rules.doneR) + '" data-change="rule-dec" data-key="doneR"></div>' + pendingRow('rules.doneR') + '</div>' +
+        '<div class="field"><div class="inline"><label for="f-hc">Hard cap (ideas)</label><input id="f-hc" class="num-sm" type="number" inputmode="numeric" min="1" max="20" step="1" value="' + esc(s.rules.hardCap) + '" data-change="rule-int" data-key="hardCap"></div><span class="hint">Never a lock: entries past the cap are flagged.</span>' + pendingRow('rules.hardCap') + '</div>' +
+        '<div class="field"><div class="inline"><label for="f-em">Event window (± minutes)</label><input id="f-em" class="num-sm" type="number" inputmode="numeric" min="0" max="30" step="1" value="' + esc(s.rules.eventMin) + '" data-change="rule-int" data-key="eventMin"></div></div>' +
+        '<div class="field">' + sw(s.run.checkins, 'run-checkins', 'run-checkins', 'Check-in cards in run mode (Google Home covers them)') + '</div>' +
+        '<div class="field">' + sw(a.noise, 'audio-switch', 'noise', 'Soft noise in trade') +
+        '<div class="seg" role="group" aria-label="Noise type" style="margin-top:8px">' + [['pink', 'Pink'], ['brown', 'Brown']].map(function (o) {
+          return '<button type="button" data-act="audio-type" data-v="' + o[0] + '" aria-pressed="' + (a.noiseType === o[0]) + '">' + o[1] + '</button>';
+        }).join('') + '</div>' +
+        '<label class="lbl" for="f-nv" style="margin-top:8px">Noise volume</label><input id="f-nv" type="range" min="0.05" max="1" step="0.05" value="' + esc(a.noiseVol) + '" data-change="audio-vol" data-key="noiseVol">' +
+        '<button type="button" class="textbtn" data-act="audio-test" data-v="noise">Play 6 s</button></div>' +
+        '<div class="field">' + sw(a.breath, 'audio-switch', 'breath', 'Breath tone in cooldowns (in 4, out 6)') +
+        '<label class="lbl" for="f-bv" style="margin-top:8px">Breath tone volume</label><input id="f-bv" type="range" min="0.05" max="1" step="0.05" value="' + esc(a.breathVol) + '" data-change="audio-vol" data-key="breathVol">' +
+        '<button type="button" class="textbtn" data-act="audio-test" data-v="breath">Play 6 s</button>' +
+        '<span class="hint">Keep it low enough to hear your platform. iPad and iPhone play sound only after a tap on the page.</span></div>';
+    }
+    return out + '</div>';
+  }
+  function viewRunSheetEditor() {
+    var out = '<header class="editor-head"><button type="button" class="icon-btn" data-act="editor-back" aria-label="Back to settings">←</button><h1>Run sheet</h1><span class="saved">SAVED</span></header>' +
+      '<p class="muted" style="margin:0;font-size:14px">Times in New York time move with US daylight saving by themselves. A step with no time sits after the window closes. Kinds: <b>task</b> lands by itself · <b>inventory</b> shows the gate boxes · <b>build</b> shows the locks, Paste card and Built.</p>';
+    out += state.settings.runSheet.map(function (st) {
+      var id = esc(st.id);
+      return '<div class="card stack rs-ed"><div class="row" style="gap:8px;flex-wrap:wrap">' +
+        '<input type="time" aria-label="Time" value="' + esc(st.at) + '" data-change="rs-field" data-id="' + id + '" data-field="at">' +
+        '<select aria-label="Time zone" data-change="rs-field" data-id="' + id + '" data-field="tz">' + [['America/New_York', 'ET'], ['local', 'here']].map(function (o) {
+          return '<option value="' + o[0] + '"' + ((st.tz || 'local') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+        }).join('') + '</select>' +
+        '<select aria-label="Kind" data-change="rs-field" data-id="' + id + '" data-field="kind">' + RUN_KINDS.map(function (k) {
+          return '<option value="' + k + '"' + (st.kind === k ? ' selected' : '') + '>' + k + '</option>';
+        }).join('') + '</select>' +
+        '<button type="button" class="icon-btn" data-act="rs-del" data-id="' + id + '" aria-label="Delete ' + esc(st.title) + '">×</button></div>' +
+        '<input type="text" aria-label="Title" value="' + esc(st.title) + '" data-change="rs-field" data-id="' + id + '" data-field="title">' +
+        '<input type="text" aria-label="Line under the title" placeholder="line under the title" value="' + esc(st.sub) + '" data-change="rs-field" data-id="' + id + '" data-field="sub"></div>';
+    }).join('');
+    return out + '<button type="button" class="add-btn" data-act="rs-add">+ ADD STEP</button><button type="button" class="textbtn" data-act="rs-reset">Reset to the default steps</button>';
+  }
+  function viewCalmEditor() {
+    var c = state.settings.calm;
+    var out = '<header class="editor-head"><button type="button" class="icon-btn" data-act="editor-back" aria-label="Back to settings">←</button><h1>Calm words</h1><span class="saved">SAVED</span></header>' +
+      '<div class="field"><div class="inline"><label for="f-ce">New line every (seconds)</label><input id="f-ce" class="num-sm" type="number" inputmode="numeric" min="3" max="120" step="1" value="' + esc(c.everySec) + '" data-change="calm-every"></div></div>' +
+      '<p class="muted" style="margin:0;font-size:14px">One line per row. Shown shuffled: every line once before any repeats.</p>';
+    [['intrade', 'In trade'], ['red', 'Red cooldown (after Stopped)'], ['green', 'Green cooldown (after Target)']].forEach(function (x) {
+      out += '<div class="field"><label for="calm-' + x[0] + '">' + x[1] + ' · ' + calmLines(x[0]).length + ' lines</label>' +
+        '<textarea id="calm-' + x[0] + '" rows="10" data-change="calm-set" data-set="' + x[0] + '">' + esc((c[x[0]] || []).join('\n')) + '</textarea>' +
+        '<button type="button" class="textbtn" data-act="calm-reset" data-set="' + x[0] + '">Back to the default lines</button></div>';
+    });
+    return out;
+  }
+  // Entered: which setup (when there's a card), and what this entry will be flagged for. Never refused.
+  function runEnterFlow() {
+    var now = new Date(), key = todayKey(now), day = getDay(key);
+    var flags = flagReasonsFor(state, day, now);
+    var c = latestCard(day);
+    var warn = flags.length ? '<p class="run-flag">This entry will be flagged: <b>' + esc(flags.map(function (f) { return f.text; }).join(' · ')) + '</b></p>' : '';
+    if (c && c.parsed.setups.length) {
+      openModal({
+        title: 'Entered · which setup?',
+        html: warn,
+        actions: c.parsed.setups.map(function (su) {
+          return { label: su.label + (su.zone && su.zone !== '—' ? ' · ' + su.zone : ''), cls: '', fn: function () { doEnter(su, flags); } };
+        }).concat([{ label: 'Not on the card', cls: 'lock-o', fn: function () { doEnter(null, flags.concat([{ k: 'off_card', text: FLAG_TEXT.off_card }])); } },
+          { label: 'Cancel', cls: 'ghost' }])
+      });
+      return;
+    }
+    if (flags.length) {
+      openModal({ title: 'Enter anyway?', html: warn, actions: [{ label: 'Entered', cls: 'primary', fn: function () { doEnter(null, flags); } }, { label: 'Cancel', cls: 'ghost' }] });
+      return;
+    }
+    doEnter(null, flags);
+  }
+  function doEnter(su, flags) {
+    var key = todayKey(), day = getDay(key);
+    var ac = state.activeCooldown;
+    if (ac && !ac.finished) { recordCooldown(ac, true); state.activeCooldown = null; releaseWakeLock(); }
+    var id = uid();
+    day.entered = true;
+    day.enteredAt = new Date().toISOString();
+    day.enteredSetup = su ? su.id : null;
+    day.enteredCard = su ? { id: su.id, label: su.label, zone: su.zone || '', sl: su.sl || '', t1: su.t1 || '', t2: su.t2 || '', rr: su.rr || '', rrNum: su.rrNum } : null;
+    day.enterId = id;
+    day.looking = null;
+    logEvent('enter', su ? su.id : 'off-card', key);
+    flags.forEach(function (f) { logEvent('flag:' + f.k, id, key); });
+    vibrate(60);
+    unlockAudio();
+    saveNow();
+    ui.tab = 'home';
+    render();
+    window.scrollTo(0, 0);
+    toast('Entered' + (flags.length ? ' · flagged' : ''), { label: 'UNDO', fn: function () {
+      var d = getDay(key);
+      if (!d.entered || d.enterId !== id) { toast('Too late to undo'); return; }
+      d.entered = false; d.enteredAt = null; d.enteredSetup = null; d.enteredCard = null; d.enterId = null;
+      logEvent('undo', 'enter:' + id, key);
+      saveNow(); render();
+    } }, UNDO_MS);
+  }
+  function runPasteFlow() {
+    function use(text) {
+      var key = todayKey(), day = getDay(key);
+      var p = parseCard(text);
+      if (!p.ok) { openModal({ title: 'Card not pasted', html: '<p>' + esc(p.err) + '</p>', actions: [{ label: 'OK', cls: 'ghost' }] }); return; }
+      function go() {
+        addCard(day, text, new Date());
+        logEvent(p.kind === 'recut' ? 'card_recut' : 'card_paste', p.at || '', key);
+        if (!day.builtAt) { day.builtAt = new Date().toISOString(); logEvent('built', 'card', key); }
+        saveNow(); render();
+        toast('Card ' + (p.kind === 'recut' ? 're-cut ' : 'built ') + (p.at || '') + ' · ' + p.setups.length + ' setups');
+      }
+      if (p.date && p.date !== key) confirmModal('This card is dated ' + p.date, 'Today is ' + key + '. Use it anyway?', 'Use it', go);
+      else go();
+    }
+    function manual() {
+      var ta = null;
+      openModal({
+        title: 'Paste the Checkpoint card',
+        html: '<p>Paste the whole CHECKPOINT CARD block from the Trading chat.</p><textarea id="card-ta" aria-label="Checkpoint card" rows="8"></textarea>',
+        onOpen: function (m) { ta = m.querySelector('#card-ta'); if (ta) ta.focus(); },
+        actions: [{ label: 'Use this card', cls: 'primary', fn: function () { use(ta ? ta.value : ''); } }, { label: 'Cancel', cls: 'ghost' }]
+      });
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        var settled = false; // a clipboard prompt that never answers falls back to the paste box after 1.5 s
+        var fb = setTimeout(function () { if (!settled) { settled = true; manual(); } }, 1500);
+        navigator.clipboard.readText().then(function (t) {
+          if (settled) return;
+          settled = true; clearTimeout(fb);
+          if (/^\s*(```\s*)?(CHECKPOINT CARD\s*)?CP1\b/i.test(t || '')) use(t); else manual();
+        }, function () { if (settled) return; settled = true; clearTimeout(fb); manual(); });
+        return;
+      }
+    } catch (e) { /* fall through */ }
+    manual();
+  }
+
   /* ==== EVENTS: actions ==== */
   var ACTIONS = {
     'go-tab': function (el) { setTab(el.getAttribute('data-tab')); },
@@ -4077,6 +5173,117 @@ var App = (function () {
       // A check-in answered Done · Red/Green Day: after its cooldown, show the session-over checklist.
       if ((ac.trigger === 'redDay' || ac.trigger === 'greenDay') && getDay(todayKey()).dayClosed) { setTab('home'); return; }
       render();
+    },
+    // v3 run sheet (spec v3 §2–§5)
+    'run-enter': function () { runEnterFlow(); },
+    'run-out': function (el) {
+      var o = el.getAttribute('data-o');
+      if (o === 'SL') { logTrade('SL'); return; }
+      var c = getDay(todayKey()).enteredCard;
+      var pref = Number(state.settings.rules.rrPreferred) || 2;
+      var opts = [1.5, 2];
+      if (c && c.rrNum && opts.indexOf(c.rrNum) < 0) opts.unshift(c.rrNum);
+      if (opts.indexOf(pref) < 0) opts.push(pref);
+      var inp = null;
+      openModal({
+        title: 'Target · what R did you take?',
+        html: '<p>One tap. It counts toward +' + esc(state.settings.rules.doneR || 3) + 'R for the day.</p>' +
+          '<label class="lbl" for="r-other">Other R</label><input id="r-other" type="number" inputmode="decimal" min="0.1" max="20" step="0.1" placeholder="e.g. 1.2">',
+        onOpen: function (m) { inp = m.querySelector('#r-other'); },
+        actions: opts.map(function (r) { return { label: r + 'R', cls: r === (c && c.rrNum) || (!c && r === pref) ? 'primary' : '', fn: function () { logTrade('TP', { r: r }); } }; })
+          .concat([{ label: 'Use the other R', cls: '', fn: function () { var v = Number(inp && inp.value); logTrade('TP', { r: isFinite(v) && v > 0 ? v : pref }); } },
+            { label: 'Cancel', cls: 'ghost' }])
+      });
+    },
+    'run-step': function (el) {
+      var day = getDay(todayKey()), id = el.getAttribute('data-id');
+      if (!isObj(day.steps)) day.steps = {};
+      if (day.steps[id]) delete day.steps[id];
+      else { day.steps[id] = new Date().toISOString(); logEvent('step_tick:' + id, (state.settings.runSheet.filter(function (x) { return x.id === id; })[0] || {}).title); }
+      save();
+      render();
+    },
+    'run-built': function () {
+      var day = getDay(todayKey());
+      day.builtAt = new Date().toISOString();
+      logEvent('built');
+      saveNow();
+      render();
+      toast('Built ' + clockOf(day.builtAt), { label: 'UNDO', fn: function () { getDay(todayKey()).builtAt = null; logEvent('undo', 'built'); saveNow(); render(); } }, UNDO_MS);
+    },
+    'run-paste': function () { runPasteFlow(); },
+    'run-lock': function () {
+      confirmModal('You moved the lock?', 'It is recorded and stays on the screen for the rest of tonight. The platform lock is the only hard stop you have.', 'Yes, I moved it', function () {
+        var day = getDay(todayKey());
+        day.lockMoved.push({ id: uid(), at: new Date().toISOString(), device: devId() });
+        logEvent('lock_moved');
+        saveNow();
+        render();
+      }, 'lock-o');
+    },
+    'run-close': function () {
+      var day = getDay(todayKey());
+      day.closedAt = new Date().toISOString();
+      if (!day.dayClosed) day.dayClosed = dayRFor(state, day) < 0 ? 'red' : 'green';
+      logEvent('night_closed');
+      saveNow();
+      render();
+      window.scrollTo(0, 0);
+    },
+    'run-reopen': function () {
+      var day = getDay(todayKey());
+      day.closedAt = null;
+      logEvent('undo', 'night_closed');
+      saveNow();
+      render();
+    },
+    'run-mute': function (el) {
+      var k = el.getAttribute('data-k');
+      ui.muted = ui.muted === k ? null : k;
+      if (ui.muted) logEvent('sound_mute');
+      render();
+    },
+    // v3 settings: home view, sound, calm words, the run sheet editor
+    'home-view': function (el) {
+      state.settings.homeView = el.getAttribute('data-v') === 'classic' ? 'classic' : 'run';
+      if (state.settings.homeView === 'run') migrateV3(state, true);
+      save(); render(); flashSaved();
+    },
+    'audio-switch': function (el) {
+      var k = el.getAttribute('data-key');
+      state.settings.audio[k] = !state.settings.audio[k];
+      save(); render(); flashSaved();
+    },
+    'audio-type': function (el) { state.settings.audio.noiseType = el.getAttribute('data-v'); save(); render(); flashSaved(); },
+    'audio-test': function (el) {
+      unlockAudio();
+      var mode = el.getAttribute('data-v');
+      if (snd.mode) stopSound();
+      if (startSound(mode)) { snd.sig = 'test'; setTimeout(function () { if (snd.sig === 'test') stopSound(); }, 6000); toast('Playing for 6 seconds'); }
+      else toast('Sound is blocked until you tap the page once.');
+    },
+    'run-checkins': function () { state.settings.run.checkins = !state.settings.run.checkins; save(); render(); flashSaved(); },
+    'open-runsheet': function () { ui.editor = { type: 'runsheet' }; render(); window.scrollTo(0, 0); },
+    'open-calm': function () { ui.editor = { type: 'calm' }; render(); window.scrollTo(0, 0); },
+    'rs-add': function () {
+      state.settings.runSheet.push({ id: uid(), at: '', tz: 'America/New_York', kind: 'step', title: 'New step', sub: '' });
+      save(); render(); flashSaved();
+    },
+    'rs-del': function (el) {
+      var id = el.getAttribute('data-id');
+      state.settings.runSheet = state.settings.runSheet.filter(function (x) { return x.id !== id; });
+      save(); render(); flashSaved();
+    },
+    'rs-reset': function () {
+      confirmModal('Reset the run sheet?', 'The steps go back to the default list from the Trading project (11 Oct). Tonight\'s ticks on old steps are kept in the log.', 'Reset the steps', function () {
+        state.settings.runSheet = defaultRunSheet(); save(); render(); flashSaved();
+      });
+    },
+    'calm-reset': function (el) {
+      var set = el.getAttribute('data-set');
+      state.settings.calm[set] = CALM_DEFAULT[set].slice();
+      calm.set = '';
+      save(); render(); flashSaved();
     },
     // v2 home (Part B)
     'home-look': function () {
@@ -4393,6 +5600,35 @@ var App = (function () {
     },
     'text-setting': function (el) { setPath(state, el.getAttribute('data-path'), el.value); save(); flashSaved(); },
     // v2 settings (spec §8)
+    // v3 settings
+    'rs-field': function (el) {
+      var st = state.settings.runSheet.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+      if (!st) return;
+      var f = el.getAttribute('data-field'), v = el.value;
+      if (f === 'at' && v && !/^\d{2}:\d{2}$/.test(v)) return;
+      if (f === 'kind' && RUN_KINDS.indexOf(v) < 0) return;
+      st[f] = v;
+      save(); flashSaved();
+      if (f === 'kind' || f === 'tz') render();
+    },
+    'calm-every': function (el) {
+      var v = Math.round(Number(el.value));
+      if (!isFinite(v) || v < 3) { render(); return; }
+      state.settings.calm.everySec = Math.min(120, v);
+      save(); flashSaved();
+    },
+    'calm-set': function (el) {
+      var set = el.getAttribute('data-set');
+      state.settings.calm[set] = String(el.value || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+      calm.set = '';
+      save(); flashSaved();
+    },
+    'audio-vol': function (el) {
+      var v = Number(el.value);
+      if (!isFinite(v)) return;
+      state.settings.audio[el.getAttribute('data-key')] = Math.max(0.05, Math.min(1, v));
+      save(); flashSaved();
+    },
     'rule-int': function (el) {
       var k = el.getAttribute('data-key');
       var v = Math.round(Number(el.value));
@@ -4404,7 +5640,8 @@ var App = (function () {
       var k = el.getAttribute('data-key');
       var v = Math.round(Number(el.value) * 10) / 10;
       if (el.value === '' || !isFinite(v) || v <= 0) { render(); return; }
-      changeSetting('rules.' + k, 'settings.rules.' + k, v, '1:' + state.settings.rules[k], '1:' + v);
+      if (k === 'doneR') changeSetting('rules.' + k, 'settings.rules.' + k, v, '+' + state.settings.rules[k] + 'R', '+' + v + 'R');
+      else changeSetting('rules.' + k, 'settings.rules.' + k, v, '1:' + state.settings.rules[k], '1:' + v);
       render();
     },
     'rule-cap': function (el) {
@@ -4608,11 +5845,21 @@ var App = (function () {
     checkinTick();
     // v2 home: re-render when the day moves to another state (or the early window ends); else update in place.
     var hs = homeNow();
-    if (homeSig(hs) !== ui.homeSig && !ui.holding && !drag) {
-      if (ui.tab === 'home' || homeLocked(hs.state)) render();
-      else { ui.homeSig = homeSig(hs); applyChrome(); }
+    if (homeSig(hs) !== ui.homeSig && !ui.holding && !drag && !$('#modal-root .modal')) {
+      if (ui.tab === 'home' || shellLocked(hs)) render();
+      else {
+        ui.homeSig = homeSig(hs);
+        applyChrome();
+        var oldStrip = isRun() && $('#view .strip'); // v3: keep the page, refresh only its "you are here" line
+        if (oldStrip) oldStrip.outerHTML = runStrip(runNow(hs.now), true);
+      }
     }
-    tickHomeDom();
+    if (isRun()) {
+      var rsx = runNow(hs.now);
+      if (ui.tab === 'home') tickRunDom(document, rsx);
+      else { var sc = $('[data-run-clock]'); if (sc && sc.textContent !== fmtClock(hs.now)) sc.textContent = fmtClock(hs.now); }
+      soundTick(rsx);
+    } else tickHomeDom();
     pipRender();
     var t = Date.now();
     if (t - lastSlow >= 20000) {
@@ -4701,6 +5948,21 @@ var App = (function () {
     signedIn: signedIn,
     WORD_LOOP: WORD_LOOP,
     HOME_STATES: HOME_STATES,
+    // v3
+    stageFor: stageFor,
+    flagReasonsFor: flagReasonsFor,
+    flagsTonight: flagsTonight,
+    runDoneFor: runDoneFor,
+    dayRFor: dayRFor,
+    runStepsFor: runStepsFor,
+    parseCard: parseCard,
+    addCard: addCard,
+    shuffleBag: shuffleBag,
+    soundFor: soundFor,
+    CALM_DEFAULT: CALM_DEFAULT,
+    defaultRunSheet: defaultRunSheet,
+    runNow: function () { return runNow(); },
+    isRun: function () { return isRun(); },
     homeNow: function () { return homeNow(); },
     go: function (tab) { setTab(tab); },
     get state() { return state; },

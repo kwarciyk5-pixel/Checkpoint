@@ -10,7 +10,7 @@ const assert = require('assert');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
 assert.strictEqual(scripts.length, 1, 'index.html must have exactly one inline <script>');
-const sandbox = { console };
+const sandbox = { console, __CP_HOME_VIEW: 'classic' }; // v3: the v2 (classic) rules and home
 vm.createContext(sandbox);
 vm.runInContext(scripts[0][1], sandbox);
 const App = sandbox.App;
@@ -48,10 +48,10 @@ test('session over: 3 items (v2 close-out: accounts locked · charts closed · a
 });
 
 test('5 presets and every presetLinks id exists', () => {
-  assert.strictEqual(d.presets.length, 5);
+  assert.strictEqual(d.presets.length, 6); // v3 adds After target
   const ids = new Set(d.presets.map(p => p.id));
   const links = d.settings.presetLinks;
-  assert.deepStrictEqual(Object.keys(links).sort(), ['greenDay', 'notGood', 'redDay', 'sl', 'urge']);
+  assert.deepStrictEqual(Object.keys(links).sort(), ['greenDay', 'notGood', 'redDay', 'sl', 'tp', 'urge']); // v3 adds tp (After target)
   Object.values(links).forEach(id => assert.ok(ids.has(id), 'link id ' + id + ' exists'));
   const byId = Object.fromEntries(d.presets.map(p => [p.id, p.name]));
   assert.strictEqual(byId[links.sl], 'After SL');

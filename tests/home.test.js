@@ -8,7 +8,7 @@ const vm = require('vm');
 const assert = require('assert');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const sandbox = { console };
+const sandbox = { console, __CP_HOME_VIEW: 'classic' }; // v3: the v2 (classic) rules and home
 vm.createContext(sandbox);
 vm.runInContext([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1], sandbox);
 const App = sandbox.App;

@@ -33,6 +33,7 @@ async function routeFonts(ctx) {
   const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || '/opt/pw-browsers/chromium' });
   const errors = [];
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true });
+  await ctx.addInitScript(() => { window.__CP_HOME_VIEW = 'classic'; }); // v3: these tests cover the v2 (classic) home
   await routeFonts(ctx);
   const page = await ctx.newPage();
   page.on('console', m => { if (m.type() === 'error' && !/fonts\.g/.test(m.location().url || '')) errors.push(m.text()); });
