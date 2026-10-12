@@ -69,7 +69,7 @@
 
 | File | Purpose |
 |---|---|
-| `sw.js` | Service worker. Cache `checkpoint-v12` (on activate it deletes only old `checkpoint-*` caches, never other apps' caches on the same site): network-first for the page, cache-first for icons/manifest, runtime cache for Google Fonts |
+| `sw.js` | Service worker. Cache `checkpoint-v13` (on activate it deletes only old `checkpoint-*` caches, never other apps' caches on the same site): network-first for the page, cache-first for icons/manifest, runtime cache for Google Fonts |
 | `supabase/cp_schema.sql` | Part F: the `cp_` tables (profiles, days, events, filled) with row-level security, for the shared `iris-apps` project. Additive; applied only on Iris's go |
 | `manifest.webmanifest` | PWA manifest (relative paths, works under `/Checkpoint/`). Part G: Paper colours (`#F4EFE6`) |
 | `icons/` | App icons, Paper (cream, ink ring, green check; Part G). Regenerate with `python3 tests/make_icons.py` (needs Pillow) |

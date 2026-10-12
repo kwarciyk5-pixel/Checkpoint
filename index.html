@@ -567,6 +567,17 @@ body[data-nav="hidden"] .run{min-height:calc(100dvh - var(--bandh) - env(safe-ar
 .run .so-row:last-child{border-bottom:0}
 .run .badges{justify-content:center}
 .rs-ed input[type="text"]{width:100%}
+.enter2{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.enter2 .btn{min-height:68px;font-size:18px}
+.ckf{display:flex;flex-direction:column;gap:10px}
+.ckf-su{display:flex;flex-wrap:wrap;gap:8px}
+details.sec{border:1px solid var(--line);border-radius:4px;margin-top:10px}
+details.sec>summary{list-style:none;cursor:pointer;min-height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:16px;font-weight:500;color:var(--ink)}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:'+';font-size:20px;color:var(--muted)}
+details.sec[open]>summary::after{content:'−'}
+details.sec .sec-body{padding:0 10px 12px;display:flex;flex-direction:column;gap:8px}
+details.sec .sec-body>.card{border:0;padding:4px}
 .outcome3{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:10px}
 .outcome3 .btn{min-height:64px;font-size:16px;padding:0 8px}
 .trades{display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:8px}
@@ -784,7 +795,7 @@ var App = (function () {
         // v3 (spec v3 §3, §6): the run sheet, the calm words and the calming sound
         runSheet: defaultRunSheet(),
         calm: { everySec: 10, intrade: CALM_DEFAULT.intrade.slice(), red: CALM_DEFAULT.red.slice(), green: CALM_DEFAULT.green.slice() },
-        audio: { noise: true, noiseType: 'pink', noiseVol: 0.25, breath: true, breathVol: 0.3 },
+        audio: { trade: 'bowl', cool: 'pad', vol: 0.3 }, // v3.2: no noise
         run: { checkins: false },
         checkins: {
           question: 'How\'s it going?',
@@ -1007,6 +1018,16 @@ var App = (function () {
     if (firstV2) migrateV2(s);
     if (firstV2c) migrateV2C(s);
     if (firstV3) migrateV3(s, hadHome);
+    // v3.2 (Iris, 12 Oct): classic (v2) home removed from the app; only the test hook can still ask for it.
+    if (s.settings.homeView !== defaultHomeView()) { s.settings.homeView = defaultHomeView(); if (s.settings.homeView === 'run') migrateV3(s, true); }
+    // v3.2: soft noise removed; old sound keys → the new calm sounds.
+    var au = s.settings.audio;
+    if (isObj(au) && ('noise' in au || 'breath' in au)) {
+      au.trade = 'bowl';
+      au.cool = au.breath === false ? 'off' : 'pad';
+      if (!isFinite(Number(au.vol))) au.vol = Number(au.breathVol) || 0.3;
+      ['noise', 'noiseType', 'noiseVol', 'breath', 'breathVol'].forEach(function (k) { delete au[k]; });
+    }
     if (!Array.isArray(s.presets) || !s.presets.length) s.presets = defs.presets;
     Object.keys(s.settings.presetLinks).forEach(function (k) {
       if (!findPresetIn(s, s.settings.presetLinks[k])) s.settings.presetLinks[k] = s.presets[0].id;
@@ -2342,70 +2363,68 @@ var App = (function () {
     return { text: lines[calm.idx], n: calm.n };
   }
   // Sound: which sound this stage wants ('noise' | 'breath' | '').
+  // v3.2 (Iris, 12 Oct: no noise). Both sounds pace slow breathing at 6 breaths a minute (in 4 s, out 6 s),
+  // the resonance-breathing rate used in HRV biofeedback: 'bowl' = a soft singing-bowl tone at the start of
+  // each out-breath; 'pad' = a warm chord that swells on the in-breath and fades on the out-breath. Made in the page.
+  var SOUND_NAME = { bowl: 'singing bowl · breathe out on each tone', pad: 'warm pad · breathe with the swell' };
   function soundFor(stage, audio) {
     audio = audio || {};
-    if (stage === 'intrade') return audio.noise ? 'noise' : '';
-    if (stage === 'cool-red' || stage === 'cool-green') return audio.breath ? 'breath' : '';
-    return '';
+    var m = stage === 'intrade' ? audio.trade : (stage === 'cool-red' || stage === 'cool-green') ? audio.cool : '';
+    return m === 'bowl' || m === 'pad' ? m : '';
   }
-  var snd = { mode: '', src: null, osc: null, gain: null, until: 0, sig: '' };
-  function noiseBuffer(type) {
-    var len = actx.sampleRate * 4, buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
-    var b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, last = 0;
-    for (var i = 0; i < len; i++) {
-      var w = Math.random() * 2 - 1;
-      if (type === 'brown') { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
-      else {
-        b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.96900 * b2 + w * 0.1538520;
-        b3 = 0.86650 * b3 + w * 0.3104856; b4 = 0.55000 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.0168980;
-        d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
-      }
-    }
-    return buf;
-  }
+  var snd = { mode: '', nodes: [], gain: null, until: 0, sig: '' };
+  function soundVol() { return Math.max(0.02, Math.min(1, Number((state.settings.audio || {}).vol) || 0.3)); }
   function stopSound() {
-    if (!actx || !snd.gain) { snd.mode = ''; return; }
-    var t = actx.currentTime, g = snd.gain, src = snd.src, osc = snd.osc;
-    try { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t); g.gain.linearRampToValueAtTime(0.0001, t + 1.5); } catch (e) { /* ignore */ }
-    setTimeout(function () { try { if (src) src.stop(); if (osc) osc.stop(); g.disconnect(); } catch (e) { /* ignore */ } }, 1700);
-    snd = { mode: '', src: null, osc: null, gain: null, until: 0, sig: '' };
+    if (!actx || !snd.gain) { snd = { mode: '', nodes: [], gain: null, until: 0, sig: '' }; return; }
+    var t = actx.currentTime, g = snd.gain, nodes = snd.nodes;
+    try { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t); g.gain.linearRampToValueAtTime(0.0001, t + 1.2); } catch (e) { /* ignore */ }
+    setTimeout(function () { nodes.forEach(function (n) { try { n.stop(); } catch (e) { /* ignore */ } }); try { g.disconnect(); } catch (e) { /* ignore */ } }, 1400);
+    snd = { mode: '', nodes: [], gain: null, until: 0, sig: '' };
   }
   function startSound(mode) {
     unlockAudio();
     if (!actx || actx.state !== 'running') return false;
-    var a = state.settings.audio || {}, t = actx.currentTime;
-    var g = actx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.connect(actx.destination);
-    snd = { mode: mode, src: null, osc: null, gain: g, until: t, sig: '' };
-    if (mode === 'noise') {
-      var src = actx.createBufferSource();
-      src.buffer = noiseBuffer(a.noiseType === 'brown' ? 'brown' : 'pink');
-      src.loop = true;
-      src.connect(g);
-      src.start(t);
-      g.gain.linearRampToValueAtTime(Math.max(0.0001, Math.min(1, Number(a.noiseVol) || 0.25)) * 0.6, t + 2);
-      snd.src = src;
-    } else {
-      var o = actx.createOscillator();
-      o.type = 'sine';
-      o.frequency.value = 196;
-      o.connect(g);
-      o.start(t);
-      snd.osc = o;
-      scheduleBreath();
+    var t = actx.currentTime;
+    var master = actx.createGain();
+    master.gain.setValueAtTime(mode === 'pad' ? 0.0001 : 1, t);
+    master.connect(actx.destination);
+    snd = { mode: mode, nodes: [], gain: master, until: t + 0.1, sig: '' };
+    if (mode === 'pad') {
+      var lp = actx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 900; lp.connect(master);
+      [146.83, 220, 293.66, 369.99].forEach(function (f, i) { // D major, soft
+        var o = actx.createOscillator();
+        o.type = i % 2 ? 'sine' : 'triangle';
+        o.frequency.value = f; o.detune.value = i % 2 ? 4 : -4;
+        var og = actx.createGain(); og.gain.value = 0.22 / (i + 1);
+        o.connect(og); og.connect(lp); o.start(t);
+        snd.nodes.push(o);
+      });
     }
+    scheduleSound();
     return true;
   }
-  // Breath tone: rises for 4 s, falls for 6 s, scheduled about 20 s ahead.
-  function scheduleBreath() {
-    if (!actx || !snd.gain || snd.mode !== 'breath') return;
-    var vol = Math.max(0.0001, Math.min(1, Number((state.settings.audio || {}).breathVol) || 0.3)) * 0.25;
-    var t = Math.max(snd.until, actx.currentTime + 0.05);
+  function bowlStrike(t, vol) {
+    [[220, 1], [607, 0.35], [1188, 0.12]].forEach(function (p) {
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine'; o.frequency.value = p[0];
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol * 0.3 * p[1]), t + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 7.5);
+      o.connect(g); g.connect(snd.gain);
+      o.start(t); o.stop(t + 7.7);
+    });
+  }
+  // Schedules about 20 s ahead: one 10-second breath at a time.
+  function scheduleSound() {
+    if (!actx || !snd.gain || !snd.mode) return;
+    var vol = soundVol(), t = Math.max(snd.until, actx.currentTime + 0.05);
     while (t < actx.currentTime + 20) {
-      snd.gain.gain.setValueAtTime(0.0001, t);
-      snd.gain.gain.linearRampToValueAtTime(vol, t + 4);
-      snd.gain.gain.linearRampToValueAtTime(0.0001, t + 10);
+      if (snd.mode === 'pad') {
+        snd.gain.gain.setValueAtTime(0.0001, t);
+        snd.gain.gain.linearRampToValueAtTime(vol * 0.5, t + 4);
+        snd.gain.gain.linearRampToValueAtTime(0.0001, t + 10);
+      } else bowlStrike(t + 4, vol); // the tone marks the start of the out-breath
       t += 10;
     }
     snd.until = t;
@@ -2414,7 +2433,7 @@ var App = (function () {
     var stageKey = rs ? rs.stage + '|' + (rs.since || '') : '';
     var want = rs && ui.muted !== stageKey ? soundFor(rs.stage, state.settings.audio) : '';
     var sig = want + '|' + JSON.stringify(state.settings.audio || {});
-    if (want && snd.mode === want && snd.sig === sig) { if (want === 'breath') scheduleBreath(); return; }
+    if (want && snd.mode === want && snd.sig === sig) { scheduleSound(); return; }
     if (snd.mode) stopSound();
     if (want && startSound(want)) snd.sig = sig;
   }
@@ -2796,7 +2815,9 @@ var App = (function () {
     out += runTiles(rs) + planCard(rs) + practisingLine(day);
     out += tradesList(rs);
     var c = latestCard(day);
-    return out + '<div class="run-foot">' + enteredBtn(rs, 'primary') +
+    if (ui.tradeCk === rs.key) return runChecklistFirst(rs, out);
+    return out + '<div class="run-foot"><div class="enter2">' + enteredBtn(rs, 'primary').replace(/<p class="run-flag"[\s\S]*$/, '') +
+      '<button type="button" class="btn" data-act="run-ck-open">Checklist first</button></div>' + flagLine(flagReasonsFor(state, day, rs.now), 'One tap. Right now it would be flagged:') +
       '<div class="run-links">' + urgeNoteBtn() + '<button type="button" class="textbtn" data-act="run-lock">I moved the lock</button>' +
       (c ? '<button type="button" class="textbtn" data-act="run-paste">Paste re-cut card</button>' : '') + '</div></div>';
   }
@@ -2808,7 +2829,7 @@ var App = (function () {
     var every = Math.max(3, Number(state.settings.calm && state.settings.calm.everySec) || 10);
     return '<div class="calm' + (rs.stage === 'intrade' ? ' ring' : '') + '"><div class="wl" data-calm="' + l.n + '"><span class="on">' + esc(l.text) + '</span><span aria-hidden="true"></span></div></div>' +
       '<p class="run-sub calm-note"><span class="calm-info">' + calmLines(set).length + ' lines · shuffled · new line every ' + every + ' s</span>' +
-      (want ? '<span class="calm-info"> · </span>' + (want === 'noise' ? 'soft noise' : 'breath tone') + ' · <button type="button" class="linkbtn" data-act="run-mute" data-k="' + esc(stageKey) + '">' + (ui.muted === stageKey ? 'unmute' : 'mute') + '</button>' : '') + '</p>';
+      (want ? '<span class="calm-info"> · </span>' + SOUND_NAME[want] + ' · <button type="button" class="linkbtn" data-act="run-mute" data-k="' + esc(stageKey) + '">' + (ui.muted === stageKey ? 'unmute' : 'mute') + '</button>' : '') + '</p>';
   }
   function runInTrade(rs) {
     var day = rs.day || {}, c = day.enteredCard, r = state.settings.rules, w = sessionWindow(rs.key, state.settings);
@@ -2846,6 +2867,25 @@ var App = (function () {
       enteredBtnCompact(rs) + '</div>' + flagLine(flagReasonsFor(state, day, rs.now), 'Entering now is allowed and flagged:') + '</div>';
   }
   function enteredBtnCompact() { return '<button type="button" class="btn run-dashed run-enter" data-act="run-enter">In a trade</button>'; }
+  // v3.2: "Checklist first" — the old way: pick the setup and tick the checks, then In a trade. Nothing is required.
+  function runChecklistFirst(rs, above) {
+    var day = rs.day || {}, c = latestCard(day), sus = c ? c.parsed.setups : [], pick = ui.tradeCkSetup || '';
+    var ticks = day.tradeChecks || {};
+    var items = [];
+    state.checklists.trade.categories.forEach(function (cat) { cat.items.forEach(function (it) { items.push(it); }); });
+    var out = '<div class="ckf"><span class="eyebrow">Checklist first · nothing here is required</span>' +
+      '<div class="ckf-su">' + sus.concat([{ id: 'own', label: 'My own read' }]).map(function (su) {
+        return '<button type="button" class="pill" data-act="run-ck-setup" data-id="' + esc(su.id) + '" aria-pressed="' + (pick === su.id) + '">' + esc(su.label) + '</button>';
+      }).join('') + '</div>';
+    var su = sus.filter(function (x) { return x.id === pick; })[0];
+    if (su) out += suRow(su, true);
+    out += '<div class="stack">' + items.map(function (it) {
+      var on = !!ticks[it.id];
+      return '<button type="button" class="item" data-act="tr-toggle" data-id="' + esc(it.id) + '" aria-pressed="' + on + '">' + cbx(on) + '<span class="txt"><b>' + esc(it.text) + '</b>' + (it.note ? '<small>' + esc(it.note) + '</small>' : '') + '</span></button>';
+    }).join('') + '</div></div>';
+    return out + '<div class="run-foot"><div class="enter2">' + enteredBtn(rs, 'primary').replace(/<p class="run-flag"[\s\S]*$/, '') +
+      '<button type="button" class="btn" data-act="run-ck-close">Back</button></div>' + flagLine(flagReasonsFor(state, day, rs.now), 'Right now it would be flagged:') + '</div>';
+  }
   // Tonight's trades on the Trade tab, each with its details (fill in any time, or never).
   var OUT_NAME = { SL: 'Stopped', TP: 'Target', MANUAL: 'Out', SCRATCH: 'Scratch' };
   var FIT_NAME = { planned: 'as planned', adjusted: 'adjusted', off: 'not on the plan' };
@@ -3795,7 +3835,7 @@ var App = (function () {
       '<button type="button" class="btn danger-o" data-act="erase-all"' + (sessionLive() ? ' disabled' : '') + '>ERASE ALL DATA</button>' +
       '<p class="muted" style="margin:0;font-size:14px">Back to a fresh install. Only Checkpoint data is deleted; other apps on this site are not touched.</p></div>';
     out += syncSettings(); // v2 Part F
-    return out;
+    return isRun() ? foldSections(out) : out; // v3.2: folding sections
   }
   function pendingRowsForPreset(p) {
     return state.pending.filter(function (x) { return x.key.indexOf('preset.' + p.id + '.') === 0; })
@@ -4996,30 +5036,40 @@ var App = (function () {
   // Also the Entered flow (setup picker + flags) and the card paste flow, which open modals.
   function runSettings() {
     var s = state.settings, a = s.audio || {};
-    var out = '<div class="sec-title">Run sheet &amp; calm</div><div class="card">' +
-      '<div class="field"><span class="lbl">Home view</span><div class="seg" role="group" aria-label="Home view">' +
-      [['run', 'Run sheet (v3)'], ['classic', 'Classic (v2)']].map(function (o) {
-        return '<button type="button" data-act="home-view" data-v="' + o[0] + '" aria-pressed="' + (s.homeView === o[0]) + '">' + o[1] + '</button>';
-      }).join('') + '</div><span class="hint">Classic brings back the v2 home exactly as it was.</span></div>';
-    if (s.homeView === 'run') {
-      out += '<button type="button" class="list-row" data-act="open-runsheet"><span>Run sheet<br><small>' + s.runSheet.length + ' steps</small></span><span class="muted" aria-hidden="true">›</span></button>' +
-        '<button type="button" class="list-row" data-act="open-calm"><span>Calm words<br><small>' + calmLines('intrade').length + ' in trade · ' + calmLines('red').length + ' red · ' + calmLines('green').length + ' green · every ' + esc(s.calm.everySec) + ' s</small></span><span class="muted" aria-hidden="true">›</span></button>' +
-        '<div class="field"><div class="inline"><label for="f-dr">Day done at +R</label><input id="f-dr" class="num-sm" type="number" inputmode="decimal" min="0.5" max="20" step="0.5" value="' + esc(s.rules.doneR) + '" data-change="rule-dec" data-key="doneR"></div>' + pendingRow('rules.doneR') + '</div>' +
-        '<div class="field"><div class="inline"><label for="f-hc">Hard cap (ideas)</label><input id="f-hc" class="num-sm" type="number" inputmode="numeric" min="1" max="20" step="1" value="' + esc(s.rules.hardCap) + '" data-change="rule-int" data-key="hardCap"></div><span class="hint">Never a lock: entries past the cap are flagged.</span>' + pendingRow('rules.hardCap') + '</div>' +
-        '<div class="field"><div class="inline"><label for="f-em">Event window (± minutes)</label><input id="f-em" class="num-sm" type="number" inputmode="numeric" min="0" max="30" step="1" value="' + esc(s.rules.eventMin) + '" data-change="rule-int" data-key="eventMin"></div></div>' +
-        '<div class="field">' + sw(s.run.checkins, 'run-checkins', 'run-checkins', 'Check-in cards in run mode (Google Home covers them)') + '</div>' +
-        '<div class="field">' + sw(a.noise, 'audio-switch', 'noise', 'Soft noise in trade') +
-        '<div class="seg" role="group" aria-label="Noise type" style="margin-top:8px">' + [['pink', 'Pink'], ['brown', 'Brown']].map(function (o) {
-          return '<button type="button" data-act="audio-type" data-v="' + o[0] + '" aria-pressed="' + (a.noiseType === o[0]) + '">' + o[1] + '</button>';
-        }).join('') + '</div>' +
-        '<label class="lbl" for="f-nv" style="margin-top:8px">Noise volume</label><input id="f-nv" type="range" min="0.05" max="1" step="0.05" value="' + esc(a.noiseVol) + '" data-change="audio-vol" data-key="noiseVol">' +
-        '<button type="button" class="textbtn" data-act="audio-test" data-v="noise">Play 6 s</button></div>' +
-        '<div class="field">' + sw(a.breath, 'audio-switch', 'breath', 'Breath tone in cooldowns (in 4, out 6)') +
-        '<label class="lbl" for="f-bv" style="margin-top:8px">Breath tone volume</label><input id="f-bv" type="range" min="0.05" max="1" step="0.05" value="' + esc(a.breathVol) + '" data-change="audio-vol" data-key="breathVol">' +
-        '<button type="button" class="textbtn" data-act="audio-test" data-v="breath">Play 6 s</button>' +
-        '<span class="hint">Keep it low enough to hear your platform. iPad and iPhone play sound only after a tap on the page.</span></div>';
+    if (s.homeView !== 'run') return '';
+    function seg(key, cur) {
+      return '<div class="seg" role="group" aria-label="' + key + '">' + [['bowl', 'Singing bowl'], ['pad', 'Warm pad'], ['off', 'Off']].map(function (o) {
+        return '<button type="button" data-act="audio-pick" data-key="' + key + '" data-v="' + o[0] + '" aria-pressed="' + ((cur || 'off') === o[0]) + '">' + o[1] + '</button>';
+      }).join('') + '</div>';
     }
-    return out + '</div>';
+    var out = '<div class="sec-title">Run sheet &amp; calm words</div><div class="card">' +
+      '<button type="button" class="list-row" data-act="open-runsheet"><span>Run sheet<br><small>' + s.runSheet.length + ' steps</small></span><span class="muted" aria-hidden="true">›</span></button>' +
+      '<button type="button" class="list-row" data-act="open-calm"><span>Calm words<br><small>' + calmLines('intrade').length + ' in trade · ' + calmLines('red').length + ' red · ' + calmLines('green').length + ' green · every ' + esc(s.calm.everySec) + ' s</small></span><span class="muted" aria-hidden="true">›</span></button></div>';
+    out += '<div class="sec-title">Calm sound</div><div class="card">' +
+      '<p class="hint" style="margin:0 0 8px">Both sounds pace slow breathing at 6 breaths a minute (in 4, out 6). Singing bowl: a soft tone at the start of each out-breath. Warm pad: a chord that swells as you breathe in and fades as you breathe out.</p>' +
+      '<div class="field"><span class="lbl">In a trade</span>' + seg('trade', a.trade) + '</div>' +
+      '<div class="field"><span class="lbl">In cooldowns</span>' + seg('cool', a.cool) + '</div>' +
+      '<div class="field"><label class="lbl" for="f-vol">Volume</label><input id="f-vol" type="range" min="0.05" max="1" step="0.05" value="' + esc(a.vol) + '" data-change="audio-vol" data-key="vol">' +
+      '<div class="row" style="gap:4px"><button type="button" class="textbtn" data-act="audio-test" data-v="bowl">Play bowl</button><button type="button" class="textbtn" data-act="audio-test" data-v="pad">Play pad</button></div>' +
+      '<span class="hint">Keep it low enough to hear your platform. iPad and iPhone play sound only after a tap on the page.</span></div></div>';
+    out += '<div class="sec-title">Day rules</div><div class="card">' +
+      '<div class="field"><div class="inline"><label for="f-dr">Day done at +R</label><input id="f-dr" class="num-sm" type="number" inputmode="decimal" min="0.5" max="20" step="0.5" value="' + esc(s.rules.doneR) + '" data-change="rule-dec" data-key="doneR"></div>' + pendingRow('rules.doneR') + '</div>' +
+      '<div class="field"><div class="inline"><label for="f-hc">Hard cap (ideas)</label><input id="f-hc" class="num-sm" type="number" inputmode="numeric" min="1" max="20" step="1" value="' + esc(s.rules.hardCap) + '" data-change="rule-int" data-key="hardCap"></div><span class="hint">Never a lock: entries past the cap are flagged.</span>' + pendingRow('rules.hardCap') + '</div>' +
+      '<div class="field"><div class="inline"><label for="f-em">Event window (± minutes)</label><input id="f-em" class="num-sm" type="number" inputmode="numeric" min="0" max="30" step="1" value="' + esc(s.rules.eventMin) + '" data-change="rule-int" data-key="eventMin"></div></div>' +
+      '<div class="field">' + sw(s.run.checkins, 'run-checkins', 'run-checkins', 'Check-in cards (timed "How\'s it going?" pop-ups at 20:45 · 21:10 · 21:30; off because Google Home says them)') + '</div></div>';
+    return out;
+  }
+  // Settings page: every section folds; all closed at first, the open ones stay open while she edits.
+  function foldSections(html) {
+    var re = /<div class="sec-title">([\s\S]*?)<\/div>/g, parts = [], last = 0, m, titles = [];
+    while ((m = re.exec(html))) { parts.push(html.slice(last, m.index)); titles.push(m[1]); last = re.lastIndex; }
+    parts.push(html.slice(last));
+    var out = parts[0];
+    titles.forEach(function (t, i) {
+      var k = t.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
+      out += '<details class="sec" data-sec="' + esc(k) + '"' + (ui.secOpen && ui.secOpen[k] ? ' open' : '') + '><summary>' + t + '</summary><div class="sec-body">' + parts[i + 1] + '</div></details>';
+    });
+    return out;
   }
   function viewRunSheetEditor() {
     var out = '<header class="editor-head"><button type="button" class="icon-btn" data-act="editor-back" aria-label="Back to settings">←</button><h1>Run sheet</h1><span class="saved">SAVED</span></header>' +
@@ -5308,7 +5358,22 @@ var App = (function () {
       render();
     },
     // v3 run sheet (spec v3 §2–§5)
-    'run-enter': function () { var n = new Date(); doEnter(null, flagReasonsFor(state, getDay(todayKey(n)), n)); }, // one tap, never a question
+    'run-enter': function () { // one tap, never a question; from "Checklist first" the ticks and setup go into the trade's details
+      var n = new Date(), k = todayKey(n), d = getDay(k), su = null, ck = null;
+      if (ui.tradeCk === k) {
+        var c = latestCard(d);
+        su = c && ui.tradeCkSetup ? c.parsed.setups.filter(function (x) { return x.id === ui.tradeCkSetup; })[0] || null : null;
+        ck = { checks: clone(d.tradeChecks || {}), setup: ui.tradeCkSetup || '' };
+        if (su) ck.setupLabel = su.label;
+        d.tradeChecks = {};
+        ui.tradeCk = null; ui.tradeCkSetup = null;
+      }
+      doEnter(su, flagReasonsFor(state, d, n));
+      if (ck) { var d2 = getDay(k); d2.openDetails = Object.assign(d2.openDetails || {}, ck); saveNow(); render(); }
+    },
+    'run-ck-open': function () { ui.tradeCk = todayKey(); ui.tradeCkSetup = null; render(); window.scrollTo(0, 0); },
+    'run-ck-close': function () { ui.tradeCk = null; ui.tradeCkSetup = null; render(); },
+    'run-ck-setup': function (el) { var id = el.getAttribute('data-id'); ui.tradeCkSetup = ui.tradeCkSetup === id ? null : id; render(); },
     'run-out': function (el) {
       // One tap. R is an estimate she can correct in details: stop −1R, target = the setup's R:R (else the preferred), out 0R.
       var o = el.getAttribute('data-o'), day = getDay(todayKey());
@@ -5375,9 +5440,8 @@ var App = (function () {
       render();
     },
     // v3 settings: home view, sound, calm words, the run sheet editor
-    'home-view': function (el) {
-      state.settings.homeView = el.getAttribute('data-v') === 'classic' ? 'classic' : 'run';
-      if (state.settings.homeView === 'run') migrateV3(state, true);
+    'audio-pick': function (el) {
+      state.settings.audio[el.getAttribute('data-key')] = el.getAttribute('data-v');
       save(); render(); flashSaved();
     },
     'audio-switch': function (el) {
@@ -5390,7 +5454,7 @@ var App = (function () {
       unlockAudio();
       var mode = el.getAttribute('data-v');
       if (snd.mode) stopSound();
-      if (startSound(mode)) { snd.sig = 'test'; setTimeout(function () { if (snd.sig === 'test') stopSound(); }, 6000); toast('Playing for 6 seconds'); }
+      if (startSound(mode)) { snd.sig = 'test'; setTimeout(function () { if (snd.sig === 'test') stopSound(); }, 12000); toast('Playing one slow breath (12 s)'); }
       else toast('Sound is blocked until you tap the page once.');
     },
     'run-checkins': function () { state.settings.run.checkins = !state.settings.run.checkins; save(); render(); flashSaved(); },
@@ -5898,6 +5962,10 @@ var App = (function () {
       var fn = ACTIONS[el.getAttribute('data-act')];
       if (fn) fn(el, e);
     });
+    view.addEventListener('toggle', function (e) { // v3.2: remember which settings sections are open
+      var d = e.target;
+      if (d && d.classList && d.classList.contains('sec')) { ui.secOpen = ui.secOpen || {}; ui.secOpen[d.getAttribute('data-sec')] = d.open; }
+    }, true);
     view.addEventListener('change', function (e) {
       var el = e.target.closest('[data-change]');
       if (!el) return;

@@ -191,7 +191,7 @@ test('migration: v2 data becomes run mode; window end 10:40 → 10:30; After tar
   assert.strictEqual(again.presets.length, 6, 'runs once');
 });
 
-test('migration keeps an edited window end, and classic stays classic', () => {
+test('migration keeps an edited window end; classic (v2) is gone: old classic data becomes the run sheet', () => {
   const v2 = J(App.makeDefaults());
   delete v2.settings.homeView; delete v2.meta.v3;
   v2.settings.session.end = '10:15';
@@ -199,8 +199,8 @@ test('migration keeps an edited window end, and classic stays classic', () => {
   const c = J(App.makeDefaults());
   c.settings.homeView = 'classic'; c.settings.session.end = '10:40'; delete c.meta.v3;
   const s = App.normalise(c);
-  assert.strictEqual(s.settings.homeView, 'classic');
-  assert.strictEqual(s.settings.session.end, '10:40');
+  assert.strictEqual(s.settings.homeView, 'run');
+  assert.strictEqual(s.settings.session.end, '10:30');
 });
 
 test('points in run mode: an entry after done −50, a moved lock −50, a 3rd idea before done is not penalised', () => {

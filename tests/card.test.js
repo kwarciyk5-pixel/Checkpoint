@@ -91,14 +91,23 @@ test('calm words: 20 in trade, 18 red, 18 green; shuffle bag has every line once
   eq(J(App.shuffleBag(1, 0)), [0]);
 });
 
-test('sound: soft noise in trade, breath tone in both cooldowns, nothing elsewhere or when switched off', () => {
-  const a = { noise: true, breath: true };
-  assert.strictEqual(App.soundFor('intrade', a), 'noise');
-  assert.strictEqual(App.soundFor('cool-red', a), 'breath');
-  assert.strictEqual(App.soundFor('cool-green', a), 'breath');
+test('sound: singing bowl / warm pad / off, chosen for trade and cooldowns separately; no noise any more', () => {
+  const a = { trade: 'bowl', cool: 'pad' };
+  assert.strictEqual(App.soundFor('intrade', a), 'bowl');
+  assert.strictEqual(App.soundFor('cool-red', a), 'pad');
+  assert.strictEqual(App.soundFor('cool-green', a), 'pad');
   assert.strictEqual(App.soundFor('watching', a), '');
-  assert.strictEqual(App.soundFor('intrade', { noise: false }), '');
-  assert.strictEqual(App.soundFor('cool-red', { breath: false }), '');
+  assert.strictEqual(App.soundFor('intrade', { trade: 'off' }), '');
+  assert.strictEqual(App.soundFor('intrade', { noise: true }), '');
+});
+
+test('old sound settings (noise, breath tone) migrate to bowl in trade and pad in cooldowns', () => {
+  const d = J(App.makeDefaults());
+  d.settings.audio = { noise: true, noiseType: 'brown', noiseVol: 0.4, breath: true, breathVol: 0.5 };
+  eq(App.normalise(d).settings.audio, { trade: 'bowl', cool: 'pad', vol: 0.3 });
+  const e = J(App.makeDefaults());
+  e.settings.audio = { noise: true, breath: false };
+  assert.strictEqual(App.normalise(e).settings.audio.cool, 'off');
 });
 
 console.log(passed + ' card + calm tests passed');

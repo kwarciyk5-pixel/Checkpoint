@@ -246,35 +246,53 @@ async function routeFonts(ctx) {
   assert.ok(exp.flags.length >= 4);
   assert.strictEqual(exp.trades[0].details.setup, 'S1');
 
-  // Settings: run sheet & calm section, the two editors
+  // Settings: every section folded; open one, it stays open while she edits; no Home view (classic) switch
   await ev(() => App.go('settings'));
   await page.clock.runFor(300);
-  assert.ok(await page.locator('.sec-title', { hasText: 'Run sheet & calm' }).isVisible());
+  assert.ok((await page.locator('details.sec').count()) >= 8);
+  assert.strictEqual(await page.locator('details.sec[open]').count(), 0, 'all folded at first');
+  assert.strictEqual(await page.locator('[data-act="home-view"]').count(), 0, 'classic switch gone');
   await shot('run-settings');
+  await page.locator('details.sec[data-sec="Calm sound"] > summary').click();
+  await page.locator('[data-act="audio-pick"][data-key="trade"][data-v="pad"]').click();
+  await page.clock.runFor(300);
+  assert.ok(await page.locator('details.sec[data-sec="Calm sound"]').evaluate(d => d.open), 'stays open after a change');
+  assert.strictEqual(await ev(() => App.state.settings.audio.trade), 'pad');
+  await shot('run-settings-sound');
+  await page.locator('details.sec[data-sec="Run sheet & calm words"] > summary').click();
   await page.locator('[data-act="open-runsheet"]').click();
   assert.strictEqual(await page.locator('.rs-ed').count(), 11);
-  await shot('run-settings-runsheet');
   await page.locator('[data-act="editor-back"]').click();
   await page.locator('[data-act="open-calm"]').click();
   assert.strictEqual(await page.locator('#calm-intrade').inputValue().then(v => v.split('\n').length), 20);
-  await shot('run-settings-calm');
   await page.locator('[data-act="editor-back"]').click();
 
-  // Next day: the lock-moved link on Watching records it and shows it in the strip's flags
+  // Next day: "Checklist first" — setup + ticks, then In a trade; they land in the trade's details
   await to(at(13, 20, 50));
   await ev(() => App.go('trade'));
   await page.clock.runFor(300);
   assert.strictEqual(await stage(), 'watching');
+  await page.locator('[data-act="run-ck-open"]').click();
+  await page.locator('[data-act="run-ck-setup"]', { hasText: 'My own read' }).click();
+  await page.locator('.ckf .item').nth(0).click();
+  await page.locator('.ckf .item').nth(2).click();
+  await shot('run-checklist-first');
+  await page.locator('.run-enter').click();
+  await page.clock.runFor(300);
+  assert.strictEqual(await stage(), 'intrade');
+  const od = await ev(() => App.state.days['2026-10-13'].openDetails);
+  assert.strictEqual(od.setup, 'own');
+  assert.strictEqual(Object.keys(od.checks).length, 2);
+  assert.strictEqual(await page.locator('.calm-note', { hasText: 'warm pad' }).count(), 1);
+  await page.locator('[data-act="run-out"][data-o="OUT"]').click();
+  await page.clock.runFor(300);
+
+  // The lock-moved link on Ready records it and shows it in the flags
+  await to(at(13, 21, 0));
   await page.locator('[data-act="run-lock"]').click();
   await modalBtn('Yes, I moved it').click();
   await page.clock.runFor(300);
   assert.ok(await page.locator('.run-flag', { hasText: 'the lock moved tonight' }).isVisible());
-
-  // Classic switch brings the v2 home back exactly
-  await ev(() => { App.state.settings.homeView = 'classic'; App.go('home'); });
-  await page.clock.runFor(300);
-  assert.ok(await page.locator('#view .home').isVisible());
-  assert.strictEqual(await page.locator('#view .run').count(), 0);
 
   await browser.close();
   assert.deepStrictEqual(errors, [], 'console errors: ' + errors.join(' | '));
