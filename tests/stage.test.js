@@ -71,13 +71,13 @@ test('watching: early window named in the why until 20:45, then the window end',
   assert.strictEqual(r.why, 'Built 20:24 · window open until 21:30');
 });
 
-test('in trade says which setup and when she tapped Entered; off-card says so', () => {
+test('in trade says when she tapped In a trade, and the setup once she adds it', () => {
   const s = fresh(), d = newDay();
   d.entered = true; d.enteredAt = at(12, 20, 52).toISOString();
   d.enteredCard = { id: 'S1', label: 'S1 long' };
-  assert.strictEqual(st(s, d, at(12, 20, 55)).why, 'S1 long · entered 20:52 · you tapped Entered');
+  assert.strictEqual(st(s, d, at(12, 20, 55)).why, 'S1 long · entered 20:52 · you tapped In a trade');
   d.enteredCard = null;
-  assert.strictEqual(st(s, d, at(12, 20, 55)).why, 'Not on the card · entered 20:52 · you tapped Entered');
+  assert.strictEqual(st(s, d, at(12, 20, 55)).why, 'entered 20:52 · you tapped In a trade');
 });
 
 test('cooldowns: red after Stopped, green after Target, each with its end time', () => {

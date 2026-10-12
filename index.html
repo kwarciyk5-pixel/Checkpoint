@@ -567,6 +567,21 @@ body[data-nav="hidden"] .run{min-height:calc(100dvh - var(--bandh) - env(safe-ar
 .run .so-row:last-child{border-bottom:0}
 .run .badges{justify-content:center}
 .rs-ed input[type="text"]{width:100%}
+.outcome3{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:10px}
+.outcome3 .btn{min-height:64px;font-size:16px;padding:0 8px}
+.trades{display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:8px}
+.tr-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.tr-row:last-child{border-bottom:0}
+.tr-n{width:24px;flex:none;font-family:var(--font-serif);font-size:20px;color:var(--muted)}
+.tr-x{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.tr-x b{font-size:15px;font-weight:500}
+.tr-x small{font-size:13px;color:var(--muted)}
+.tr-row.open .tr-x b{color:var(--live-ink)}
+.det{display:flex;flex-direction:column;gap:6px}
+.det select,.det input[type="text"],.det input[type="number"]{width:100%;min-height:44px}
+.det-checks{display:flex;flex-direction:column;gap:2px}
+.det-ck{display:flex;align-items:center;gap:10px;min-height:40px;font-size:15px}
+.det-ck input{width:20px;height:20px;accent-color:var(--ink);flex:none}
 input[type="range"]{width:100%;accent-color:var(--ink)}
 .st-flags{display:flex;flex-direction:column;gap:4px;font-size:15px}
 .st-flags b{font-family:var(--font-serif);font-weight:400;font-size:20px;margin-right:6px}
@@ -862,7 +877,7 @@ var App = (function () {
       // v2 Part D: the day's event log (append-only) and Claude's end-of-day fill (from Import filled)
       events: [], filled: null,
       // v3: pasted Checkpoint cards, Built, the night closed, lock moves, run-sheet ticks, the card setup in trade
-      cards: [], builtAt: null, closedAt: null, lockMoved: [], steps: {}, enteredCard: null
+      cards: [], builtAt: null, closedAt: null, lockMoved: [], steps: {}, enteredCard: null, openDetails: null
     };
   }
 
@@ -1338,11 +1353,11 @@ var App = (function () {
   function homeLocked(st) { return st === 'intrade' || st === 'cooldown'; }
   // v3: in run mode the stage decides (in trade, cooldowns and overtime keep her on home, nav hidden).
   var RUN_BAND = { intrade: 'live', 'cool-red': 'cool', 'cool-green': 'cool', overtime: 'breach' };
-  function shellLocked(hs) { return isRun() ? !!RUN_LOCKED[runNow(hs.now).stage] : homeLocked(hs.state); }
+  function shellLocked(hs) { return isRun() ? false : homeLocked(hs.state); } // v3: never locked to one tab
   function chromeState() {
     if (isRun()) {
       var rs = runNow();
-      return { band: RUN_BAND[rs.stage] || 'wait', nav: !RUN_LOCKED[rs.stage], home: '', run: ui.tab === 'home' ? rs.stage : 'page' };
+      return { band: RUN_BAND[rs.stage] || 'wait', nav: true, home: '', run: ui.tab === 'home' || ui.tab === 'trade' ? rs.stage : 'page' };
     }
     var st = homeNow().state;
     return { band: HOME_BAND[st] || 'wait', nav: !homeLocked(st), home: ui.tab === 'home' ? st : '', run: '' };
@@ -1377,18 +1392,18 @@ var App = (function () {
     var html;
     if (ui.tab === 'home') html = viewHome(hs);
     else if (ui.tab === 'premarket') html = viewPremarket();
-    else if (ui.tab === 'trade') html = viewTrade();
+    else if (ui.tab === 'trade') html = isRun() ? viewRunTrade(runNow(hs.now)) : viewTrade();
     else if (ui.tab === 'cooldown') html = viewCooldown();
     else if (ui.tab === 'stats') html = viewStats(); // v2 Part E
     else if (ui.tab === 'log') html = viewLog(); // v2 Part E
     else html = viewSettings();
     var banner = ui.tab === 'home' && (homeLocked(hs.state) || hs.state === 'done') ? '' : checkinBanner();
     var rsn = isRun() ? runNow(hs.now) : null;
-    if (rsn && ui.tab === 'home' && RUN_LOCKED[rsn.stage]) banner = '';
-    if (rsn && ui.tab !== 'home') banner = runStrip(rsn, true) + banner; // v3: "you are here" on every page
+    if (rsn && (ui.tab === 'home' || ui.tab === 'trade') && RUN_LOCKED[rsn.stage]) banner = '';
+    if (rsn && ui.tab !== 'home' && ui.tab !== 'trade') banner = runStrip(rsn, true) + banner; // v3: "you are here" on every page
     view.innerHTML = '<div class="wrap' + (rsn ? ' run-wrap' : '') + '">' + banner + html + '</div>';
     // A new home state starts at the top of the screen.
-    var shown = ui.tab === 'home' ? (rsn ? rsn.stage : hs.state) : '';
+    var shown = ui.tab === 'home' || (rsn && ui.tab === 'trade') ? ui.tab + (rsn ? rsn.stage : hs.state) : '';
     if (shown && shown !== ui.homeShown) window.scrollTo(0, 0);
     ui.homeShown = shown;
     applyChrome();
@@ -1781,7 +1796,7 @@ var App = (function () {
           id: t.id, setupId: t.setupId || null, setup: su ? su.text : null, grade: t.grade || null,
           enteredAt: t.enteredAt || null, closedAt: t.closedAt || t.at || null, outcome: String(t.outcome || '').toLowerCase(),
           earlyWindow: !!t.earlyWindow, openOffsetMin: t.openOffsetMin == null ? null : t.openOffsetMin, checklistComplete: !!t.checklistComplete,
-          rTaken: t.rTaken == null ? undefined : t.rTaken, cardSetup: t.cardSetup || undefined
+          rTaken: t.rTaken == null ? undefined : t.rTaken, rEstimated: t.rEstimated || undefined, cardSetup: t.cardSetup || undefined, details: t.details || undefined
         };
       }),
       urges: (day.urges || []).length, points: pointsFor(s, key, new Date()), filled: day.filled || null
@@ -2023,6 +2038,8 @@ var App = (function () {
   // R of one trade: a stop is −1R; a target is the R she tapped (else the preferred R:R); scratch / manual 0.
   function rOfTrade(t, s) {
     if (!t) return 0;
+    var rt = Number(t.rTaken);
+    if (t.rTaken != null && t.rTaken !== '' && isFinite(rt)) return rt; // the R she gave (one-tap estimate or her details)
     if (t.outcome === 'SL') return -1;
     if (t.outcome === 'TP') { var r = Number(t.rTaken); return isFinite(r) && r > 0 ? r : (Number(s.settings.rules.rrPreferred) || 2); }
     return 0;
@@ -2064,13 +2081,13 @@ var App = (function () {
     var w = sessionWindow(key, s.settings), n = now.getTime();
     if (day.entered) {
       var c = day.enteredCard;
-      return out('intrade', (c && c.label ? c.label : 'Not on the card') + ' · entered ' + clockOf(day.enteredAt) + ' · you tapped Entered', day.enteredAt);
+      return out('intrade', (c && c.label ? c.label + ' · ' : '') + 'entered ' + clockOf(day.enteredAt) + ' · you tapped In a trade', day.enteredAt);
     }
     if (day.closedAt) return out('closed', 'You closed the night at ' + clockOf(day.closedAt) + ' · say "journal"', day.closedAt);
     var ac = runCooling(s, key, now);
     if (ac) {
-      var green = ac.trigger === 'tp';
-      var t0 = ac.trigger === 'sl' ? 'You tapped Stopped at ' : (green ? 'You tapped Target' + (opts && opts.lastR ? ' (' + opts.lastR + ')' : '') + ' at ' : ac.name + ' started at ');
+      var green = ac.trigger === 'tp' || ac.trigger === 'out';
+      var t0 = ac.trigger === 'sl' ? 'You tapped Stopped at ' : (ac.trigger === 'tp' ? 'You tapped Target' + (opts && opts.lastR ? ' (' + opts.lastR + ')' : '') + ' at ' : ac.trigger === 'out' ? 'You tapped Out at ' : ac.name + ' started at ');
       return out(green ? 'cool-green' : 'cool-red', t0 + clockOf(ac.startedAt) + ' · ends ' + clockOf(ac.endsAt) + ' · then back to Watching', ac.startedAt);
     }
     var d = runDoneFor(s, day);
@@ -2102,7 +2119,8 @@ var App = (function () {
   var FLAG_TEXT = {
     before_window: 'before the window', not_built: 'not built yet', observe_day: 'observation day', early_window: 'early window',
     event_window: 'event window', cooldown: 'cooldown', third_idea: '3rd idea · needs 2 clean losses + an A+', over_cap: 'over the hard cap',
-    after_done: 'the day is done', after_window: 'after the window', lock_moved: 'the lock moved tonight', off_card: 'not on the card'
+    after_done: 'the day is done', after_window: 'after the window', lock_moved: 'the lock moved tonight', off_card: 'not on the card',
+    stop_moved: 'moved the stop'
   };
   // Why an entry now would be flagged. Never a block: the Entered button always works. [{k, text}]
   function flagReasonsFor(s, day, now) {
@@ -2635,20 +2653,35 @@ var App = (function () {
   }
 
   /* ==== VIEW: run sheet ==== */
-  // v3 (spec v3 §5). The home in run mode: the "you are here" strip on top of every stage, then the stage itself.
-  // Entered is on every stage before the trade, always tappable; what it would flag is written under it.
+  // v3 (spec v3 §5, revised 12 Oct): TODAY = the run sheet and its checklists only, nothing to do with trading.
+  // TRADE = the trade sequence: Ready (one tap "In a trade") → In trade → Cooldown → Ready … → Overtime / Closed.
+  // Both carry the "you are here" strip. Trade details are filled in any time (in trade, after, at EOD) or never.
   function runStrip(rs, compact) {
     return '<div class="strip" data-st="' + esc(rs.stage) + '"' + (compact ? ' data-act="go-tab" data-tab="home" role="button" tabindex="0"' : '') + '>' +
       '<div class="strip-top"><span class="strip-st">' + (compact ? '' : 'YOU ARE HERE · ') + esc(RUN_LABEL[rs.stage]).toUpperCase() + '</span>' +
       '<span class="strip-t" data-run-clock>' + esc(fmtClock(rs.now)) + '</span></div>' +
       (compact ? '' : '<div class="strip-why" data-run-why>' + esc(rs.why) + (rs.next && /^(desk|built|before|watching)$/.test(rs.stage) ? ' · next: ' + esc(rs.next) : '') + '</div>') + '</div>';
   }
-  function viewRun(rs) {
+  function viewRun(rs) { // the Today tab
+    var body = rs.stage === 'offday' ? runOffday(rs) : runDesk(rs);
+    return '<div class="run" data-st="' + esc(rs.stage) + '">' + runStrip(rs) + '<div class="run-body">' + body + '</div></div>';
+  }
+  function viewRunTrade(rs) { // the Trade tab
     var fn = {
-      offday: runOffday, before: runDesk, desk: runDesk, built: runDesk, watching: runWatching, intrade: runInTrade,
+      offday: runTradeOff, before: runReady, desk: runReady, built: runReady, watching: runReady, intrade: runInTrade,
       'cool-red': runCool, 'cool-green': runCool, overtime: runOvertime, closed: runClosed
     }[rs.stage];
-    return '<div class="run" data-st="' + esc(rs.stage) + '">' + runStrip(rs) + '<div class="run-body">' + fn(rs) + '</div></div>';
+    return '<div class="run run-trade" data-st="' + esc(rs.stage) + '">' + runStrip(rs) + '<div class="run-body">' + fn(rs) + '</div></div>';
+  }
+  function runTradeOff(rs) {
+    return '<div class="run-mid"><p class="run-big">No session today.</p><p class="run-sub">Days off stay quiet.</p></div>' + tradesList(rs);
+  }
+  function countText(rs) {
+    var w = sessionWindow(rs.key, state.settings), n = rs.now.getTime();
+    var mins = Math.ceil((w.start - n) / 60000);
+    if (mins > 0) return 'Open in ' + fmtDur(mins).toLowerCase();
+    if (n < w.end) return 'Window open until ' + clockOf(w.end);
+    return 'Window closed ' + clockOf(w.end);
   }
   function flagLine(flags, lead) {
     if (!flags.length) return '';
@@ -2657,7 +2690,7 @@ var App = (function () {
   function enteredBtn(rs, style) {
     var flags = flagReasonsFor(state, rs.day, rs.now);
     var cls = style === 'primary' && !flags.length ? 'btn primary' : (style === 'dashed' ? 'btn run-dashed' : 'btn');
-    return '<button type="button" class="' + cls + ' run-enter" data-act="run-enter">Entered</button>' + flagLine(flags, style === 'dashed' ? 'Allowed, and flagged:' : '');
+    return '<button type="button" class="' + cls + ' run-enter" data-act="run-enter">In a trade</button>' + flagLine(flags, style === 'dashed' ? 'Allowed, and flagged:' : 'One tap. Right now it would be flagged:');
   }
   function runTiles(rs) {
     var day = rs.day || {}, r = state.settings.rules;
@@ -2707,14 +2740,15 @@ var App = (function () {
     return runHeadLine(rs) + '<div class="run-mid"><p class="run-big">No session today.</p><p class="run-sub">Days off stay quiet.</p></div>' +
       '<div class="run-foot"><button type="button" class="btn block" data-act="home-show-anyway">Show the day anyway</button></div>';
   }
-  // Pre-open: the countdown, the run sheet (current step boxed), Entered at the bottom.
+  // Today: the countdown (or the window), the run sheet with the current step boxed. No trade buttons here.
   function runDesk(rs) {
     var w = sessionWindow(rs.key, state.settings);
-    var mins = Math.ceil((w.start - rs.now.getTime()) / 60000);
-    var out = runHeadLine(rs) + '<div class="run-count"><span class="run-big" data-run-count>' + esc(mins > 0 ? 'Open in ' + fmtDur(mins).toLowerCase() : 'Opening') + '</span>' +
+    var out = runHeadLine(rs) + '<div class="run-count"><span class="run-big" data-run-count>' + esc(countText(rs)) + '</span>' +
       '<span class="run-sub">window<br>' + esc(clockOf(w.start)) + '–' + esc(clockOf(w.end)) + '</span></div>';
     out += '<ol class="rs">' + rs.list.map(function (x, i) { return runStepRow(rs, x, i); }).join('') + '</ol>';
-    return out + '<div class="run-foot">' + enteredBtn(rs, 'outline') + '</div>';
+    var tradeTime = rs.now.getTime() >= w.start - 10 * 60000 || /^(intrade|cool-red|cool-green|overtime)$/.test(rs.stage);
+    return out + (tradeTime ? '<div class="run-foot"><button type="button" class="btn' + (rs.stage === 'intrade' ? ' primary' : '') + ' block" data-act="go-tab" data-tab="trade">' +
+      esc(rs.stage === 'intrade' ? 'In trade · open the Trade tab' : 'Trade tab') + ' →</button></div>' : '');
   }
   function runStepRow(rs, x, i) {
     var st = x.step, day = rs.day || {}, ticked = !!(day.steps && day.steps[st.id]);
@@ -2754,14 +2788,13 @@ var App = (function () {
     }
     return '';
   }
-  function runWatching(rs) {
+  // Trade tab, Ready: the plan for reference, one tap "In a trade", tonight's trades with their details.
+  function runReady(rs) {
     var day = rs.day || {}, w = sessionWindow(rs.key, state.settings);
     var out = '';
     if (isEarlyFor(state, rs.now)) out += '<div class="run-amber" role="status">Early window until ' + esc(clockOf(w.start + observeMinOf(state.settings) * 60000)) + ' · an entry now is flagged, not blocked</div>';
     out += runTiles(rs) + planCard(rs) + practisingLine(day);
-    var items = [];
-    state.checklists.trade.categories.forEach(function (cat) { cat.items.forEach(function (it) { if (!it.afterStopOnly || (day.trades || []).some(function (t) { return t.outcome === 'SL'; })) items.push(it); }); });
-    out += '<details class="run-checks"><summary>The checks (' + items.length + ')</summary><ol>' + items.map(function (it) { return '<li>' + esc(it.text) + (it.note ? ' <small>' + esc(it.note) + '</small>' : '') + '</li>'; }).join('') + '</ol></details>';
+    out += tradesList(rs);
     var c = latestCard(day);
     return out + '<div class="run-foot">' + enteredBtn(rs, 'primary') +
       '<div class="run-links">' + urgeNoteBtn() + '<button type="button" class="textbtn" data-act="run-lock">I moved the lock</button>' +
@@ -2781,14 +2814,17 @@ var App = (function () {
     var day = rs.day || {}, c = day.enteredCard, r = state.settings.rules, w = sessionWindow(rs.key, state.settings);
     var el = day.enteredAt ? Math.max(0, (rs.now.getTime() - Date.parse(day.enteredAt)) / 1000) : 0;
     var out = '<div class="run-head"><span class="eyebrow">This trade</span><span class="eyebrow">in for <span data-home-el>' + fmtMS(Math.floor(el)) + '</span></span></div>';
-    out += '<p class="run-big">' + esc(c && c.label ? c.label + (c.zone && c.zone !== '—' ? ' · ' + c.zone : '') : 'Not on the card') + '</p>';
-    if (c) {
+    out += '<p class="run-big">' + esc(c && c.label ? c.label + (c.zone && c.zone !== '—' ? ' · ' + c.zone : '') : 'In a trade') + '</p>';
+    out += '<div class="run-links"><button type="button" class="textbtn" data-act="run-details" data-i="open">' + (isObj(day.openDetails) && detailsFilled(day.openDetails) ? 'details · edit' : 'add details (any time)') + '</button>' +
+      '<button type="button" class="textbtn" data-act="run-stopmoved">I moved my stop</button></div>';
+    if (c && (c.sl || c.t1 || c.t2)) {
       out += '<div class="tiles three"><div class="tile"><span>stop</span><b>' + esc(c.sl || '—') + '</b></div><div class="tile"><span>T1</span><b>' + esc(c.t1 || '—') + '</b></div><div class="tile"><span>T2</span><b>' + esc(c.t2 || '—') + '</b></div></div>';
     }
     out += calmHtml(rs);
     out += '<p class="run-sub">day ' + esc(runR(dayRFor(state, day))) + ' · done when ' + esc(r.doneSl || 2) + ' SL or +' + esc(r.doneR || 3) + 'R · window closes ' + esc(clockOf(w.end)) + '</p>';
-    return out + '<div class="run-foot"><div class="outcome2"><button type="button" class="btn" data-act="run-out" data-o="SL">Stopped</button>' +
-      '<button type="button" class="btn primary" data-act="run-out" data-o="TP">Target</button></div>' + urgeNoteBtn() + '</div>';
+    return out + '<div class="run-foot"><div class="outcome3"><button type="button" class="btn" data-act="run-out" data-o="SL">Stopped</button>' +
+      '<button type="button" class="btn primary" data-act="run-out" data-o="TP">Target</button>' +
+      '<button type="button" class="btn" data-act="run-out" data-o="OUT">Out · other</button></div>' + urgeNoteBtn() + '</div>';
   }
   function runCool(rs) {
     var ac = state.activeCooldown, day = rs.day || {}, r = state.settings.rules, green = rs.stage === 'cool-green';
@@ -2809,7 +2845,36 @@ var App = (function () {
       (leftDesk ? '<span class="run-sub" style="align-self:center">Left the desk · logged</span>' : '<button type="button" class="btn" data-act="left-desk">I left the desk</button>') +
       enteredBtnCompact(rs) + '</div>' + flagLine(flagReasonsFor(state, day, rs.now), 'Entering now is allowed and flagged:') + '</div>';
   }
-  function enteredBtnCompact() { return '<button type="button" class="btn run-dashed run-enter" data-act="run-enter">Entered</button>'; }
+  function enteredBtnCompact() { return '<button type="button" class="btn run-dashed run-enter" data-act="run-enter">In a trade</button>'; }
+  // Tonight's trades on the Trade tab, each with its details (fill in any time, or never).
+  var OUT_NAME = { SL: 'Stopped', TP: 'Target', MANUAL: 'Out', SCRATCH: 'Scratch' };
+  var FIT_NAME = { planned: 'as planned', adjusted: 'adjusted', off: 'not on the plan' };
+  function detailsFilled(d) {
+    return !!(d && (d.setup || d.fit || d.note || d.contracts || (d.checks && Object.keys(d.checks).some(function (k) { return d.checks[k]; })) || d.rSet));
+  }
+  function detailsText(d) {
+    if (!detailsFilled(d)) return '';
+    var bits = [];
+    if (d.setup) bits.push(d.setup === 'own' ? 'my own read' : d.setupLabel || d.setup);
+    if (d.fit) bits.push(FIT_NAME[d.fit] || d.fit);
+    var nc = d.checks ? Object.keys(d.checks).filter(function (k) { return d.checks[k]; }).length : 0;
+    if (nc) bits.push(nc + ' checks');
+    if (d.contracts) bits.push(d.contracts + ' ct');
+    return bits.join(' · ');
+  }
+  function tradesList(rs) {
+    var day = rs.day || {}, t = day.trades || [];
+    if (!t.length && !day.entered) return '';
+    var rows = t.map(function (x, i) {
+      var r = rOfTrade(x, state), d = x.details || {};
+      return '<div class="tr-row"><span class="tr-n">' + (i + 1) + '</span><span class="tr-x"><b>' + esc(clockOf(x.enteredAt || x.at)) + '–' + esc(clockOf(x.closedAt || x.at)) + ' · ' + esc(OUT_NAME[x.outcome] || x.outcome) +
+        ' · ' + esc(runR(r)) + (x.rEstimated && !d.rSet ? ' <small>est.</small>' : '') + '</b><small>' + esc(detailsText(d) || 'no details yet') + '</small></span>' +
+        '<button type="button" class="textbtn" data-act="run-details" data-i="' + i + '">' + (detailsFilled(d) ? 'edit' : 'details') + '</button></div>';
+    });
+    if (day.entered) rows.push('<div class="tr-row open"><span class="tr-n">' + (t.length + 1) + '</span><span class="tr-x"><b>' + esc(clockOf(day.enteredAt)) + ' · open</b><small>' +
+      esc(detailsText(day.openDetails) || 'no details yet') + '</small></span><button type="button" class="textbtn" data-act="run-details" data-i="open">details</button></div>');
+    return '<div class="trades"><span class="eyebrow">Tonight\'s trades</span>' + rows.join('') + '</div>';
+  }
   function runOvertime(rs) {
     var day = rs.day || {}, w = sessionWindow(rs.key, state.settings);
     var d = runDoneFor(state, day);
@@ -2820,7 +2885,7 @@ var App = (function () {
     var fl = flagsTonight(day);
     if (fl.length) out += '<div class="flagged"><span class="eyebrow">Flagged tonight</span>' + fl.map(function (f) { return '<div><span>' + esc(clockOf(f.t)) + '</span>' + esc(f.text) + '</div>'; }).join('') + '</div>';
     if ((day.lockMoved || []).length) out += '<p class="run-sub left">Lock moved at ' + esc(day.lockMoved.map(function (x) { return clockOf(x.at); }).join(', ')) + '</p>';
-    out += '<div class="closeout"><span class="eyebrow">Close out</span>' + closeoutRows(day) + '</div>';
+    out += '<div class="closeout"><span class="eyebrow">Close out</span>' + closeoutRows(day) + '</div>' + tradesList(rs);
     return out + '<div class="run-foot"><div class="outcome2"><button type="button" class="btn primary" data-act="run-close">I\'m done for tonight</button>' + enteredBtnCompact() + '</div>' +
       '<p class="run-flag">Still tappable · it would be flagged entry ' + (flaggedEntries(day) + 1) + ' tonight</p></div>';
   }
@@ -2840,10 +2905,12 @@ var App = (function () {
     var bits = [t.length + (t.length === 1 ? ' idea' : ' ideas'), t.filter(function (x) { return x.outcome === 'SL'; }).length + ' SL',
       t.filter(function (x) { return x.outcome === 'TP'; }).length + ' target', runR(dayRFor(state, day)), urgeText(day), flagsTonight(day).length + ' flags'];
     var badges = dayBadgesFor(state, rs.key, rs.now, pts);
+    var nod = t.filter(function (x) { return !detailsFilled(x.details); }).length;
     return runHeadLine(rs) + '<div class="run-mid"><p class="run-big">Closed ' + esc(clockOf(day.closedAt)) + '.</p><p class="run-sub">' + esc(bits.join(' · ')) + '</p>' +
       '<p class="run-sub">' + esc(fmtPts(pts.total)) + ' · behaviour only</p>' +
       (badges.length ? '<div class="badges">' + badges.map(function (b) { return '<span class="badge">' + esc(b) + '</span>'; }).join('') + '</div>' : '') +
-      '<p class="run-sub">Now say "journal" to Claude.</p></div>' +
+      '<p class="run-sub">Now say "journal" to Claude.</p>' +
+      (nod ? '<p class="run-sub" data-run-nod>' + nod + (nod === 1 ? ' trade' : ' trades') + ' without details · fill now or let Claude do it at EOD</p>' : '') + '</div>' + tradesList(rs) +
       '<div class="run-foot"><button type="button" class="btn primary block" data-act="export-today" data-key="' + esc(rs.key) + '">' + (hasEvent(day, 'export') ? 'Export again' : 'Export today') + '</button>' +
       '<div class="run-links"><button type="button" class="textbtn" data-act="go-tab" data-tab="log">Log</button><button type="button" class="textbtn" data-act="go-tab" data-tab="stats">Stats</button>' +
       '<button type="button" class="textbtn" data-act="run-reopen">Reopen tonight</button></div></div>';
@@ -2855,8 +2922,7 @@ var App = (function () {
     if (c && c.textContent !== fmtClock(now)) c.textContent = fmtClock(now);
     var cnt = $('[data-run-count]', doc);
     if (cnt) {
-      var mins = Math.ceil((sessionWindow(rs.key, state.settings).start - now.getTime()) / 60000);
-      var txt = mins > 0 ? 'Open in ' + fmtDur(mins).toLowerCase() : 'Opening';
+      var txt = countText(rs);
       if (cnt.textContent !== txt) cnt.textContent = txt;
     }
     var why = $('[data-run-why]', doc);
@@ -3127,7 +3193,8 @@ var App = (function () {
     start_looking: 'Started looking', enter: 'Entered', stopped: 'Stopped', target: 'Target', undo: 'Undo', urge: 'Urge',
     left_desk: 'Left the desk', cooldown_start: 'Cooldown started', cooldown_end: 'Cooldown ended', sitout: 'Sat out',
     early_warning_shown: 'Early-window warning', greencap: 'Green cap hit', dll: 'Daily loss hit', export: 'Exported', import: 'Imported a fill',
-    built: 'Built', card_paste: 'Card pasted', card_recut: 'Re-cut card pasted', lock_moved: 'Moved the lock', night_closed: 'Closed the night', sound_mute: 'Sound muted'
+    built: 'Built', card_paste: 'Card pasted', card_recut: 'Re-cut card pasted', lock_moved: 'Moved the lock', night_closed: 'Closed the night', sound_mute: 'Sound muted',
+    details: 'Details saved', stop_moved: 'Moved the stop'
   };
   function eventLabel(e) {
     var t = String(e.type || '');
@@ -3436,7 +3503,7 @@ var App = (function () {
   function logTrade(outcome, opts) {
     var c = tradeCtx();
     var day = c.day, b = c.s.behaviour;
-    var before = { tradeChecks: clone(day.tradeChecks), entered: !!day.entered, dayDoneShown: !!day.dayDoneShown, enteredAt: day.enteredAt || null, enteredSetup: day.enteredSetup || null, enteredCard: day.enteredCard || null, enterId: day.enterId || null };
+    var before = { tradeChecks: clone(day.tradeChecks), entered: !!day.entered, dayDoneShown: !!day.dayDoneShown, enteredAt: day.enteredAt || null, enteredSetup: day.enteredSetup || null, enteredCard: day.enteredCard || null, enterId: day.enterId || null, openDetails: day.openDetails || null };
     var rec = {
       n: day.trades.length + 1, outcome: outcome,
       checklistComplete: !!day.entered || (c.allArmed && c.visible.length > 0),
@@ -3455,7 +3522,8 @@ var App = (function () {
     rec.earlyWindow = openMin !== null && openMin >= 0 && openMin < observeMinOf(c.s);
     // v3: the card setup she entered on, and the R she took on a target
     if (day.enteredCard) { rec.cardSetup = clone(day.enteredCard); rec.setupId = day.enteredCard.id; }
-    if (outcome === 'TP' && opts && isFinite(Number(opts.r))) rec.rTaken = Number(opts.r);
+    if (opts && isFinite(Number(opts.r))) { rec.rTaken = Number(opts.r); rec.rEstimated = !!opts.est; }
+    if (isObj(day.openDetails)) rec.details = day.openDetails;
     if (day.enterId) rec.enterId = day.enterId;
     day.trades.push(rec);
     logEvent(OUTCOME_EVENT[outcome] || String(outcome).toLowerCase(), rec.id, c.key);
@@ -3465,15 +3533,17 @@ var App = (function () {
     day.enteredSetup = null;
     day.enteredCard = null;
     day.enterId = null;
+    day.openDetails = null;
     day.looking = null;
     save();
     var key = c.key;
     if (isRun()) {
       // v3: a 5-minute cooldown after any exit; the stage strip says why.
-      toast((outcome === 'TP' ? 'Target' : outcome === 'SL' ? 'Stopped' : outcome) + ' · idea ' + day.trades.length, { label: 'UNDO', fn: function () { undoTrade(key, rec, before); } }, UNDO_MS);
-      ui.tab = 'home';
+      toast((OUT_NAME[outcome] || outcome) + ' · idea ' + day.trades.length + (rec.rEstimated ? ' · ' + runR(rec.rTaken) + ' est.' : ''), { label: 'UNDO', fn: function () { undoTrade(key, rec, before); } }, UNDO_MS);
+      ui.tab = 'trade';
+      try { sessionStorage.setItem('checkpoint.tab', 'trade'); } catch (e) { /* ignore */ }
       if (outcome === 'SL' && b.slStartsCooldown) { startCooldown(c.s.presetLinks.sl, 'sl', { force: true }); return; }
-      if (outcome === 'TP' && b.cooldownAfterTarget !== false && findPreset(c.s.presetLinks.tp)) { startCooldown(c.s.presetLinks.tp, 'tp', { force: true }); return; }
+      if (outcome !== 'SL' && b.cooldownAfterTarget !== false && findPreset(c.s.presetLinks.tp)) { startCooldown(c.s.presetLinks.tp, outcome === 'TP' ? 'tp' : 'out', { force: true }); return; }
       render();
       return;
     }
@@ -3492,7 +3562,7 @@ var App = (function () {
     day.trades.splice(i, 1);
     var ac = state.activeCooldown;
     var cancelled = false;
-    if (ac && ((ac.trigger === 'sl' && rec.outcome === 'SL') || (ac.trigger === 'tp' && rec.outcome === 'TP')) && ac.startedAt >= Date.parse(rec.at)) {
+    if (ac && ((ac.trigger === 'sl' && rec.outcome === 'SL') || (ac.trigger === 'tp' && rec.outcome === 'TP') || (ac.trigger === 'out' && rec.outcome === 'MANUAL')) && ac.startedAt >= Date.parse(rec.at)) {
       state.activeCooldown = null;
       releaseWakeLock();
       cancelled = true;
@@ -3504,10 +3574,11 @@ var App = (function () {
     day.enteredSetup = before.enteredSetup;
     day.enteredCard = before.enteredCard || null;
     day.enterId = before.enterId || null;
+    day.openDetails = before.openDetails || null;
     day.undone.push({ outcome: rec.outcome, n: rec.n, loggedAt: rec.at, undoneAt: new Date().toISOString(), cooldownCancelled: cancelled, id: uid(), kind: 'trade', device: devId() });
     logEvent('undo', rec.id, key);
     saveNow();
-    ui.tab = isRun() ? 'home' : 'trade';
+    ui.tab = 'trade';
     try { sessionStorage.setItem('checkpoint.tab', 'trade'); } catch (e) { /* ignore */ }
     render();
     toast('Undone · ' + rec.outcome + ' removed' + (cancelled ? ' · cooldown cancelled' : ''));
@@ -3533,7 +3604,7 @@ var App = (function () {
       unlockAudio();
       requestWakeLock();
       // v2: the cooldown shows on the home screen; when the day is already done, on the Cooldown page.
-      ui.tab = homeNow().state === 'cooldown' ? 'home' : 'cooldown';
+      ui.tab = isRun() ? 'trade' : (homeNow().state === 'cooldown' ? 'home' : 'cooldown'); // v3: cooldowns live on the Trade tab
       try { sessionStorage.setItem('checkpoint.tab', ui.tab); } catch (e) { /* ignore */ }
       render();
       window.scrollTo(0, 0);
@@ -4187,7 +4258,7 @@ var App = (function () {
       var rsp = isRun() ? runNow(now) : null; // v3: the run sheet in the window too
       var lockd = rsp ? !!RUN_LOCKED[rsp.stage] : (homeLocked(hsn.state) || hsn.state === 'done');
       return '<div class="pw pw-home" data-s="' + (rsp ? RUN_BAND[rsp.stage] || 'wait' : HOME_BAND[hsn.state] || 'wait') + '">' + undo +
-        '<div class="pw-body">' + viewHome(hsn) + '</div>' + (lockd ? '' : pipCheckinLine(now)) + '</div>';
+        '<div class="pw-body">' + (rsp ? viewRunTrade(rsp) : viewHome(hsn)) + '</div>' + (lockd ? '' : pipCheckinLine(now)) + '</div>';
     }
     var out = '<div class="pw' + cls + '"><div class="pw-head"><span class="dot"></span><b>CHECKPOINT</b><span>ALWAYS ON TOP</span></div>' + undo;
     out += '<div class="pw-body">';
@@ -5012,7 +5083,8 @@ var App = (function () {
     day.entered = true;
     day.enteredAt = new Date().toISOString();
     day.enteredSetup = su ? su.id : null;
-    day.enteredCard = su ? { id: su.id, label: su.label, zone: su.zone || '', sl: su.sl || '', t1: su.t1 || '', t2: su.t2 || '', rr: su.rr || '', rrNum: su.rrNum } : null;
+    day.enteredCard = su ? cardSnap(su) : null;
+    day.openDetails = {};
     day.enterId = id;
     day.looking = null;
     logEvent('enter', su ? su.id : 'off-card', key);
@@ -5020,16 +5092,77 @@ var App = (function () {
     vibrate(60);
     unlockAudio();
     saveNow();
-    ui.tab = 'home';
+    ui.tab = 'trade';
+    try { sessionStorage.setItem('checkpoint.tab', 'trade'); } catch (e) { /* ignore */ }
     render();
     window.scrollTo(0, 0);
-    toast('Entered' + (flags.length ? ' · flagged' : ''), { label: 'UNDO', fn: function () {
+    toast('In a trade' + (flags.length ? ' · flagged' : ''), { label: 'UNDO', fn: function () {
       var d = getDay(key);
       if (!d.entered || d.enterId !== id) { toast('Too late to undo'); return; }
-      d.entered = false; d.enteredAt = null; d.enteredSetup = null; d.enteredCard = null; d.enterId = null;
+      d.entered = false; d.enteredAt = null; d.enteredSetup = null; d.enteredCard = null; d.enterId = null; d.openDetails = null;
       logEvent('undo', 'enter:' + id, key);
       saveNow(); render();
     } }, UNDO_MS);
+  }
+  function cardSnap(su) { return { id: su.id, label: su.label, zone: su.zone || '', sl: su.sl || '', t1: su.t1 || '', t2: su.t2 || '', rr: su.rr || '', rrNum: su.rrNum }; }
+  // Details for a trade (index) or the open one ('open'): setup, how it went vs the plan, checks, R, contracts, note.
+  // Any time, any part, or never. R she types replaces the one-tap estimate (and counts toward +3R).
+  function runDetailsFlow(which) {
+    var key = todayKey(), day = getDay(key);
+    var open = which === 'open';
+    var rec = open ? null : day.trades[+which];
+    if (!open && !rec) return;
+    if (open && !day.entered) return;
+    var d = clone(open ? (day.openDetails || {}) : (rec.details || {})) || {};
+    var c = latestCard(day), sus = c ? c.parsed.setups : [];
+    var items = [];
+    state.checklists.trade.categories.forEach(function (cat) { cat.items.forEach(function (it) { items.push(it); }); });
+    var chk = d.checks || {};
+    var html = '<div class="det">' +
+      '<label class="lbl" for="d-setup">Setup</label><select id="d-setup"><option value="">—</option>' +
+      sus.map(function (su) { return '<option value="' + esc(su.id) + '"' + (d.setup === su.id ? ' selected' : '') + '>' + esc(su.label + (su.zone && su.zone !== '—' ? ' · ' + su.zone : '')) + '</option>'; }).join('') +
+      '<option value="own"' + (d.setup === 'own' ? ' selected' : '') + '>My own read</option></select>' +
+      '<label class="lbl" for="d-fit">How it went vs the plan</label><select id="d-fit"><option value="">—</option>' +
+      [['planned', 'As planned'], ['adjusted', 'Adjusted (entry, size or stop)'], ['off', 'Not on the plan']].map(function (o) {
+        return '<option value="' + o[0] + '"' + (d.fit === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('') + '</select>' +
+      '<span class="lbl">What was true</span><div class="det-checks">' + items.map(function (it) {
+        return '<label class="det-ck"><input type="checkbox" data-ck="' + esc(it.id) + '"' + (chk[it.id] ? ' checked' : '') + '><span>' + esc(it.text) + '</span></label>';
+      }).join('') + '</div>' +
+      '<div class="row" style="gap:10px">' +
+      (open ? '' : '<span style="flex:1"><label class="lbl" for="d-r">R</label><input id="d-r" type="number" inputmode="decimal" step="0.1" value="' + esc(rec.rTaken != null ? rec.rTaken : rOfTrade(rec, state)) + '"></span>') +
+      '<span style="flex:1"><label class="lbl" for="d-ct">Contracts</label><input id="d-ct" type="number" inputmode="numeric" min="0" step="1" value="' + esc(d.contracts || '') + '"></span></div>' +
+      '<label class="lbl" for="d-note">Note</label><input id="d-note" type="text" value="' + esc(d.note || '') + '"></div>';
+    var m = null;
+    openModal({
+      title: open ? 'This trade · details' : 'Trade ' + (+which + 1) + ' · details',
+      html: html,
+      onOpen: function (el) { m = el; },
+      actions: [{ label: 'Save', cls: 'primary', fn: function () {
+        if (!m) return;
+        var nd = { setup: m.querySelector('#d-setup').value, fit: m.querySelector('#d-fit').value, checks: {}, note: m.querySelector('#d-note').value.trim(), at: new Date().toISOString() };
+        var su = sus.filter(function (x) { return x.id === nd.setup; })[0];
+        if (su) nd.setupLabel = su.label;
+        $$('[data-ck]', m).forEach(function (x) { if (x.checked) nd.checks[x.getAttribute('data-ck')] = true; });
+        var ct = Math.round(Number(m.querySelector('#d-ct').value));
+        if (isFinite(ct) && ct > 0) nd.contracts = ct;
+        var d2 = getDay(key);
+        if (open) {
+          d2.openDetails = nd;
+          d2.enteredCard = su ? cardSnap(su) : null;
+        } else {
+          var rIn = m.querySelector('#d-r');
+          var rv = rIn && rIn.value !== '' ? Number(rIn.value) : NaN;
+          if (isFinite(rv) && rv !== rOfTrade(rec, state)) { rec.rTaken = rv; nd.rSet = true; rec.rEstimated = false; }
+          else if (d.rSet) nd.rSet = true;
+          if (su) { rec.cardSetup = cardSnap(su); rec.setupId = su.id; }
+          rec.details = nd;
+        }
+        logEvent('details', open ? 'open' : rec.id, key);
+        saveNow(); render();
+        toast('Details saved');
+      } }, { label: 'Cancel', cls: 'ghost' }]
+    });
   }
   function runPasteFlow() {
     function use(text) {
@@ -5175,25 +5308,23 @@ var App = (function () {
       render();
     },
     // v3 run sheet (spec v3 §2–§5)
-    'run-enter': function () { runEnterFlow(); },
+    'run-enter': function () { var n = new Date(); doEnter(null, flagReasonsFor(state, getDay(todayKey(n)), n)); }, // one tap, never a question
     'run-out': function (el) {
-      var o = el.getAttribute('data-o');
-      if (o === 'SL') { logTrade('SL'); return; }
-      var c = getDay(todayKey()).enteredCard;
-      var pref = Number(state.settings.rules.rrPreferred) || 2;
-      var opts = [1.5, 2];
-      if (c && c.rrNum && opts.indexOf(c.rrNum) < 0) opts.unshift(c.rrNum);
-      if (opts.indexOf(pref) < 0) opts.push(pref);
-      var inp = null;
-      openModal({
-        title: 'Target · what R did you take?',
-        html: '<p>One tap. It counts toward +' + esc(state.settings.rules.doneR || 3) + 'R for the day.</p>' +
-          '<label class="lbl" for="r-other">Other R</label><input id="r-other" type="number" inputmode="decimal" min="0.1" max="20" step="0.1" placeholder="e.g. 1.2">',
-        onOpen: function (m) { inp = m.querySelector('#r-other'); },
-        actions: opts.map(function (r) { return { label: r + 'R', cls: r === (c && c.rrNum) || (!c && r === pref) ? 'primary' : '', fn: function () { logTrade('TP', { r: r }); } }; })
-          .concat([{ label: 'Use the other R', cls: '', fn: function () { var v = Number(inp && inp.value); logTrade('TP', { r: isFinite(v) && v > 0 ? v : pref }); } },
-            { label: 'Cancel', cls: 'ghost' }])
-      });
+      // One tap. R is an estimate she can correct in details: stop −1R, target = the setup's R:R (else the preferred), out 0R.
+      var o = el.getAttribute('data-o'), day = getDay(todayKey());
+      if (o === 'SL') { logTrade('SL', { r: -1, est: true }); return; }
+      if (o === 'OUT') { logTrade('MANUAL', { r: 0, est: true }); return; }
+      var c = day.enteredCard;
+      logTrade('TP', { r: c && c.rrNum ? c.rrNum : (Number(state.settings.rules.rrPreferred) || 2), est: true });
+    },
+    'run-details': function (el) { runDetailsFlow(el.getAttribute('data-i')); },
+    'run-stopmoved': function () {
+      var day = getDay(todayKey());
+      if (!day.entered) return;
+      logEvent('stop_moved');
+      logEvent('flag:stop_moved', day.enterId || '');
+      saveNow(); render();
+      toast('Recorded · moved the stop');
     },
     'run-step': function (el) {
       var day = getDay(todayKey()), id = el.getAttribute('data-id');
@@ -5846,7 +5977,7 @@ var App = (function () {
     // v2 home: re-render when the day moves to another state (or the early window ends); else update in place.
     var hs = homeNow();
     if (homeSig(hs) !== ui.homeSig && !ui.holding && !drag && !$('#modal-root .modal')) {
-      if (ui.tab === 'home' || shellLocked(hs)) render();
+      if (ui.tab === 'home' || (isRun() && ui.tab === 'trade') || shellLocked(hs)) render();
       else {
         ui.homeSig = homeSig(hs);
         applyChrome();
@@ -5856,7 +5987,7 @@ var App = (function () {
     }
     if (isRun()) {
       var rsx = runNow(hs.now);
-      if (ui.tab === 'home') tickRunDom(document, rsx);
+      if (ui.tab === 'home' || ui.tab === 'trade') tickRunDom(document, rsx);
       else { var sc = $('[data-run-clock]'); if (sc && sc.textContent !== fmtClock(hs.now)) sc.textContent = fmtClock(hs.now); }
       soundTick(rsx);
     } else tickHomeDom();
