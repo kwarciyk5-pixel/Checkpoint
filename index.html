@@ -517,8 +517,9 @@ body[data-nav="hidden"] .run{min-height:calc(100dvh - var(--bandh) - env(safe-ar
 .rs-row.past .rs-t{font-weight:400}
 .rs-row.past .rs-x b{font-weight:400}
 .rs-row.cur{border:1.5px solid var(--ink);border-radius:4px;padding:14px 12px;margin:6px 0;background:var(--info-a)}
-.rs-row.cur .rs-x b{font-family:var(--font-serif);font-size:24px;font-weight:400}
-.rs-row.cur .rs-x small{font-size:15px;color:var(--ink-2)}
+.rs-row.cur .rs-x>b{font-family:var(--font-serif);font-size:24px;font-weight:400}
+.rs-row.cur .rs-x>small{font-size:15px;color:var(--ink-2)}
+.rs-build .item b{font-size:15px;font-weight:500}
 .rs-gates,.rs-build{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .rs-gate{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:15px}
 .rs-gate .gate-btns{flex:none}
@@ -567,6 +568,15 @@ body[data-nav="hidden"] .run{min-height:calc(100dvh - var(--bandh) - env(safe-ar
 .run .so-row:last-child{border-bottom:0}
 .run .badges{justify-content:center}
 .rs-ed input[type="text"]{width:100%}
+.pw-run{border-top-width:6px}
+.pw-tabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line);margin:0 0 8px}
+.pw-tabs button{min-height:40px;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent}
+.pw-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.pw-run .pw-body{padding:0 12px 12px}
+.pipwin .run{min-height:calc(100vh - 60px)}
+.pipwin .wrap.run-wrap,.pipwin .run{max-width:none}
+.pipwin .run-foot{bottom:0}
+.pipwin .pop-out{display:none}
 .enter2{display:grid;grid-template-columns:2fr 1fr;gap:10px}
 .enter2 .btn{min-height:68px;font-size:18px}
 .ckf{display:flex;flex-direction:column;gap:10px}
@@ -1449,18 +1459,26 @@ var App = (function () {
     return '<span class="cb' + (dashed ? ' dashed' : '') + (on ? ' on' : '') + '" aria-hidden="true">' + CHECK_SVG + '</span>';
   }
   function toast(msg, action, ms) {
-    var root = $('#toast-root');
-    if (!root) return;
-    var t = document.createElement('div');
-    t.className = 'toast';
-    t.innerHTML = '<span>' + esc(msg) + '</span>' + (action ? '<button type="button">' + esc(action.label) + '</button>' : '');
-    if (action) t.querySelector('button').addEventListener('click', function () { t.remove(); action.fn(); });
-    root.appendChild(t);
-    if (ms !== 0) setTimeout(function () { t.remove(); }, ms || 3200);
+    // v3.3: shown in the main window and, when it is open, in the floating window too (one UNDO for both)
+    var docs = [document];
+    if (typeof pip !== 'undefined' && pip.win && pip.win.document) docs.push(pip.win.document);
+    var made = [];
+    docs.forEach(function (d) {
+      var root = d.getElementById('toast-root');
+      if (!root) return;
+      var t = d.createElement('div');
+      t.className = 'toast';
+      t.innerHTML = '<span>' + esc(msg) + '</span>' + (action ? '<button type="button">' + esc(action.label) + '</button>' : '');
+      if (action) t.querySelector('button').addEventListener('click', function () { made.forEach(function (x) { x.remove(); }); action.fn(); });
+      root.appendChild(t);
+      made.push(t);
+    });
+    if (ms !== 0) setTimeout(function () { made.forEach(function (x) { x.remove(); }); }, ms || 3200);
   }
   // opts: { title, html, actions: [{ label, cls, fn, keepOpen, id }], onOpen }
   function openModal(opts) {
-    var root = $('#modal-root');
+    var mdoc = opts.doc || ui.modalDoc || document; // v3.3: the floating window has its own modal root
+    var root = mdoc.getElementById('modal-root') || $('#modal-root');
     var prevFocus = document.activeElement;
     root.innerHTML = '<div class="modal-back"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">' +
       '<h2 id="m-title">' + esc(opts.title) + '</h2>' + (opts.html || '') +
@@ -1469,11 +1487,11 @@ var App = (function () {
       }).join('') + '</div></div></div>';
     function close() {
       root.innerHTML = '';
-      document.removeEventListener('keydown', onKey);
+      mdoc.removeEventListener('keydown', onKey);
       if (prevFocus && prevFocus.focus && document.body.contains(prevFocus)) prevFocus.focus();
     }
     function onKey(e) { if (e.key === 'Escape') close(); }
-    document.addEventListener('keydown', onKey);
+    mdoc.addEventListener('keydown', onKey);
     $$('[data-mi]', root).forEach(function (b) {
       b.addEventListener('click', function () {
         var a = opts.actions[+b.getAttribute('data-mi')];
@@ -2753,7 +2771,12 @@ var App = (function () {
   }
   function runHeadLine(rs) {
     var sd = seriesDayFor(rs.key, state.settings);
-    return '<div class="run-head"><span>' + esc(fmtDayKey(rs.key)) + (sd && sd.n >= 1 && sd.n <= sd.of ? ' · day ' + sd.n + ' of ' + esc(sd.of) : '') + '</span>' + SETTINGS_LINK + '</div>';
+    return '<div class="run-head"><span>' + esc(fmtDayKey(rs.key)) + (sd && sd.n >= 1 && sd.n <= sd.of ? ' · day ' + sd.n + ' of ' + esc(sd.of) : '') + '</span><span class="row" style="gap:12px">' + popOutBtn() + SETTINGS_LINK + '</span></div>';
+  }
+  // v3.3: open the whole app in an always-on-top window (Chrome / Edge on a computer).
+  function popOutBtn() {
+    if (!pipSupported() || (typeof pip !== 'undefined' && pip.win)) return '';
+    return '<button type="button" class="textbtn pop-out" data-act="pip-open">Pop-out window</button>';
   }
   function runOffday(rs) {
     return runHeadLine(rs) + '<div class="run-mid"><p class="run-big">No session today.</p><p class="run-sub">Days off stay quiet.</p></div>' +
@@ -2818,7 +2841,7 @@ var App = (function () {
     if (ui.tradeCk === rs.key) return runChecklistFirst(rs, out);
     return out + '<div class="run-foot"><div class="enter2">' + enteredBtn(rs, 'primary').replace(/<p class="run-flag"[\s\S]*$/, '') +
       '<button type="button" class="btn" data-act="run-ck-open">Checklist first</button></div>' + flagLine(flagReasonsFor(state, day, rs.now), 'One tap. Right now it would be flagged:') +
-      '<div class="run-links">' + urgeNoteBtn() + '<button type="button" class="textbtn" data-act="run-lock">I moved the lock</button>' +
+      '<div class="run-links">' + urgeNoteBtn() + '<button type="button" class="textbtn" data-act="run-lock">I moved the lock</button>' + popOutBtn() +
       (c ? '<button type="button" class="textbtn" data-act="run-paste">Paste re-cut card</button>' : '') + '</div></div>';
   }
   function calmHtml(rs) {
@@ -4221,7 +4244,7 @@ var App = (function () {
     if (pip.win) return;
     if (!pipSupported()) { toast('The floating window needs Chrome or Edge on a computer.'); return; }
     unlockAudio();
-    window.documentPictureInPicture.requestWindow({ width: 360, height: 640 }).then(attachPip) // v2 Part G: spec §9 size
+    window.documentPictureInPicture.requestWindow({ width: 420, height: 760 }).then(attachPip) // v3.3: the whole app (Today + Trade)
       .catch(function () { toast('Could not open the floating window.'); });
   }
   function attachPip(w) {
@@ -4235,7 +4258,7 @@ var App = (function () {
     st.textContent = document.querySelector('style').textContent;
     d.head.appendChild(st);
     d.body.className = 'pipwin';
-    d.body.innerHTML = '<div id="pip-root"></div>';
+    d.body.innerHTML = '<div id="pip-root"></div><div id="modal-root"></div><div id="toast-root" class="toasts" aria-live="polite"></div>'; // v3.3: modals + toasts open in the window
     d.body.addEventListener('click', function (e) {
       // v2 Part G: a tap outside an open roll-up row closes it, as in the main window.
       if (ui.ruOpen && !e.target.closest('.ru-open') && !e.target.closest('[data-act="ru"]')) {
@@ -4243,9 +4266,10 @@ var App = (function () {
         if (!e.target.closest('[data-act]')) { render(); return; }
       }
       var el = e.target.closest('[data-act]');
-      if (!el || el.disabled) return;
+      if (!el || el.disabled || el.closest('#modal-root')) return;
       var fn = ACTIONS[el.getAttribute('data-act')];
-      if (fn) fn(el, e);
+      ui.modalDoc = d; // v3.3: a modal opened from the window opens in the window
+      try { if (fn) fn(el, e); } finally { ui.modalDoc = null; }
     });
     d.body.addEventListener('change', function (e) { // v2 Part G: the home screen's fields (Today card)
       var el = e.target.closest('[data-change]');
@@ -4267,6 +4291,7 @@ var App = (function () {
     var now = new Date();
     var ac = state.activeCooldown;
     if (ui.pipFlash && ui.pipFlash.until > Date.now()) return 'flash';
+    if (isRun()) return 'home'; // v3.3: the window shows the app (Today / Trade), whatever the stage
     var hst = homeNow(now).state;
     if (hst === 'intrade') return 'home';
     if (hst === 'cooldown' && ac && ac.trigger === 'sl') return 'home'; // after a stop: home Cooldown (with "I left the desk")
@@ -4297,8 +4322,15 @@ var App = (function () {
       var hsn = homeNow(now);
       var rsp = isRun() ? runNow(now) : null; // v3: the run sheet in the window too
       var lockd = rsp ? !!RUN_LOCKED[rsp.stage] : (homeLocked(hsn.state) || hsn.state === 'done');
-      return '<div class="pw pw-home" data-s="' + (rsp ? RUN_BAND[rsp.stage] || 'wait' : HOME_BAND[hsn.state] || 'wait') + '">' + undo +
-        '<div class="pw-body">' + (rsp ? viewRunTrade(rsp) : viewHome(hsn)) + '</div>' + (lockd ? '' : pipCheckinLine(now)) + '</div>';
+      if (rsp) { // v3.3: the whole app in the window: Today and Trade, switched here without touching the main window
+        var pt = ui.pipTab === 'home' ? 'home' : 'trade';
+        return '<div class="pw pw-home pw-run" data-s="' + (RUN_BAND[rsp.stage] || 'wait') + '">' +
+          '<div class="pw-tabs" role="tablist"><button type="button" role="tab" data-act="pip-tab" data-v="home" aria-selected="' + (pt === 'home') + '">Today</button>' +
+          '<button type="button" role="tab" data-act="pip-tab" data-v="trade" aria-selected="' + (pt === 'trade') + '">Trade</button></div>' +
+          '<div class="pw-body">' + (pt === 'home' ? viewRun(rsp) : viewRunTrade(rsp)) + '</div></div>';
+      }
+      return '<div class="pw pw-home" data-s="' + (HOME_BAND[hsn.state] || 'wait') + '">' + undo +
+        '<div class="pw-body">' + viewHome(hsn) + '</div>' + (lockd ? '' : pipCheckinLine(now)) + '</div>';
     }
     var out = '<div class="pw' + cls + '"><div class="pw-head"><span class="dot"></span><b>CHECKPOINT</b><span>ALWAYS ON TOP</span></div>' + undo;
     out += '<div class="pw-body">';
@@ -4351,6 +4383,11 @@ var App = (function () {
   }
   function pipSig(mode) {
     var now = new Date();
+    if (mode === 'home' && isRun()) {
+      var rsg = runNow(now);
+      return JSON.stringify([mode, runSig(rsg), rsg.day, ui.pipTab, ui.tradeCk, ui.tradeCkSetup, ui.muted, state.activeCooldown && state.activeCooldown.startedAt,
+        state.settings.runSheet, state.settings.rules, state.settings.audio, state.checklists.trade]);
+    }
     if (mode === 'home') { // v2 Part G: re-render on a state change or any change to the day, never on a tick
       var hsn = homeNow(now);
       return JSON.stringify([mode, homeSig(hsn), hsn.day, ui.ruOpen, state.activeCooldown, !!(ui.pipUndo && ui.pipUndo.until > Date.now()), checkinsActive(),
@@ -4382,7 +4419,8 @@ var App = (function () {
   function pipTickDom() {
     if (!pip.win) return;
     var d = pip.win.document, now = new Date();
-    if (d.querySelector('.pw-home')) { tickHomeDom(d); tickCooldownDom(d); } // v2 Part G: +N min, countdown, elapsed, word loop, cooldown
+    if (d.querySelector('.pw-run')) { tickRunDom(d, runNow(now)); tickCooldownDom(d); } // v3.3
+    else if (d.querySelector('.pw-home')) { tickHomeDom(d); tickCooldownDom(d); } // v2 Part G: +N min, countdown, elapsed, word loop, cooldown
     var l = d.querySelector('[data-pw-left]');
     if (l) l.textContent = sessionInfo(now).right;
     var f = d.querySelector('[data-pw-fill]');
@@ -5143,6 +5181,7 @@ var App = (function () {
     unlockAudio();
     saveNow();
     ui.tab = 'trade';
+    ui.pipTab = 'trade';
     try { sessionStorage.setItem('checkpoint.tab', 'trade'); } catch (e) { /* ignore */ }
     render();
     window.scrollTo(0, 0);
@@ -5215,6 +5254,9 @@ var App = (function () {
     });
   }
   function runPasteFlow() {
+    var pdoc = ui.modalDoc; // v3.3: the clipboard answer comes back later; keep the window it was asked from
+    function inDoc(fn) { return function () { var keep = ui.modalDoc; ui.modalDoc = pdoc; try { return fn.apply(null, arguments); } finally { ui.modalDoc = keep; } }; }
+    use = inDoc(use); manual = inDoc(manual);
     function use(text) {
       var key = todayKey(), day = getDay(key);
       var p = parseCard(text);
@@ -5382,6 +5424,7 @@ var App = (function () {
       var c = day.enteredCard;
       logTrade('TP', { r: c && c.rrNum ? c.rrNum : (Number(state.settings.rules.rrPreferred) || 2), est: true });
     },
+    'pip-tab': function (el) { ui.pipTab = el.getAttribute('data-v'); pipRender(true); },
     'run-details': function (el) { runDetailsFlow(el.getAttribute('data-i')); },
     'run-stopmoved': function () {
       var day = getDay(todayKey());
